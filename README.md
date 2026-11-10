@@ -4,7 +4,34 @@ Aplicación de gastos, planificación y metas personales. Primera versión previ
 
 ## Estado
 
-Repositorio inicial de planificación. La aplicación todavía no está implementada ni publicada.
+Primera entrega implementada: aplicación Next.js con demo interactiva en español. Incluye resumen, registro temporal de movimientos, búsqueda, exportación CSV y vistas ilustrativas de planificación, metas y premios. Todavía no hay conexión MySQL, acceso privado ni publicación.
+
+## Ejecutar en tu computadora
+
+Recomendado: Node.js 24 y npm. Instalar dependencias desde las versiones fijadas:
+
+```sh
+npm ci
+npm run dev
+```
+
+Abrir http://localhost:3000. La demo no necesita `.env` y pierde los cambios al recargar. No introducir información real.
+
+Comprobar antes de integrar cambios:
+
+```sh
+npm run build
+npm run typecheck
+```
+
+Para ejecutar la compilación: `npm run start`. Se usa webpack al compilar para facilitar compatibilidad con Hostinger. En este equipo se verificó con Node.js 26.13.0; la verificación con Node.js 24 en Hostinger queda pendiente.
+
+## Contexto para continuar
+
+- `docs/PROJECT_CONTEXT.md`: decisiones y alcance acordado.
+- `docs/STATUS.md`: avances, verificaciones y siguiente entrega.
+- `AGENTS.md`: instrucciones para asistentes que trabajen en el repositorio.
+- `.env.example`: plantilla sin secretos para la futura conexión MySQL.
 
 ## Primera versión
 
@@ -56,4 +83,4 @@ Conexiones bancarias, inteligencia artificial, WhatsApp/SMS, cobros a usuarios, 
 
 ## Próxima entrega
 
-Crear la base ejecutable de Next.js, configuración de ejemplo sin secretos, esquema MySQL y acceso privado. Después implementar y comprobar movimientos y transferencias antes de añadir dashboards y recompensas.
+Implementar esquema MySQL, migraciones y acceso privado. Después sustituir los datos de demostración por movimientos persistentes, con permisos y transferencias comprobados. No publicar para uso real hasta completar esas verificaciones.
