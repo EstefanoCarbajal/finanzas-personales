@@ -4,7 +4,7 @@ Aplicación de gastos, planificación y metas personales. Primera versión previ
 
 ## Estado
 
-Primera entrega implementada: aplicación Next.js con demo interactiva en español. Incluye resumen, registro temporal de movimientos, búsqueda, exportación CSV y vistas ilustrativas de planificación, metas y premios. Todavía no hay conexión MySQL, acceso privado ni publicación.
+Aplicación Next.js con acceso privado y persistencia en una base exclusiva de pruebas de Hostinger. Incluye login, sesiones, cuentas/categorías iniciales, ingresos, gastos y transferencias. La demo independiente conserva búsqueda, exportación CSV y vistas ilustrativas de planificación, metas y premios. No hay publicación ni autorización para cargar datos financieros reales.
 
 ## Ejecutar en tu computadora
 
@@ -15,13 +15,28 @@ npm ci
 npm run dev
 ```
 
-Abrir http://localhost:3000. La demo no necesita `.env` y pierde los cambios al recargar. No introducir información real.
+Abrir http://localhost:3000. El acceso privado requiere `.env.local`; la demo en `/demo` no necesita credenciales y pierde los cambios al recargar. No introducir información real durante las pruebas.
+
+## Base de pruebas y acceso privado
+
+Copiar `.env.example` a `.env.local` solo si el archivo privado no existe. Completar servidor, puerto, base, usuario y contraseña. En Hostinger autorizar únicamente la IP pública del equipo en MySQL remoto. Mantener `DB_SSL=true`: la conexión TLS con certificado válido ya se comprobó en el alojamiento del proyecto. La aplicación sigue ejecutándose en el equipo; esto no publica la web.
+
+En una base nueva y exclusiva para este proyecto, ejecutar `npm run db:migrate`. La migración inicial **ya está aplicada** en la base de pruebas de este proyecto. Las migraciones aplicadas no deben editarse: se comprueba su checksum. MySQL confirma automáticamente las operaciones de esquema; una migración parcialmente fallida requiere revisión manual antes de reintentar.
+
+Para una instalación nueva, definir temporalmente `INITIAL_USER_EMAIL` e `INITIAL_USER_PASSWORD` (12 a 128 caracteres) en `.env.local` y ejecutar `npm run db:create-user`. El comando solo funciona sin usuarios existentes. Después retirar la contraseña inicial del archivo privado. **La cuenta inicial de este proyecto ya está creada.**
+
+El acceso está en `/login` y el panel en `/privado`. Cada usuario ve sus propias cuentas, categorías y movimientos. El panel muestra balance acumulado; las transferencias entre cuentas, incluidos aportes a ahorros, no suman ingresos ni gastos. Aún no hay edición/borrado de movimientos ni gestión de nuevas cuentas/categorías desde la interfaz.
+
+Las sesiones duran siete días y se revocan al salir. El entorno publicado debe usar HTTPS: las cookies de producción llevan Secure. No existe registro público ni recuperación automática de contraseña todavía.
+
+Para las pruebas de integración, definir `TEST_DB_NAME` con el nombre exacto de la base de pruebas y ejecutar `npm run test:integration`. El comando crea usuarios ficticios con identificadores aleatorios y limpia únicamente sus datos al terminar. No usarlo en producción. `node scripts/check-access.mjs` verifica el login y logout HTTP con el servidor local en 127.0.0.1:3000 y las variables de cuenta inicial presentes temporalmente; no imprime credenciales.
 
 Comprobar antes de integrar cambios:
 
 ```sh
 npm run build
 npm run typecheck
+npm test
 ```
 
 Para ejecutar la compilación: `npm run start`. Se usa webpack al compilar para facilitar compatibilidad con Hostinger. En este equipo se verificó con Node.js 26.13.0; la verificación con Node.js 24 en Hostinger queda pendiente.
@@ -31,7 +46,7 @@ Para ejecutar la compilación: `npm run start`. Se usa webpack al compilar para 
 - `docs/PROJECT_CONTEXT.md`: decisiones y alcance acordado.
 - `docs/STATUS.md`: avances, verificaciones y siguiente entrega.
 - `AGENTS.md`: instrucciones para asistentes que trabajen en el repositorio.
-- `.env.example`: plantilla sin secretos para la futura conexión MySQL.
+- `.env.example`: plantilla sin secretos para la conexión MySQL.
 
 ## Primera versión
 
@@ -83,4 +98,4 @@ Conexiones bancarias, inteligencia artificial, WhatsApp/SMS, cobros a usuarios, 
 
 ## Próxima entrega
 
-Implementar esquema MySQL, migraciones y acceso privado. Después sustituir los datos de demostración por movimientos persistentes, con permisos y transferencias comprobados. No publicar para uso real hasta completar esas verificaciones.
+Completar verificación visual y registro desde la interfaz, gestión de cuentas/categorías y resumen mensual. Después implementar planificación y metas persistentes. Antes de publicar: verificar Node.js 24, HTTPS, respaldo/restauración y recuperación de acceso. Consultar docs/STATUS.md para las pruebas realizadas y pendientes exactos.

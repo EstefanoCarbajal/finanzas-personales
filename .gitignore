@@ -11,5 +11,6 @@ coverage/
 .DS_Store
 Thumbs.db
 backups/
+.local-db/
 *.sql
 !migrations/**/*.sql

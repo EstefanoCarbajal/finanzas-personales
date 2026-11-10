@@ -12,6 +12,9 @@ Aplicación personal para registrar gastos e ingresos, categorías, dashboards, 
 - Usuario inicial privado, registro público cerrado, separación por usuario desde el modelo de datos.
 - PEN y America/Lima como valores iniciales, pendientes de personalización futura.
 - Supabase no es necesario ni una migración obligatoria.
+- Decisión del 10/11/2026: usar una base exclusiva de pruebas en Hostinger con datos ficticios. No continuar con MariaDB local. Conexión remota TLS con validación de certificado comprobada y primera migración aplicada. El servicio MySQL de este alojamiento informa MariaDB 11.8.9; las pruebas de integración pasaron en ese motor. Configuración exclusivamente en .env.local. No ejecutar migraciones sobre bases de otros sitios.
+- Acceso privado en /privado, login en /login y demo aislada en /demo. Sesiones opacas de siete días con hash en MySQL y cookie HttpOnly (Secure en producción); contraseñas con scrypt y límite persistente de intentos. No hay registro público.
+- Movimientos de importe positivo DECIMAL(13,2), propietario obligatorio y referencias compuestas que impiden usar cuentas/categorías ajenas. Una transferencia es una sola fila con origen y destino. Idempotencia mediante identificador de envío. Balance acumulado calculado con céntimos BigInt; PEN y fecha de Lima.
 
 ## Fases
 1. Base ejecutable y diseño inicial.

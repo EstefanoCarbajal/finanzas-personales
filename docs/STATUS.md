@@ -22,14 +22,24 @@
 
 ## Git
 
-La creación de la rama feat/base-aplicacion falló por restricciones de escritura de los archivos internos de Git, incluso después del permiso solicitado. Los archivos permanecen en la copia local del usuario, sin commit ni push de esta entrega. No se modificó el historial ni el remoto.
+La primera versión visual fue guardada por el usuario: commit 1b64b5c en main, coincidente con la referencia local origin/main. Se creó la rama codex/acceso-privado-mysql para la segunda entrega, que todavía tiene cambios locales sin commit.
 
-Para guardar desde la terminal del usuario, primero revisar git status, crear la rama con git switch -c feat/base-aplicacion, añadir los archivos, hacer commit y push. main debe mantenerse como la última versión comprobada e integrada.
+main debe mantenerse como la última versión comprobada e integrada.
+
+## Entrega 2: acceso privado y persistencia en base de pruebas
+
+- Esquema SQL, migraciones con checksum, cuenta inicial, sesiones, login y movimientos persistentes con transferencias implementados. Demo separada en /demo; acceso privado en /privado. Sin registro público.
+- Migración 001_private_finances.sql aplicada a la base vacía de pruebas autorizada en Hostinger mediante conexión TLS. Tablas users, sessions, login_limits, accounts, categories, movements y schema_migrations. Cuenta inicial creada con los datos privados proporcionados por el usuario; tres cuentas y siete categorías iniciales, sin movimientos reales.
+- Build y typecheck correctos. Cuatro pruebas unitarias aprobadas. Prueba de integración con cinco subpruebas aprobadas en Hostinger: precisión/transferencias, aislamiento de propietarios (incluidas claves foráneas), duplicados/restricciones, contraseñas/sesiones/expiración/revocación y límite de intentos. Usuarios ficticios y sus movimientos eliminados al terminar.
+- Verificación HTTP del formulario real: acceso anónimo redirige a login, contraseña inicial inicia sesión, cookie HttpOnly/SameSite, panel privado responde y logout revoca acceso. Sesión de comprobación eliminada. Pantalla de login comprobada en navegador. Falta revisión visual completa del panel privado y formulario en móvil, y prueba de registro a través de la interfaz.
+- Se inicializó una instancia aislada de MariaDB en .local-db y configuración privada .env.local (ambas excluidas de Git). No se crearon las tablas de la aplicación ni la base finanzas_test.
+- El usuario configuró los secretos en .env.local y confirmó el acceso remoto; conexión verificada a MariaDB 11.8.9 de Hostinger. La contraseña de creación de cuenta se retira de .env.local después de verificar el login. No se ha publicado la aplicación.
+- Instancia aislada local detenida mediante SHUTDOWN tras comprobar su directorio. La carpeta .local-db se conserva excluida de Git. No continuar usando esa instancia.
 
 ## Siguiente entrega
 
-1. Esquema MySQL con usuario propietario y restricciones de integridad.
-2. Migraciones y procedimiento para crear la cuenta inicial sin registro público.
-3. Login con hash de contraseñas y sesiones protegidas; comprobación de permisos en cada operación.
-4. Movimientos reales con cuentas, categorías, transferencias y pruebas de precisión monetaria.
-5. Probar Node.js 24, respaldo/restauración y publicación en Hostinger cuando corresponda.
+1. Probar el registro desde la interfaz y revisar visualmente el panel privado en móvil y escritorio.
+2. Añadir gestión de cuentas/categorías, búsqueda/exportación privadas y resumen mensual. Actualmente se incluyen cuentas/categorías iniciales y balance acumulado.
+3. Presupuestos, pagos futuros y metas siguen siendo ilustrativos en la demo, sin funciones persistentes todavía.
+4. Probar Node.js 24, respaldo/restauración, recuperación de acceso y configuración HTTPS antes de publicar o cargar datos reales.
+5. Revisar y guardar esta entrega en Git; no se hizo commit ni push de la rama.
