@@ -33,12 +33,12 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const needsDashboard = section !== 'habitos';
   const data = needsDashboard ? await readDashboard(db(), user.id) : null;
   const planning = section === 'planificacion' ? await readPlanning(db(), user.id, month) : null;
-  const goals = section === 'metas' ? await readGoals(db(), user.id) : null;
+  const goals = section === 'metas' || section === 'resumen' ? await readGoals(db(), user.id) : null;
   const habits = section === 'habitos' ? await readHabitDashboard(db(), user.id, today) : null;
 
   return <div className="app-shell private-shell">
     <aside className="sidebar">
-      <a className="brand" href="/privado" aria-label="Finanzas personales, resumen privado"><span className="brand-mark">f.</span><span>finanzas<span className="brand-sub">PERSONALES</span></span></a>
+      <a className="brand" href="/privado" aria-label="Finanzas personales, resumen privado"><img className="brand-mark" src="/koala.svg" alt="" /><span>finanzas<span className="brand-sub">PERSONALES</span></span></a>
       <div className="workspace-label">TU ESPACIO PERSONAL</div>
       <nav aria-label="Navegación del espacio privado">
         {sections.map(item => <a key={item} className={section === item ? 'nav-item active' : 'nav-item'} href={`/privado?seccion=${item}`} aria-current={section === item ? 'page' : undefined}><span aria-hidden="true">{sectionIcons[item]}</span>{sectionLabels[item]}</a>)}
@@ -54,6 +54,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
           <div className="section-bar"><h2>Tu balance acumulado</h2><span className="month-pill">Todos tus movimientos</span></div>
           <div className="stats">{[['Saldo total', data.totals.balance], ['Ingresos', data.totals.income], ['Gastos', data.totals.expense]].map(([label, value], i) => <article key={label} className={`stat ${i === 0 ? 'balance' : ''}`}><span>{label}{i === 0 && <span aria-hidden="true"> ↗</span>}</span><strong>{soles(String(value))}</strong><small>{i === 0 ? 'Saldo entre todas tus cuentas' : 'Las transferencias no se incluyen'}</small></article>)}</div>
           <MonthlySummary movements={data.movements} currentMonth={month} />
+          {goals?.[0] && <section className="private-goal-feature"><div className="goal-top"><span className="eyebrow">UNA META A LA VEZ</span><span className="goal-symbol" aria-hidden="true">☀</span></div><h2>{goals[0].name}</h2><p>Tu próximo paso empieza hoy.</p><div className="goal-amount"><strong>{soles(goals[0].saved)}</strong><span>de {soles(goals[0].target_amount)}</span></div><progress aria-label={`Avance de ${goals[0].name}`} value={Math.min(100, Number(BigInt(goals[0].saved.replace('.', '')) * BigInt(100) / BigInt(goals[0].target_amount.replace('.', ''))))} max={100} /><div className="goal-bottom"><span>Avanza a tu ritmo</span><a href="/privado?seccion=metas">Ver meta →</a></div></section>}
           <section className="panel summary-next"><div className="panel-heading"><div><h2>Sigue a tu ritmo</h2><p>Elige una sección para continuar organizando tus finanzas.</p></div></div><div className="summary-links">{sections.slice(1).map(item => <a className="summary-link" key={item} href={`/privado?seccion=${item}`}><span aria-hidden="true">{sectionIcons[item]}</span><strong>{sectionLabels[item]}</strong><span aria-hidden="true">→</span></a>)}</div></section>
         </>}
         {section === 'movimientos' && data && <>

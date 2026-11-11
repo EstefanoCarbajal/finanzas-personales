@@ -1,5 +1,21 @@
 # Estado al 11 de noviembre de 2026
 
+## Sidebar con zoom
+
+- El sidebar privado ahora permite desplazamiento vertical propio cuando el zoom o la altura de ventana impiden mostrar toda la navegación, el mensaje lateral y el perfil a la vez. Sus secciones conservan su tamaño y acceso.
+- Pendiente comprobar visualmente con zoom elevado en escritorio y con navegación móvil.
+
+## Resumen más visual
+
+- El balance mensual del panel privado ahora tiene mayor jerarquía visual y un mensaje amable que se adapta al resultado; los ingresos y gastos incluyen barras comparativas, manteniendo los cálculos exactos y excluyendo transferencias.
+- En meses sin actividad se muestra una guía clara. Diseño adaptable a móvil.
+- `npm run typecheck` y `npm run build` correctos.
+
+## Icono de marca
+
+- Se reemplazó el monograma «f.» por un koala minimalista original en SVG, con fondo lima y trazos verde oscuro. Se usa en demo, panel privado y favicon.
+- Build y typecheck pendientes de ejecutar para esta entrega.
+
 ## Mejora visual inicial
 
 - Se estableció una dirección visual alegre y motivadora, inspirada en la energía lúdica de Duolingo con identidad propia. Se renovaron colores, tipografía, botones, navegación, tarjetas, paneles, etiquetas y formularios en estilos compartidos por demo y panel privado.

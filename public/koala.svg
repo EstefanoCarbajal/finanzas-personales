@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Koala">
+  <rect width="64" height="64" rx="20" fill="#d4f15b"/>
+  <path d="M16 23 12 12c-.7-2 1.4-3.8 3.3-2.7l10 5.8a21 21 0 0 1 13.4 0l10-5.8c1.9-1.1 4 .7 3.3 2.7l-4 11A20 20 0 1 1 16 23Z" fill="#f8fbf4" stroke="#243a32" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M17 26c-2.8-.5-5.4-2.4-6.8-5.5-1.5-3.4-1.4-7.4.1-10.8 3.9 1.2 7.7 4.2 9.5 8.4M47 26c2.8-.5 5.4-2.4 6.8-5.5 1.5-3.4 1.4-7.4-.1-10.8-3.9 1.2-7.7 4.2-9.5 8.4" fill="#b5c8bb" stroke="#243a32" stroke-width="2.6" stroke-linejoin="round"/>
+  <ellipse cx="32" cy="34" rx="7" ry="10" fill="#344b40"/>
+  <path d="M25 46c2.1 2.4 4.4 3.6 7 3.6s4.9-1.2 7-3.6" fill="none" stroke="#243a32" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="23" cy="34" r="1.7" fill="#243a32"/><circle cx="41" cy="34" r="1.7" fill="#243a32"/>
+</svg>

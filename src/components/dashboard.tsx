@@ -61,7 +61,7 @@ export default function Dashboard() {
 
   return <div className="app-shell">
     <aside className="sidebar">
-      <a className="brand" href="/" aria-label="Finanzas personales, inicio"><span className="brand-mark">f.</span><span>finanzas<span className="brand-sub">PERSONALES</span></span></a>
+      <a className="brand" href="/" aria-label="Finanzas personales, inicio"><img className="brand-mark" src="/koala.svg" alt="" /><span>finanzas<span className="brand-sub">PERSONALES</span></span></a>
       <div className="workspace-label">TU ESPACIO PERSONAL</div>
       <nav aria-label="Navegación principal">{sections.map(item => <button key={item.label} aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "nav-item active" : "nav-item"} onClick={() => { setSection(item.label); setFilter(""); setNotice(""); }}><span aria-hidden="true">{item.icon}</span>{item.label}</button>)}</nav>
       <div className="sidebar-tip"><span className="tip-icon">✧</span><h3>Pequeños pasos.<br />Grandes metas.</h3><p>Un poco de claridad hoy, más tranquilidad mañana.</p></div>
