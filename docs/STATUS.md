@@ -1,5 +1,43 @@
 # Estado al 11 de noviembre de 2026
 
+## Mejora visual inicial
+
+- Se estableció una dirección visual alegre y motivadora, inspirada en la energía lúdica de Duolingo con identidad propia. Se renovaron colores, tipografía, botones, navegación, tarjetas, paneles, etiquetas y formularios en estilos compartidos por demo y panel privado.
+- La mascota queda para una fase futura; el sistema visual deja espacio para incorporarla sin imitar personajes ni marca de terceros.
+- Revisión visual de demo y login completada en navegador. La demo adapta bien la navegación y las tarjetas al ancho disponible; el login conserva jerarquía clara y buen contraste. No se accedió con credenciales al panel privado en esta revisión; comparte estilos con la demo y su puerta de entrada comprobada es /login. Revisar el panel con sesión autorizada en la siguiente pasada.
+- Panel privado actualizado para compartir la identidad visual: navegación a resumen, movimientos y cuentas; resumen de saldos, formulario y tabla con tipos de movimiento identificados. Build y typecheck correctos. Pendiente revisar el panel en navegador con una sesión autorizada y ajustar móvil/escritorio.
+- Navegación privada organizada por secciones: Resumen, Movimientos, Cuentas, Planificación, Metas y ahorro, y Hábitos y recompensas. El resumen conserva indicadores generales y accesos; cada herramienta aparece al elegir su sección en el sidebar. Navegación comprobada con usuario ficticio y a ancho móvil.
+- La demo ahora presenta esas mismas seis secciones con datos ficticios. Incluye cuentas ilustrativas y marcas interactivas de hábitos/puntos para exploración; los cambios viven solo en memoria y se reinician al recargar, sin guardarse en navegador ni en MySQL. Build, typecheck y diff check correctos.
+- Se permitió `127.0.0.1` como origen adicional del servidor Next.js de desarrollo, ya que el navegador trata ese host distinto de `localhost`; esto evita que la seguridad de recursos de desarrollo deje la demo sin interacción al entrar por la IP local. Reiniciar el servidor de desarrollo tras cambiar la configuración.
+- Panel privado ahora permite añadir cuentas y categorías por tipo mediante acciones ligadas al usuario autenticado, con validación de nombre y duplicados. Confirmado en QA con usuario ficticio en la base u519053982_finanzas_test.
+- El resumen mensual ahora permite navegar a meses anteriores, bloquea avanzar más allá del mes actual y conserva el cálculo exacto excluyendo transferencias. Los movimientos permiten búsqueda, filtro por mes y tipo; el CSV se genera con los filtros aplicados y protección contra fórmulas.
+- QA visual confirmó noviembre con gasto ficticio de S/ 23,45, octubre vacío y vuelta a noviembre con saldo esperado. Búsqueda + filtros por mes/tipo devolvieron el movimiento correcto. Se activó Exportar CSV con los filtros aplicados, pero queda confirmar el archivo descargado en una hoja de cálculo. Revisión a ancho ~700 px; pendiente escritorio amplio.
+- Usuario ficticio y movimiento de QA eliminados al terminar; sesión cerrada. No se modificó la cuenta del propietario. Build, typecheck y diff check correctos.
+
+## Presupuestos y pagos futuros
+
+- Migración 002_planning.sql aplicada a u519053982_finanzas_test. Crea presupuestos mensuales por categoría y pagos programados con cuenta/categoría, vencimiento y estado. Sin datos de prueba activos tras el QA.
+- El panel permite guardar/actualizar límite mensual por categoría, revisar consumo y disponible, programar pagos, marcarlos como pagados o cancelarlos. Los pagos programados no afectan saldos ni gastos; confirmar el pago crea, en una transacción, un movimiento de gasto y marca el pago, con el ID del pago como clave de idempotencia.
+- Restringido por propietario en consultas y claves foráneas compuestas; solo categorías de gasto son válidas para presupuestos/pagos. Importes con DECIMAL(13,2), positivos y hasta dos decimales.
+- QA visual: presupuesto S/ 120, pago futuro S/ 25,75; saldo permaneció S/ 0 mientras estaba programado. Tras confirmación, el pago desapareció de pendientes, se registró un solo gasto y el presupuesto mostró S/ 25,75 consumidos y S/ 94,25 disponibles. Sesión y fixtures eliminados.
+- `npm test`: 4 pruebas aprobadas. `npm run test:integration`: 7 pruebas aprobadas, incluyendo propiedad, saldo sin alterar antes de confirmar, exactamente un gasto al confirmar, rechazo de doble confirmación y cancelación. Build, typecheck y diff check correctos.
+
+## Metas y ahorro
+
+- Migración 003_goals.sql aplicada únicamente a u519053982_finanzas_test. Metas con nombre, objetivo, cuenta de ahorro y fecha opcional; aportes con historial ligado a la meta y a una transferencia real entre cuentas del usuario.
+- Aporte transaccional e idempotente: crea una transferencia hacia la cuenta de ahorro y registra el avance en la misma transacción. No incrementa ingresos ni gastos. La base exige vínculo del aporte con una meta y un movimiento del mismo usuario.
+- Panel permite crear metas, consultar progreso/importe restante y aportar desde otra cuenta. Al alcanzar o superar el objetivo, progreso visual limitado a 100% y etiqueta de meta alcanzada.
+- QA visual: meta Viaje QA de S/ 500, aporte ficticio S/ 25,50 desde Efectivo a Ahorros; progreso 5%, gastos e ingresos siguieron en S/ 0. Transferencia visible en movimientos. Sesión y fixtures eliminados.
+- Integración comprueba propiedad, precisión, no inflar ingresos/gastos y rechazo de reenvío duplicado. `npm run test:integration`: 8 pruebas aprobadas; `npm test`: 4 aprobadas; build, typecheck y diff check correctos.
+
+## Hábitos y recompensas personales
+
+- Migración 004_habits_rewards.sql aplicada solo a u519053982_finanzas_test. Se crean hábitos iniciales al abrir el panel: tomar agua, pasos diarios, leer, ahorrar y comer saludable; se admiten hábitos personalizados.
+- Cada hábito suma 10 puntos una vez por día. Se pueden marcar hoy y los seis días anteriores; la base impide duplicados por usuario/hábito/fecha. El saldo de puntos es acumulado menos canjes.
+- Recompensas configurables con costo en puntos, saldo suficiente y límite de un canje por semana. Recompensas y puntos son personales y virtuales, sin equivalencia monetaria.
+- QA visual confirmó marcar “Tomé agua” (+10 puntos), crear y canjear una recompensa de 10 puntos; el saldo pasó a 0, historial mostró 10 acumulados/10 canjeados y bloqueó otro canje esa semana. Usuario, marcas, puntos y recompensa ficticios limpiados.
+- `npm test`: 4 pruebas aprobadas; `npm run test:integration`: 9 aprobadas con propiedad, doble marca, saldo y límite semanal. Build, typecheck y diff check correctos.
+
 ## Entrega 1: base y diseño inicial
 
 - Next.js 16.4.6, React 19.3.1 y TypeScript; dependencias fijadas en package-lock.json.
@@ -41,6 +79,6 @@ main debe mantenerse como la última versión comprobada e integrada.
 
 ## Siguiente entrega
 
-1. Añadir gestión de cuentas/categorías, búsqueda/exportación privadas y resumen mensual. Actualmente se incluyen cuentas/categorías iniciales y balance acumulado.
-2. Presupuestos, pagos futuros y metas siguen siendo ilustrativos en la demo, sin funciones persistentes todavía.
-3. Probar Node.js 24, respaldo/restauración, recuperación de acceso y configuración HTTPS antes de publicar o cargar datos reales. La revisión de esta entrega no equivale a autorizar producción.
+1. Revisar respaldo/restauración, recuperación de acceso y configuración HTTPS/cookies seguras antes de producción.
+2. Probar en Node.js 24 y revisar la descarga CSV en Excel.
+3. La aplicación sigue sin publicar; completar respaldos/restauración, recuperación de acceso y HTTPS/cookies seguras antes de producción o datos reales.

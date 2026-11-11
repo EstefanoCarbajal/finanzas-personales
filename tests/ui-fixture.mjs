@@ -29,7 +29,7 @@ try {
     await connection.beginTransaction();
     const [[user]] = await connection.execute('SELECT email FROM users WHERE id = ? FOR UPDATE', [id]);
     if (user && user.email !== email) throw new Error('Usuario distinto; no se elimina.');
-    for (const table of ['movements', 'sessions', 'categories', 'accounts']) await connection.execute(`DELETE FROM ${table} WHERE user_id = ?`, [id]);
+    for (const table of ['reward_redemptions', 'personal_rewards', 'habit_completions', 'habits', 'budgets', 'scheduled_payments', 'goal_contributions', 'goals', 'movements', 'sessions', 'categories', 'accounts']) await connection.execute(`DELETE FROM ${table} WHERE user_id = ?`, [id]);
     await connection.execute('DELETE FROM users WHERE id = ? AND email = ?', [id, email]);
     await connection.execute('DELETE FROM login_limits WHERE bucket = ?', [tokenHash(`email:${email}`)]);
     await connection.commit();
