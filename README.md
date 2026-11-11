@@ -98,4 +98,4 @@ Conexiones bancarias, inteligencia artificial, WhatsApp/SMS, cobros a usuarios, 
 
 ## Próxima entrega
 
-Completar verificación visual y registro desde la interfaz, gestión de cuentas/categorías y resumen mensual. Después implementar planificación y metas persistentes. Antes de publicar: verificar Node.js 24, HTTPS, respaldo/restauración y recuperación de acceso. Consultar docs/STATUS.md para las pruebas realizadas y pendientes exactos.
+La verificación visual y el registro desde la interfaz están completados; el escenario reproducible está en docs/QA.md. Continuar con gestión de cuentas/categorías y resumen mensual, después planificación y metas persistentes. Antes de publicar: verificar Node.js 24, HTTPS, respaldo/restauración y recuperación de acceso. Consultar docs/STATUS.md para las pruebas realizadas y pendientes exactos.
