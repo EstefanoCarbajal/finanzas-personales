@@ -62,7 +62,6 @@ export default function DashboardShell({ active, demo = false, avatar = "E", onN
         {navigation.map((item, index) => <div key={item.id}>{index === 3 && <p className={styles.groupLabel}>CONSTRUYE TU FUTURO</p>}{destination(item.id, <><span className={styles.navIcon}><Icon name={item.id} /></span><span className={styles.navCopy}><strong>{item.label}</strong></span><span className={styles.activeDot} /></>, `${styles.navItem} ${active === item.id ? styles.active : ""}`)}</div>)}
       </nav>
       <div className={styles.encouragement}><span className={styles.sparkle} aria-hidden="true">✦</span><span className={styles.cardEyebrow}>A TU PROPIO RITMO</span><h2>Pequeños pasos.<br />Grandes posibilidades.</h2><p>Tu próxima meta empieza con una decisión de hoy.</p>{destination("metas", <>Vamos por esa meta <Icon name="arrow" /></>, styles.goalLink)}</div>
-      <div className={styles.profile}><span className={styles.avatar}>{avatar}</span><div><strong>Mi espacio</strong><small>{demo ? "Demostración · sin guardar" : "Acceso privado"}</small></div><Icon name="shield" /></div>
     </>;
   }
   return <div className={`app-shell ${styles.shell} ${demo ? "" : "private-shell"}`}>
@@ -71,8 +70,21 @@ export default function DashboardShell({ active, demo = false, avatar = "E", onN
     <dialog ref={drawer} className={styles.drawer} aria-label="Menú de navegación" onClose={() => setOpen(false)} onClick={event => { if (event.target === event.currentTarget) close(); }}><div className={styles.drawerInner}>{sidebar(true)}</div></dialog>
     <main className={styles.main}>
       <header className={styles.topbar}>
-        <div className={styles.topContext}><button type="button" className={styles.menuButton} aria-label="Abrir menú de navegación" aria-haspopup="dialog" aria-expanded={open} onClick={() => { drawer.current?.showModal(); setOpen(true); }}><Icon name="menu" /></button><span className={styles.sectionIcon}><Icon name={active} /></span><div><span className={styles.breadcrumb}>Mi espacio <span>/</span> <span>Tu dinero, con propósito</span></span><strong className={styles.sectionTitle}>{current.label}</strong></div></div>
-        <div className={styles.topActions}><span className={styles.currency}>PEN <span>·</span> S/</span><span className={`${styles.modeBadge} ${demo ? styles.demoBadge : ""}`}><span />{demo ? "Modo demo" : "Espacio privado"}</span>{destination("movimientos", <><Icon name="plus" /><span>Registrar movimiento</span></>, styles.register)}{sessionAction && <div className={styles.sessionAction}>{sessionAction}</div>}</div>
+        <div className={styles.topContext}>
+          <button type="button" className={styles.menuButton} aria-label="Abrir menú de navegación" aria-haspopup="dialog" aria-expanded={open} onClick={() => { drawer.current?.showModal(); setOpen(true); }}><Icon name="menu" /></button>
+          <strong className={styles.sectionTitle}>{current.label}</strong>
+        </div>
+        <div className={styles.topActions}>
+          <span className={`${styles.modeBadge} ${demo ? styles.demoBadge : ""}`} title={demo ? "Datos de ejemplo. Los cambios no se guardan." : "Acceso a tu espacio privado"}><span aria-hidden="true" />{demo ? "Demo" : "Privado"}</span>
+          {destination("movimientos", <><Icon name="plus" /><span>Nuevo movimiento</span></>, styles.register)}
+          {sessionAction && <>
+            <button type="button" className={styles.accountButton} popoverTarget="dashboard-account-menu" aria-label="Abrir menú de cuenta" title="Mi cuenta">{avatar}</button>
+            <div id="dashboard-account-menu" popover="auto" className={styles.accountMenu}>
+              <div className={styles.accountHeading}><Icon name="shield" /><div><strong>Mi espacio</strong><span>Acceso privado · PEN</span></div></div>
+              <div className={styles.sessionAction}>{sessionAction}</div>
+            </div>
+          </>}
+        </div>
       </header>
       <div id="dashboard-content" tabIndex={-1} className={styles.contentAnchor}>{children}</div>
     </main>

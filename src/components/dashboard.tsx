@@ -6,7 +6,9 @@ import MonthlySummary from "@/app/privado/monthly-summary";
 import HabitsDemo from "./habits-demo";
 import MovementsWorkspace from "./movements-workspace";
 import MovementsTable from "@/app/privado/movements-table";
-import DemoMovementForm, { type DemoMovementDraft } from "./demo-movement-form";
+import DemoMovementForm, { demoAccounts, demoCategories, type DemoMovementDraft } from "./demo-movement-form";
+import AccountsDemo from "./accounts-demo";
+import { totals } from "@/lib/money.mjs";
 
 type Section = "Resumen" | "Movimientos" | "Cuentas" | "Planificación" | "Metas y ahorro" | "Hábitos y recompensas";
 type Movement = { id: number; name: string; category: string; amount: number; date: string; kind?: string; account?: string; destination?: string | null };
@@ -32,13 +34,16 @@ const sections: { label: Section; icon: string }[] = [
 export default function Dashboard() {
   const [section, setSection] = useState<Section>("Resumen");
   const [movements, setMovements] = useState(initial);
+  const [accounts, setAccounts] = useState(demoAccounts);
+  const [categories, setCategories] = useState(demoCategories);
   const [formOpen, setFormOpen] = useState(false);
 
   const [notice, setNotice] = useState("");
 
   const income = movements.filter(m => m.amount > 0 && m.kind !== "transfer").reduce((a, m) => a + m.amount, 0);
   const expense = -movements.filter(m => m.amount < 0).reduce((a, m) => a + m.amount, 0);
-  const sharedMovements = movements.map(m => ({ id: String(m.id), kind: m.kind || (m.amount > 0 ? "income" : "expense"), description: m.name, occurred_on: m.date, amount: (Math.abs(m.amount) / 100).toFixed(2), account_name: m.account || "Efectivo", destination_name: m.destination || null, category_name: m.kind === "transfer" ? null : m.category }));
+  const sharedMovements = movements.map(m => ({ id: String(m.id), kind: m.kind || (m.amount > 0 ? "income" : "expense"), description: m.name, occurred_on: m.date, amount: (Math.abs(m.amount) / 100).toFixed(2), account_id: accounts.find(a => a.name === (m.account || "Efectivo"))!.id, destination_id: accounts.find(a => a.name === m.destination)?.id || null, account_name: m.account || "Efectivo", destination_name: m.destination || null, category_name: m.kind === "transfer" ? null : m.category }));
+  const accountTotals = totals(sharedMovements);
   function addMovement(movement: DemoMovementDraft) {
     setMovements(current => [{ ...movement, id: Date.now() }, ...current]);
     setFormOpen(false);
@@ -46,8 +51,8 @@ export default function Dashboard() {
   }
   return <DashboardShell demo active={navigation.find(item => item.label === section)!.id} onNavigate={id => { setSection(navigation.find(item => item.id === id)!.label); setNotice(""); }}>
       <div className="content">
-        <div className="page-heading"><div><div className="eyebrow">TU DINERO, CON PROPÓSITO</div><h1>{section === "Resumen" ? "Cada paso cuenta." : section}</h1><p>{section === "Resumen" ? "Una mirada clara a tu mes y a lo que quieres conseguir." : section === "Movimientos" ? "Registra y encuentra los movimientos del ejemplo." : section === "Cuentas" ? "Conoce cómo se distribuye el dinero entre tus cuentas." : section === "Planificación" ? "Dale un lugar a cada compromiso antes de que llegue." : section === "Metas y ahorro" ? "Cada aporte te acerca un poco más a lo que quieres." : "Reconoce tus avances cotidianos y suma puntos virtuales."}</p></div></div>
-        <div className="demo-note">Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos.</div>
+        <div className="page-heading"><div>{section !== "Cuentas" && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Cada paso cuenta." : section}</h1>{section !== "Cuentas" && <p>{section === "Resumen" ? "Una mirada clara a tu mes y a lo que quieres conseguir." : section === "Movimientos" ? "Registra y encuentra los movimientos del ejemplo." : section === "Planificación" ? "Dale un lugar a cada compromiso antes de que llegue." : section === "Metas y ahorro" ? "Cada aporte te acerca un poco más a lo que quieres." : "Reconoce tus avances cotidianos y suma puntos virtuales."}</p>}</div></div>
+        <div className="demo-note">{section === "Cuentas" ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
         <p className="notice" role="status">{notice}</p>
 
         {section === "Resumen" && <>
@@ -55,12 +60,8 @@ export default function Dashboard() {
           <section className="panel summary-next"><div className="panel-heading"><div><h2>¿Qué quieres revisar?</h2><p>Elige una sección para explorarla</p></div></div><div className="summary-links">{sections.slice(1).map(item => <button className="summary-link" key={item.label} onClick={() => setSection(item.label)}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong><span aria-hidden="true">→</span></button>)}</div></section>
         </>}
 
-        {section === "Movimientos" && <MovementsWorkspace demo form={<DemoMovementForm onAdd={addMovement} />}><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
-        {section === "Cuentas" && <>
-          <section className="page-heading section-page-heading"><div><span className="eyebrow">TUS CUENTAS DE EJEMPLO</span><h2>Tu dinero, en su lugar.</h2><p>Estas cuentas son ilustrativas y no están conectadas a ningún banco.</p></div></section>
-          <div className="stats account-cards"><article className="stat balance"><span>Cuenta principal <span aria-hidden="true">◉</span></span><strong>{money(326300)}</strong><small>Ejemplo · Efectivo</small></article><article className="stat"><span>Cuenta de ahorro <b className="mini-icon green">◇</b></span><strong>{money(120000)}</strong><small>Ejemplo · Ahorros</small></article><article className="stat"><span>Total ilustrativo</span><strong>{money(446300)}</strong><small>Saldo entre las cuentas de ejemplo</small></article></div>
-          <section className="panel"><div className="panel-heading"><div><h2>¿Cómo funciona esta sección?</h2><p>En la privada podrás gestionar tus cuentas reales de la aplicación.</p></div></div><p className="panel-foot">En la demo solo puedes consultar estos saldos de muestra. No cambian ni se guardan.</p></section>
-        </>}
+        {section === "Movimientos" && <MovementsWorkspace demo form={<DemoMovementForm onAdd={addMovement} accounts={accounts} categories={categories} />}><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
+        {section === "Cuentas" && <AccountsDemo accounts={accounts} categories={categories} balances={accountTotals.accounts} balance={accountTotals.balance} onAddAccount={name => setAccounts(current => [...current, { id: crypto.randomUUID(), name }])} onAddCategory={(name, kind) => setCategories(current => [...current, { id: crypto.randomUUID(), name, kind }])} />}
 
         {section === "Planificación" && <div className="two-columns"><section className="panel"><div className="panel-heading"><div><h2>Presupuestos de ejemplo</h2><p>Un límite que te ayuda a decidir</p></div></div>{[{ name: "Alimentación", limit: 80000 }, { name: "Transporte", limit: 25000 }, { name: "Ocio", limit: 20000 }].map(b => { const spent = -movements.filter(m => m.category === b.name && m.amount < 0).reduce((s, m) => s + m.amount, 0); return <div className="budget" key={b.name}><div><strong>{b.name}</strong><span>{money(spent)} / {money(b.limit)}</span></div><progress aria-label={`Presupuesto de ${b.name}`} value={spent} max={Math.max(b.limit, spent)} /><small>{spent > b.limit ? `Exceso: ${money(spent - b.limit)}` : `Quedan ${money(b.limit - spent)}`}</small></div>; })}</section><section className="panel"><div className="panel-heading"><div><h2>Próximos pagos</h2><p>Ejemplos previstos, no descontados del saldo</p></div></div>{[{ day: "15", name: "Internet de casa", amount: 9900 }, { day: "20", name: "Suscripción de música", amount: 2090 }].map(p => <div className="upcoming" key={p.day}><span className="date-tile"><small>NOV</small>{p.day}</span><strong>{p.name}</strong><span>{money(p.amount)}</span></div>)}<p className="panel-foot">La confirmación de pagos está disponible en el espacio privado.</p></section></div>}
 
@@ -70,6 +71,6 @@ export default function Dashboard() {
 
         <footer>Hecho para avanzar a tu ritmo.<span>Vista previa · Datos ficticios</span></footer>
       </div>
-    {formOpen && <div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="form-title" onKeyDown={e => { if (e.key === "Escape") setFormOpen(false); if (e.key === "Tab") { const nodes = e.currentTarget.querySelectorAll<HTMLElement>("button, input, select"); const first = nodes[0]; const last = nodes[nodes.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } } }}><div className="panel-heading"><h2 id="form-title">Prueba un movimiento</h2><button className="close" aria-label="Cerrar formulario" onClick={() => setFormOpen(false)}>×</button></div><p>Solo para explorar la demo. No introduzcas datos reales.</p><DemoMovementForm onAdd={addMovement} autoFocus /></section></div>}
+    {formOpen && <div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="form-title" onKeyDown={e => { if (e.key === "Escape") setFormOpen(false); if (e.key === "Tab") { const nodes = e.currentTarget.querySelectorAll<HTMLElement>("button, input, select"); const first = nodes[0]; const last = nodes[nodes.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } } }}><div className="panel-heading"><h2 id="form-title">Prueba un movimiento</h2><button className="close" aria-label="Cerrar formulario" onClick={() => setFormOpen(false)}>×</button></div><p>Solo para explorar la demo. No introduzcas datos reales.</p><DemoMovementForm onAdd={addMovement} accounts={accounts} categories={categories} autoFocus /></section></div>}
   </DashboardShell>;
 }

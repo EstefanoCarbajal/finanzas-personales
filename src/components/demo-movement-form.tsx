@@ -2,13 +2,13 @@
 
 import { useState, type FormEvent } from 'react';
 import { toCents } from '@/lib/money.mjs';
-import MovementFields from './movement-fields';
+import MovementFields, { type MovementAccount, type MovementCategory } from './movement-fields';
 import s from './movements.module.css';
 
 export type DemoMovementDraft = { name: string; category: string; amount: number; date: string; kind: string; account: string; destination: string | null };
-const accounts = [{ id: 'cash', name: 'Efectivo' }, { id: 'savings', name: 'Ahorros' }];
-const categories = [...['Alimentación', 'Transporte', 'Vivienda', 'Ocio', 'Salud', 'Otros'].map((name, i) => ({ id: `expense-${i}`, name, kind: 'expense' })), { id: 'income', name: 'Ingresos', kind: 'income' }];
-export default function DemoMovementForm({ onAdd, autoFocus = false }: { onAdd: (movement: DemoMovementDraft) => void; autoFocus?: boolean }) {
+export const demoAccounts = [{ id: 'cash', name: 'Efectivo' }, { id: 'savings', name: 'Ahorros' }];
+export const demoCategories = [...['Alimentación', 'Transporte', 'Vivienda', 'Ocio', 'Salud', 'Otros'].map((name, i) => ({ id: `expense-${i}`, name, kind: 'expense' })), { id: 'income', name: 'Ingresos', kind: 'income' }];
+export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = demoAccounts, categories = demoCategories }: { onAdd: (movement: DemoMovementDraft) => void; autoFocus?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[] }) {
   const [kind, setKind] = useState('expense');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');

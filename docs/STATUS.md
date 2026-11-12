@@ -1,4 +1,32 @@
-# Estado al 11 de noviembre de 2026
+# Estado al 12 de noviembre de 2026
+
+## Cuentas con menos texto · 12/11/2026
+
+- Simplificación solicitada sobre el rediseño: cabecera solo con título; bloque verde con «Saldo total» e importe; tarjetas compactas con icono, nombre y saldo. Se eliminan subtítulos, notas explicativas repetidas, monedas redundantes y frases en la ilustración. Categorías conserva iconos de ingreso/gasto, agrupación y chips.
+- Acciones «Nueva cuenta» y «Nueva categoría» con símbolo +; formularios desplegables con etiqueta «Nombre», botón «Crear» y mensajes breves. Nombres accesibles completos conservados, junto con errores, controles de guardado y saldo inicial cero. Aviso de demo reducido a una línea, sin cambiar otras secciones.
+- QA de demo: crear cuenta por Enter, error de duplicado, creación de categoría y apertura del desplegable por teclado correctos. Revisión visual de escritorio/móvil y comprobación a 320 px sin desbordamiento. Build, typecheck y diff check correctos. Sin cambios monetarios, de permisos ni de persistencia; sigue pendiente la revisión autenticada de los formularios privados.
+
+## Rediseño de Cuentas · 12/11/2026
+
+- En codex/resumen-premium: AccountsWorkspace compartido por privado y demo, con estilos encapsulados. Saldo total protagonista, tarjetas por cuenta con saldo acumulado, tratamiento de saldos negativos/cero, composición gráfica propia y listado de categorías separado por ingresos/gastos. Incluye estados sin cuentas o categorías.
+- Formularios de cuenta y categoría desplegables con controles compartidos. En privado se conservan addAccount/addCategory y sus validaciones/permisos; nombres controlados se conservan ante errores y se limpian tras éxito. Campos bloqueados mientras se guarda. Sin cambios de esquema ni consultas.
+- Demo: creación en memoria de cuentas (saldo cero) y categorías; disponibles también en los formularios de Movimientos y Resumen. Los saldos de Cuentas ahora usan totals, la utilidad exacta compartida con el servidor, y coinciden con los movimientos. Se eliminan los saldos ilustrativos fijos que antes no respondían a la actividad.
+- QA de demo: duplicado «efectivo» con espacios muestra error y conserva texto; nueva cuenta aparece con saldo cero. Categoría de gasto creada y disponible en Movimientos; duplicado del mismo tipo rechazado y mismo nombre aceptado como ingreso. Transferir S/ 25,50 desde Efectivo a la nueva cuenta conserva el total S/ 3.963,00, con saldos S/ 3.937,50 y S/ 25,50. Gasto de S/ 30,75 desde esa cuenta deja S/ -5,25 y total S/ 3.932,25.
+- Revisión responsive a 1440, 1024, 768, 390 y 320 px sin desbordamiento horizontal. Formularios a 320 px con controles de 16 px, categorías y nombres largos ajustados. Recarga devuelve las dos cuentas iniciales, siete categorías y total S/ 3.963,00, sin conservar pruebas.
+- Build, typecheck, diff check y cuatro pruebas unitarias correctos. No se accedió a datos privados ni se publicó. Pendiente comprobar guardado, duplicados y estado de espera de los formularios con una sesión privada autorizada.
+
+## Menos espacio bajo el topbar · 12/11/2026
+
+- Padding superior del contenido de escritorio ajustado a 26 px, tanto en el tamaño base (antes 42 px) como desde 1500 px (antes 55 px). Laterales y reglas móviles conservados.
+- Verificación: build, typecheck y diff check correctos.
+
+## Topbar minimalista · 12/11/2026
+
+- Trabajo en codex/resumen-premium. Encabezado compartido simplificado: título directo, mayor espacio libre, fondo translúcido y separador suave. Se eliminan breadcrumb, icono decorativo y moneda redundante. Acción «Nuevo movimiento» sin sombra de volumen, etiqueta Demo discreta y estado Privado en escritorio.
+- En móvil, menú y acción principal con objetivos de 44 px; títulos largos se ajustan sin recortarse. Avatar privado abre popover HTML nativo con contexto de cuenta y el mismo formulario de cierre de sesión del servidor. No se modifican permisos, sesiones, cálculos ni persistencia de demo.
+- QA visual de demo en escritorio 1440 px y móvil 390/320 px; título «Hábitos y recompensas» sin desbordamiento y acceso a Movimientos comprobado. Menú móvil se cierra al navegar y con Escape, devuelve foco al disparador y libera el desplazamiento del fondo.
+- Menú de cuenta comprobado con una ruta temporal sin datos ni sesión privada, retirada al finalizar: 320 y 1024 px, opción de cierre visible, Tab llega al botón y Escape cierra devolviendo foco al avatar. No se ejecutó un cierre real; pendiente validarlo con sesión autenticada autorizada.
+- Build, typecheck y diff check correctos. Sin dependencias nuevas, publicación ni acceso a datos privados.
 
 ## Navegación más limpia · 11/11/2026
 

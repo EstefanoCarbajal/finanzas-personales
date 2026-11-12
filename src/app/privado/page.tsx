@@ -16,9 +16,9 @@ import PlanningPanel from './planning-panel';
 import GoalsPanel from './goals-panel';
 import HabitsRewards from './habits-rewards';
 import DashboardShell from '@/components/dashboard-shell';
+import AccountsWorkspace from '@/components/accounts-workspace';
 
 export const dynamic = 'force-dynamic';
-type Account = { id: string; name: string };
 const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'metas', 'habitos'] as const;
 type Section = typeof sections[number];
 const sectionLabels: Record<Section, string> = { resumen: 'Resumen', movimientos: 'Movimientos', cuentas: 'Cuentas', planificacion: 'Planificación', metas: 'Metas y ahorro', habitos: 'Hábitos y recompensas' };
@@ -51,9 +51,8 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
           <MovementsWorkspace form={<MovementForm accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />}><MovementsTable movements={data.movements} /></MovementsWorkspace>
         </>}
         {section === 'cuentas' && data && <>
-          <section className="page-heading"><div><span className="eyebrow">TU DINERO ORGANIZADO</span><h1>Cuentas</h1><p>Consulta tus saldos y personaliza cómo organizas tus movimientos.</p></div></section>
-          <section className="panel account-list-panel"><div className="panel-heading"><div><h2>Tus cuentas</h2><p>Saldo por cuenta</p></div><span className="private-panel-icon account-icon" aria-hidden="true">▦</span></div>{data.accounts.map((account: Account) => <div className="upcoming account-row" key={account.id}><span className="account-dot" aria-hidden="true" /><strong>{account.name}</strong><span>{soles(data.totals.accounts[account.id] || '0.00')}</span></div>)}<p className="panel-foot">Los ahorros forman parte de tu saldo total.</p></section>
-          <SetupForms />
+          <section className="page-heading"><h1>Cuentas</h1></section>
+          <AccountsWorkspace accounts={data.accounts} categories={data.categories} balances={data.totals.accounts} balance={data.totals.balance} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
         </>}
         {section === 'planificacion' && data && planning && <><section className="page-heading"><div><span className="eyebrow">PLANIFICA CON CALMA</span><h1>Planificación</h1><p>Presupuestos y pagos futuros en un solo lugar.</p></div></section><PlanningPanel accounts={data.accounts} categories={data.categories} budgets={planning.budgets} payments={planning.payments} month={month} today={today} /></>}
         {section === 'metas' && data && goals && <><section className="page-heading"><div><span className="eyebrow">AHORRA A TU MANERA</span><h1>Metas y ahorro</h1><p>Define un objetivo y avanza con aportes entre tus cuentas.</p></div></section><GoalsPanel accounts={data.accounts} goals={goals} today={today} /></>}
