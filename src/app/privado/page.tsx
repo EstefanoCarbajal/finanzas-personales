@@ -8,12 +8,14 @@ import { readGoals } from '@/lib/goals.mjs';
 import { readHabitDashboard } from '@/lib/habits.mjs';
 import { signOut } from '@/app/login/actions';
 import MovementForm from './movement-form';
+import MovementsWorkspace from '@/components/movements-workspace';
 import SetupForms from './setup-forms';
 import MovementsTable from './movements-table';
 import MonthlySummary from './monthly-summary';
 import PlanningPanel from './planning-panel';
 import GoalsPanel from './goals-panel';
 import HabitsRewards from './habits-rewards';
+import DashboardShell from '@/components/dashboard-shell';
 
 export const dynamic = 'force-dynamic';
 type Account = { id: string; name: string };
@@ -36,31 +38,17 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const goals = section === 'metas' || section === 'resumen' ? await readGoals(db(), user.id) : null;
   const habits = section === 'habitos' ? await readHabitDashboard(db(), user.id, today) : null;
 
-  return <div className="app-shell private-shell">
-    <aside className="sidebar">
-      <a className="brand" href="/privado" aria-label="Finanzas personales, resumen privado"><img className="brand-mark" src="/koala.svg" alt="" /><span>finanzas<span className="brand-sub">PERSONALES</span></span></a>
-      <div className="workspace-label">TU ESPACIO PERSONAL</div>
-      <nav aria-label="Navegación del espacio privado">
-        {sections.map(item => <a key={item} className={section === item ? 'nav-item active' : 'nav-item'} href={`/privado?seccion=${item}`} aria-current={section === item ? 'page' : undefined}><span aria-hidden="true">{sectionIcons[item]}</span>{sectionLabels[item]}</a>)}
-      </nav>
-      <div className="sidebar-tip"><span className="tip-icon" aria-hidden="true">✧</span><h3>Pequeños pasos.<br />Grandes metas.</h3><p>Un poco de claridad hoy, más tranquilidad mañana.</p></div>
-      <div className="profile"><span className="avatar">{avatar}</span><div><strong>Mi espacio</strong><small>Acceso privado</small></div><span className="profile-dot" /></div>
-    </aside>
-    <main>
-      <header className="topbar"><span>Mi espacio <span className="breadcrumb">/ {sectionLabels[section]}</span></span><div className="private-top-actions"><span className="demo-badge private-badge">ACCESO PRIVADO</span><form action={signOut}><button className="secondary">Cerrar sesión</button></form></div></header>
+  return <DashboardShell active={section} avatar={avatar} sessionAction={<form action={signOut}><button type="submit">Cerrar sesión</button></form>}>
       <div className="content">
         {section === 'resumen' && data && <>
-          <section className="page-heading" id="resumen"><div><span className="eyebrow">TU DINERO, CON PROPÓSITO · PEN</span><h1>Cada paso cuenta.</h1><p>Hola, {user.email}. Aquí tienes una mirada clara a tus cuentas.</p></div></section>
-          <div className="section-bar"><h2>Tu balance acumulado</h2><span className="month-pill">Todos tus movimientos</span></div>
-          <div className="stats">{[['Saldo total', data.totals.balance], ['Ingresos', data.totals.income], ['Gastos', data.totals.expense]].map(([label, value], i) => <article key={label} className={`stat ${i === 0 ? 'balance' : ''}`}><span>{label}{i === 0 && <span aria-hidden="true"> ↗</span>}</span><strong>{soles(String(value))}</strong><small>{i === 0 ? 'Saldo entre todas tus cuentas' : 'Las transferencias no se incluyen'}</small></article>)}</div>
-          <MonthlySummary movements={data.movements} currentMonth={month} />
+          <section className="page-heading" id="resumen"><div><span className="eyebrow">TU DINERO, CON PROPÓSITO · PEN</span><h1>Cada paso cuenta.</h1><p>Más claridad para hoy. Más posibilidades para mañana.</p></div></section>
+          <MonthlySummary movements={data.movements} currentMonth={month} balance={data.totals.balance} />
           {goals?.[0] && <section className="private-goal-feature"><div className="goal-top"><span className="eyebrow">UNA META A LA VEZ</span><span className="goal-symbol" aria-hidden="true">☀</span></div><h2>{goals[0].name}</h2><p>Tu próximo paso empieza hoy.</p><div className="goal-amount"><strong>{soles(goals[0].saved)}</strong><span>de {soles(goals[0].target_amount)}</span></div><progress aria-label={`Avance de ${goals[0].name}`} value={Math.min(100, Number(BigInt(goals[0].saved.replace('.', '')) * BigInt(100) / BigInt(goals[0].target_amount.replace('.', ''))))} max={100} /><div className="goal-bottom"><span>Avanza a tu ritmo</span><a href="/privado?seccion=metas">Ver meta →</a></div></section>}
           <section className="panel summary-next"><div className="panel-heading"><div><h2>Sigue a tu ritmo</h2><p>Elige una sección para continuar organizando tus finanzas.</p></div></div><div className="summary-links">{sections.slice(1).map(item => <a className="summary-link" key={item} href={`/privado?seccion=${item}`}><span aria-hidden="true">{sectionIcons[item]}</span><strong>{sectionLabels[item]}</strong><span aria-hidden="true">→</span></a>)}</div></section>
         </>}
         {section === 'movimientos' && data && <>
           <section className="page-heading"><div><span className="eyebrow">TU ACTIVIDAD FINANCIERA</span><h1>Movimientos</h1><p>Registra y encuentra ingresos, gastos y transferencias.</p></div></section>
-          <div className="two-columns private-columns"><section className="panel"><div className="panel-heading"><div><h2>Registrar movimiento</h2><p>Los cambios se guardan en tu espacio.</p></div><span className="private-panel-icon" aria-hidden="true">＋</span></div><MovementForm accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} /></section><section className="panel"><h2>Saldo acumulado</h2><div className="big-number">{soles(data.totals.balance)} <small>en total</small></div><p className="subtle">Las transferencias no se cuentan como ingresos ni gastos.</p></section></div>
-          <section className="panel private-movements"><div className="panel-heading"><div><h2>Movimientos guardados</h2><p>Busca, filtra o descarga tu actividad</p></div><span className="private-panel-icon movement-icon" aria-hidden="true">↔</span></div><MovementsTable movements={data.movements} /></section>
+          <MovementsWorkspace form={<MovementForm accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />}><MovementsTable movements={data.movements} /></MovementsWorkspace>
         </>}
         {section === 'cuentas' && data && <>
           <section className="page-heading"><div><span className="eyebrow">TU DINERO ORGANIZADO</span><h1>Cuentas</h1><p>Consulta tus saldos y personaliza cómo organizas tus movimientos.</p></div></section>
@@ -72,6 +60,5 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         {section === 'habitos' && habits && <><section className="page-heading"><div><span className="eyebrow">PEQUEÑOS PASOS, TODOS LOS DÍAS</span><h1>Hábitos y recompensas</h1><p>Reconoce tus avances cotidianos y elige premios personales.</p></div></section><HabitsRewards data={habits} today={today} /></>}
         <footer>Hecho para avanzar a tu ritmo.<span>Tus datos están en tu espacio privado</span></footer>
       </div>
-    </main>
-  </div>;
+  </DashboardShell>;
 }

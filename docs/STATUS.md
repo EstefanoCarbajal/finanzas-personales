@@ -1,5 +1,52 @@
 # Estado al 11 de noviembre de 2026
 
+## Navegación más limpia · 11/11/2026
+
+- Se retiran los subtítulos debajo de los seis módulos del sidebar, por preferencia del usuario. Se eliminan también sus propiedades y estilos sin uso; nombres e iconos conservados en escritorio/móvil y demo/privado.
+- Verificación: build, typecheck y diff check correctos.
+
+## Sidebar y topbar renovados · 11/11/2026
+
+- En la rama de mejora codex/resumen-premium, componente DashboardShell común a privado y demo. Sidebar verde profundo, marca koala, iconos SVG, navegación en dos grupos, estado activo lima, acceso a metas y perfil. Estilos encapsulados y microinteracciones con respeto a movimiento reducido.
+- Topbar fijo con fondo translúcido, sección actual, PEN, modo demo/privado y acceso a registrar movimientos. Cierre de sesión mantiene la acción original del servidor.
+- Móvil hasta 900 px: panel modal nativo con fondo desenfocado, cierre al navegar/Escape/botón, bloqueo de desplazamiento, aislamiento del fondo y devolución de foco. En escritorio bajo, tarjeta compacta y sidebar desplazable sin recortar bloques.
+- QA en /demo: navegación por las seis secciones en escritorio 1280 px; menú móvil a 390 px, selección/cierre, Escape y retorno de foco comprobados. A 320 px, encabezado y página sin desbordamiento horizontal. Build, typecheck y diff check correctos. No se probaron sesiones privadas; pendiente QA visual con sesión autorizada. Sin publicación, cambios monetarios ni acceso a datos privados.
+
+## Movimientos: formulario protagonista e historial debajo · 11/11/2026
+
+- Ajuste solicitado por el usuario sobre codex/resumen-premium: se retira el resumen de saldo/ingresos/gastos de Movimientos. La zona verde contiene «Anota tu movimiento» y todo el formulario; «La historia de tus movimientos» aparece debajo, fuera de la zona verde y al mismo ancho.
+- Campos en dos columnas en escritorio y una en móvil, con controles claros sobre el fondo verde, botón lima y koala. Se conserva la tipografía amigable, búsqueda, filtros, CSV y balance de la selección en el historial. Se eliminan propiedades y estilos del resumen anterior.
+- QA de demo a 1280 y 390 px: formulario e historial al mismo ancho y orden vertical confirmado; móvil sin desbordamiento. Registrar gasto ficticio S/ 10,25 y buscarlo devuelve una fila y balance de selección -S/ 10,25. No se cambiaron acciones privadas, reglas monetarias ni persistencia.
+- Build y typecheck correctos; build repetido con permisos autorizados tras restricción al generar archivos. Sin publicación ni datos privados. Se mantiene pendiente la revisión privada con sesión autorizada.
+## Rediseño de Movimientos · 11/11/2026
+
+- En codex/resumen-premium, vista compartida por privado y demo: bloque protagonista de saldo acumulado, ingresos/gastos y koala; formulario con selección visual de tipo, importe destacado, cuentas/categoría y fecha; historial agrupado por día con iconos, origen/destino, tipo y signo monetario. CSS Module aislado y tipografía Nunito.
+- Filtros combinables por texto, mes y tipo con limpieza rápida, estados vacíos, cantidad de resultados y balance de la selección calculado con BigInt excluyendo transferencias. Exportación CSV mantiene protección contra fórmulas, BOM, separador punto y coma y filtros aplicados.
+- Campos compartidos con formulario privado: se conservan acciones, request_id, bloqueo al guardar y preservación de valores ante errores. Tras éxito solo se limpian descripción e importe. No se modificaron reglas del servidor, permisos ni MySQL.
+- Demo ahora permite ingresos, gastos y transferencias entre cuentas ficticias, sin persistencia. Formulario del resumen reutiliza los mismos campos. Transferencias excluidas también del resumen y acumulados de demo.
+- QA: gasto S/ 10,25 dejó saldo S/ 3.952,75 y gastos S/ 247,25. Transferencia S/ 25,50 a la misma cuenta mostró error conservando descripción/importe; al elegir Ahorros se registró sin alterar esos totales. Filtro texto + noviembre + transferencias devolvió una fila y balance S/ 0,00. CSV descargado inspeccionado: solo esa transferencia, con origen Efectivo, destino Ahorros, fecha e importe correctos. Búsqueda sin resultados, limpieza y bloqueo de exportación vacía comprobados.
+- Revisión visual en escritorio (~1280 px) y móvil 390 px; comprobación adicional a 320 y 768 px, sin desbordamiento de página. Build y typecheck finales correctos; 4 pruebas unitarias aprobadas. No se accedió a datos privados ni se publicó. Pendiente comprobar guardado/errores privados con sesión autorizada y apertura del CSV en Excel.
+## Tipografía más cercana · 11/11/2026
+
+- En codex/resumen-premium se incorpora Nunito variable para textos, controles, navegación e importes. Archivo local desde el repositorio oficial google/fonts, licencia OFL incluida en src/app/fonts; carga mediante next/font/local con swap y fallback. La aplicación sirve la fuente sin consultar Google en cada visita ni durante builds posteriores.
+- Los encabezados h1–h6 conservan su familia anterior y sus estilos específicos. Ajustes globales en typography.css y ajustes encapsulados para resumen/hábitos: textos auxiliares más legibles, interlineado más amplio, espaciado más natural y campos de 16 px en móvil. Se mantienen cifras tabulares para lectura de importes.
+- Build, typecheck y diff check correctos. QA en navegador confirmó Nunito en body/campos y Arial en encabezados; revisión visual de resumen en escritorio y hábitos en móvil. Las seis secciones de demo a 390 px no desbordan horizontalmente (tabla conserva scroll propio). Campo de creación de hábito confirmado a 16 px.
+- No se modificaron reglas monetarias, permisos ni acciones privadas. Pendiente revisión visual con sesión privada autorizada.
+## Rediseño de Hábitos y recompensas · 11/11/2026
+
+- Continúa en codex/resumen-premium. Vista compartida entre privado y demo, con CSS Module propio: bienvenida con koala, tarjeta de puntos, calendario de siete días, hábitos con SVG originales, progreso circular, días con actividad y catálogo de recompensas con avance hacia el costo.
+- Formularios desplegables para crear hábitos y premios; estados de guardado, errores, saldo insuficiente y canje semanal utilizado. Se conservan las acciones privadas y todas las validaciones del servidor, sin cambios en MySQL ni permisos. El progreso usa hábitos activos; no se inventan rachas.
+- La demo ahora permite registrar hábitos por día, crear hábitos/recompensas y simular un canje semanal. Datos ilustrativos del 11/11/2026, solo en memoria; se reinician al salir de la sección o recargar. No usa acciones privadas ni almacenamiento del navegador.
+- QA en demo: completar los cinco hábitos pasó de 80 a 110 puntos y de 40% a 100%; canjear un premio de 60 dejó 50 puntos y bloqueó los otros canjes. Crear un sexto hábito recalculó progreso a 83%; crear premio de 40 conservó bloqueo semanal aun con saldo suficiente. Selector de día anterior mostró 0/6 hábitos. Revisado en escritorio y móvil 390 × 844 sin desbordamiento horizontal.
+- Build y typecheck correctos; 4 pruebas unitarias existentes aprobadas. Build repetido con permisos autorizados tras restricción al generar archivos. Sin publicación ni uso de datos privados. Pendiente revisar los formularios y acciones con sesión privada autorizada; esta entrega no cambió reglas del servidor ni ejecutó integración remota.
+## Rediseño integral del resumen · 11/11/2026
+
+- Rama de mejora: codex/resumen-premium. Resumen compartido por panel privado y demo; estilos encapsulados en CSS Module.
+- Nuevo bloque protagonista verde profundo con saldo acumulado, koala original, detalles orbitales y acción para registrar movimientos. Tarjetas mensuales de ingresos/gastos/balance, selector de mes, gráfico circular por categorías y actividad reciente. El saldo total permanece acumulado al cambiar de mes; el resto corresponde al mes seleccionado.
+- Distribución completa de gastos: si hay más de seis categorías, agrupa las menores en «Otras categorías». Importes y porcentajes calculados desde céntimos BigInt; transferencias excluidas de ingresos, gastos y categorías, pero visibles en actividad.
+- Estados vacíos, balance negativo y ausencia de ingresos contemplados. Adaptación móvil, foco visible y animaciones que respetan movimiento reducido. Sin dependencias ni servicios nuevos.
+- Verificado en navegador con demo: escritorio y 390 × 844, sin desbordamiento horizontal; octubre vacío y regreso a noviembre con avance futuro bloqueado. Registrar gasto ficticio S/ 10,25 actualizó saldo a S/ 3.952,75, gastos a S/ 247,25 y gráfico; recarga restauró datos iniciales.
+- Build, typecheck y 4 pruebas unitarias aprobados. Primera compilación limitada por permisos de generación; repetición con permisos autorizados correcta. No se publicaron cambios ni se accedió a datos privados para este QA. Pendiente revisión visual del resumen privado con sesión autorizada.
 ## Sidebar con zoom
 
 - El sidebar privado ahora permite desplazamiento vertical propio cuando el zoom o la altura de ventana impiden mostrar toda la navegación, el mensaje lateral y el perfil a la vez. Sus secciones conservan su tamaño y acceso.

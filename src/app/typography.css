@@ -1,0 +1,67 @@
+/* Warm reading voice; headings retain their established typeface and sizing. */
+:root {
+  --font-body: var(--font-nunito), Arial, sans-serif;
+  --font-heading: Arial, Helvetica, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6, .brand {
+  font-family: var(--font-heading);
+}
+
+p { line-height: 1.7; }
+button, input, select, textarea { font-family: var(--font-body); }
+input, select, textarea { font-size: 15px; line-height: 1.5; }
+input::placeholder, textarea::placeholder { color: #7a887b; opacity: 1; }
+
+.nav-item { font-size: 15px; font-weight: 650; line-height: 1.35; }
+.topbar { font-size: 14px; font-weight: 600; }
+.workspace-label, .eyebrow { font-size: 11px; letter-spacing: .08em; }
+.page-heading p { font-size: 16px; line-height: 1.7; }
+.sidebar-tip p { font-size: 14px; line-height: 1.7; }
+.profile strong { font-size: 14px; }
+.profile small { font-size: 12px; }
+.primary, .secondary { font-size: 14px; font-weight: 750; }
+.demo-note, .notice { font-size: 13px; }
+.demo-badge { font-size: 10px; letter-spacing: .06em; }
+.panel-heading p, .subtle, .panel-foot, .result-count { font-size: 13px; line-height: 1.7; }
+.month-pill, label, .search { font-size: 14px; }
+.stat small { font-size: 12px; line-height: 1.6; }
+.stat>span { font-size: 14px; }
+th { font-size: 12px; text-transform: none; letter-spacing: .01em; font-weight: 750; }
+td { font-size: 14px; }
+.amount, .stat>strong, .big-number, .goal-amount { font-variant-numeric: tabular-nums; }
+.category-tag, .movement-tag { font-size: 12px; }
+.text-button, .goal-bottom, .goal-bottom button, .goal-bottom a { font-size: 13px; }
+.summary-link { font-size: 14px; }
+.setup-message, .planning-message, .goal-message, .goal-remaining { font-size: 12px; }
+.setup-form>label, .planning-form>label, .goal-create-form>label { font-size: 14px; }
+.budget-line, .budget>div, .budget span, .budget small { font-size: 13px; }
+.upcoming, .goal-card-heading p, .goal-amount-line span { font-size: 13px; }
+.payment-info>div small, .payment-actions button { font-size: 12px; }
+.goal-contribution-form label { font-size: 13px; }
+.rewards p, .reward-item small, .goal-feature p, .private-goal-feature>p { font-size: 13px; }
+.category>div:first-child, .modal p { font-size: 13px; }
+footer { font-size: 12px; line-height: 1.7; }
+
+@media (max-width: 800px) {
+  .app-shell .sidebar .nav-item { font-size: 12px; line-height: 1.35; }
+}
+
+@media (max-width: 560px) {
+  input, select, textarea { font-size: 16px; }
+  .page-heading p { font-size: 15px; }
+  .primary, .secondary, .private-top-actions .secondary { font-size: 13px; }
+  .demo-badge { font-size: 9px; }
+  .topbar { font-size: 12px; }
+  .summary-link { font-size: 13px; }
+}
+
+h2, h3, h4, h5, h6 { line-height: normal; }

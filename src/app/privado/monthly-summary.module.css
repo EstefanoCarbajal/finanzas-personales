@@ -1,0 +1,820 @@
+.summary {
+  --deep:#123f34;
+  --quiet:#667d72;
+  display:grid;
+  gap:30px;
+  margin-top:28px;
+  font-variant-numeric:tabular-nums
+}
+.hero {
+  isolation:isolate;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  min-height:310px;
+  padding:36px 40px;
+  border-radius:28px;
+  background:radial-gradient(ellipse at 80% 0%,#32644b 0%,transparent 60%),#123f34;
+  color:white;
+  box-shadow:0 12px 30px #123f3415
+}
+.heroCopy {
+  position:relative;
+  z-index:2;
+  min-width:0
+}
+.heroLabel {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:10px;
+  letter-spacing:1.8px;
+  color:#d5e8d8;
+  font-weight:700
+}
+.heroLabel i {
+  width:6px;
+  height:6px;
+  background:#d5f58b;
+  border-radius:50%;
+  box-shadow:0 0 0 4px #d5f58b18
+}
+.hero h2 {
+  color:#dae9dd;
+  font-size:15px;
+  font-weight:500;
+  margin:27px 0 7px;
+  letter-spacing:0
+}
+.heroAmount {
+  display:block;
+  font-size:clamp(36px,4.5vw,62px);
+  font-weight:750;
+  letter-spacing:-2.8px;
+  line-height:1.12;
+  overflow-wrap:anywhere
+}
+.hero p {
+  font-size:12px;
+  line-height:1.6;
+  color:#bdcfbf;
+  margin:12px 0 24px
+}
+.cta {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:12px 18px;
+  border:1px solid #d8f893;
+  border-radius:12px;
+  background:#d8f893;
+  color:#173f31;
+  font-size:12px;
+  font-weight:750;
+  text-decoration:none;
+  box-shadow:0 3px 0 #9dc45b;
+  transition:transform .2s,box-shadow .2s
+}
+.cta:hover {
+  transform:translateY(-2px);
+  box-shadow:0 5px 0 #9dc45b;
+  filter:none
+}
+.cta span {
+  font-size:20px;
+  line-height:1
+}
+.heroCorner {
+  position:absolute;
+  right:28px;
+  bottom:21px;
+  font-size:9px;
+  letter-spacing:1.6px;
+  color:#b8cebd
+}
+.orbit {
+  position:relative;
+  flex:0 0 280px;
+  height:280px;
+  border:1px solid #d8f89320;
+  border-radius:50%;
+  margin-right:8px;
+  transform:rotate(-8deg)
+}
+.orbit:before {
+  content:'';
+  position:absolute;
+  inset:28px;
+  border:1px dashed #d8f89325;
+  border-radius:50%
+}
+.orbitInner {
+  position:absolute;
+  inset:57px;
+  border-radius:50%;
+  background:#d8f8930b;
+  border:1px solid #d8f89320
+}
+.koala {
+  position:absolute;
+  inset:72px;
+  display:grid;
+  place-items:center;
+  transform:rotate(8deg)
+}
+.koala img {
+  width:100%;
+  height:100%;
+  border-radius:36px;
+  box-shadow:0 14px 30px #062e3150;
+  transform:rotate(5deg)
+}
+.spark {
+  position:absolute;
+  top:9px;
+  right:25px;
+  color:#d8f893;
+  font-size:49px
+}
+.orbitPlus {
+  position:absolute;
+  bottom:45px;
+  left:4px;
+  font-size:33px;
+  color:#ccebb9
+}
+.orbitNote {
+  position:absolute;
+  right:-13px;
+  bottom:26px;
+  background:#f3f8e9;
+  color:#476444;
+  padding:13px 17px;
+  border-radius:13px;
+  transform:rotate(8deg);
+  font-size:11px;
+  line-height:1.6;
+  box-shadow:0 7px 20px #082f3825
+}
+.sectionHeading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px
+}
+.kicker {
+  font-size:9px;
+  letter-spacing:1.4px;
+  font-weight:750;
+  color:var(--quiet)
+}
+.sectionHeading h2 {
+  font-size:25px;
+  letter-spacing:-.9px;
+  margin-top:7px;
+  font-weight:750
+}
+.monthControl {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:5px;
+  background:#fff;
+  border:1px solid #e0e8de;
+  border-radius:12px;
+  flex-shrink:0
+}
+.monthControl span {
+  text-transform:capitalize;
+  min-width:138px;
+  text-align:center;
+  font-size:12px;
+  font-weight:650
+}
+.monthControl button {
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:8px;
+  width:32px;
+  height:32px;
+  background:#f2f6ed;
+  color:#385c40;
+  font-size:24px
+}
+.monthControl button:disabled {
+  opacity:.3
+}
+.metrics {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px
+}
+.metric {
+  position:relative;
+  overflow:hidden;
+  min-width:0;
+  padding:21px 23px;
+  border:1px solid #e1e8df;
+  border-radius:20px;
+  background:#fff
+}
+.metricLabel {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:12px;
+  color:#4b665a;
+  font-weight:600
+}
+.metricLabel>span {
+  display:grid;
+  place-items:center;
+  flex-shrink:0;
+  width:29px;
+  height:29px;
+  border-radius:10px;
+  font-size:19px
+}
+.inIcon {
+  background:#eaf5de;
+  color:#487c32
+}
+.outIcon {
+  background:#fff0df;
+  color:#a56632
+}
+.transferIcon {
+  background:#edf0ff;
+  color:#6b75a4
+}
+.metric>strong {
+  display:block;
+  font-size:clamp(23px,2.6vw,32px);
+  letter-spacing:-1.2px;
+  margin:17px 0;
+  overflow-wrap:anywhere
+}
+.metric small {
+  display:block;
+  color:var(--quiet);
+  font-size:10px;
+  line-height:1.7
+}
+.bar {
+  height:5px;
+  border-radius:99px;
+  background:#f0f4ec;
+  margin:0 0 10px;
+  overflow:hidden
+}
+.bar i {
+  display:block;
+  background:#98c76d;
+  height:100%;
+  border-radius:inherit;
+  transition:width .4s
+}
+.expenseBar i {
+  background:#efb16c
+}
+.net {
+  background:#e9f3cf;
+  border-color:#dce9be
+}
+.net .metricLabel>span {
+  background:#d9e9b2;
+  color:#547132
+}
+.net>strong {
+  position:relative;
+  z-index:1
+}
+.net small {
+  max-width:90%;
+  color:#4e673a
+}
+.netDecoration {
+  position:absolute;
+  bottom:-15px;
+  right:2px;
+  font-size:120px;
+  color:#c7dc9e70;
+  line-height:1;
+  pointer-events:none
+}
+.negative {
+  background:#fff0e7;
+  border-color:#f0dac8
+}
+.negative small {
+  color:#875635
+}
+.negative .netDecoration {
+  color:#f0cfb470
+}
+.details {
+  display:grid;
+  grid-template-columns:1fr 1.18fr;
+  gap:20px;
+  align-items:stretch
+}
+.card {
+  background:#fff;
+  border:1px solid #e1e8df;
+  border-radius:22px;
+  padding:25px;
+  min-width:0;
+  display:flex;
+  flex-direction:column
+}
+.cardHeading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px
+}
+.cardHeading h2 {
+  font-size:18px;
+  letter-spacing:-.5px;
+  margin-top:7px
+}
+.cardIcon {
+  font-size:27px;
+  color:#78976b
+}
+.textLink {
+  flex-shrink:0;
+  color:#386a4b;
+  font-size:11px;
+  font-weight:700;
+  text-decoration:none;
+  padding:8px 0;
+  background:none;
+  border:0
+}
+.textLink:hover {
+  text-decoration:underline
+}
+.chartArea {
+  display:grid;
+  place-items:center;
+  padding:24px 0
+}
+.donut {
+  width:185px;
+  height:185px;
+  border-radius:50%;
+  padding:20px;
+  transform:rotate(-90deg)
+}
+.donut>div {
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  transform:rotate(90deg);
+  box-shadow:0 0 0 6px #fff
+}
+.donut span,.donut small {
+  font-size:10px;
+  color:var(--quiet)
+}
+.donut strong {
+  font-size:23px;
+  letter-spacing:-.8px;
+  margin:8px 0
+}
+.legend {
+  list-style:none;
+  padding:0;
+  margin:0
+}
+.legend li {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto 44px;
+  gap:10px;
+  align-items:center;
+  padding:10px 0;
+  border-top:1px solid #eff2ec;
+  font-size:11px
+}
+.legend li>span:last-child {
+  text-align:right;
+  color:var(--quiet);
+  font-size:10px
+}
+.categoryName {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  overflow-wrap:anywhere
+}
+.categoryName i {
+  flex-shrink:0;
+  width:8px;
+  height:8px;
+  border-radius:3px
+}
+.legend strong {
+  font-weight:600
+}
+.activity {
+  list-style:none;
+  margin:20px 0 24px;
+  padding:0
+}
+.activity li {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:18px 0;
+  border-bottom:1px solid #eef2ea
+}
+.activityIcon {
+  display:grid;
+  place-items:center;
+  flex:0 0 38px;
+  height:38px;
+  border-radius:12px;
+  font-size:20px
+}
+.activity li>div {
+  flex:1;
+  min-width:0
+}
+.activity strong {
+  display:block;
+  font-size:12px;
+  font-weight:650;
+  overflow-wrap:anywhere
+}
+.activity small {
+  display:block;
+  margin-top:6px;
+  color:var(--quiet);
+  font-size:10px;
+  line-height:1.5
+}
+.activity b {
+  font-size:12px;
+  font-weight:650;
+  flex-shrink:0
+}
+.incomeAmount {
+  color:#428144
+}
+.insight {
+  display:flex;
+  align-items:flex-start;
+  gap:13px;
+  padding:18px;
+  background:#f4f7ed;
+  border:1px solid #e9eedf;
+  border-radius:14px;
+  margin-top:auto
+}
+.insight>span {
+  font-size:25px;
+  color:#7d9d49
+}
+.insight strong {
+  font-size:12px;
+  font-weight:650
+}
+.insight p {
+  font-size:11px;
+  line-height:1.7;
+  color:var(--quiet);
+  margin:6px 0 0
+}
+.empty {
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:38px 16px;
+  text-align:center;
+  min-height:265px
+}
+.empty>span {
+  font-size:42px;
+  color:#91ac6b
+}
+.empty h3 {
+  font-size:17px;
+  margin:17px 0 3px
+}
+.empty p {
+  font-size:12px;
+  color:var(--quiet);
+  max-width:260px
+}
+.footnote {
+  font-size:10px;
+  color:var(--quiet);
+  text-align:center;
+  margin:-13px 0 0
+}
+.summary button:focus-visible,.summary a:focus-visible {
+  outline:3px solid #7f983b;
+  outline-offset:5px
+}
+
+@media(min-width:1450px) {
+  .hero {
+  min-height:340px
+}
+.orbit {
+  margin-right:35px
+}
+.card {
+  padding:28px
+}
+
+}
+
+@media(max-width:1150px) {
+  .hero {
+  padding:30px
+}
+.orbit {
+  flex-basis:220px;
+  height:220px
+}
+.koala {
+  inset:55px
+}
+.orbitNote {
+  right:-9px;
+  bottom:9px;
+  font-size:10px;
+  padding:10px
+}
+.orbitInner {
+  inset:42px
+}
+.heroAmount {
+  font-size:44px
+}
+.metric {
+  padding:18px
+}
+.details {
+  grid-template-columns:1fr 1.1fr
+}
+.card {
+  padding:20px
+}
+.cardHeading .kicker {
+  font-size:8px;
+  letter-spacing:.7px
+}
+.cardHeading h2 {
+  font-size:16px
+}
+.activity li {
+  gap:8px
+}
+.activity b {
+  font-size:11px
+}
+
+}
+
+@media(max-width:950px) and (min-width:801px) {
+  .orbit {
+  flex-basis:170px;
+  height:170px
+}
+.koala {
+  inset:43px
+}
+.orbitNote {
+  right:-7px;
+  bottom:-12px
+}
+.spark {
+  font-size:30px
+}
+.details {
+  grid-template-columns:1fr
+}
+.metrics {
+  gap:10px
+}
+.metric {
+  padding:15px
+}
+.metricLabel {
+  font-size:10px;
+  gap:5px
+}
+.heroAmount {
+  font-size:39px
+}
+
+}
+
+@media(max-width:600px) {
+  .summary {
+  gap:24px;
+  margin-top:23px
+}
+.hero {
+  min-height:295px;
+  padding:25px;
+  border-radius:22px;
+  align-items:flex-start
+}
+.heroCopy {
+  max-width:100%
+}
+.heroLabel {
+  font-size:8px;
+  letter-spacing:1.3px
+}
+.hero h2 {
+  margin-top:27px;
+  font-size:13px
+}
+.heroAmount {
+  font-size:clamp(32px,9vw,46px);
+  letter-spacing:-1.8px
+}
+.hero p {
+  font-size:11px
+}
+.orbit {
+  position:absolute;
+  right:-61px;
+  top:22px;
+  width:190px;
+  height:190px;
+  opacity:.17;
+  z-index:0
+}
+.koala {
+  inset:50px
+}
+.orbitNote,.orbitPlus {
+  display:none
+}
+.heroCorner {
+  font-size:7px;
+  right:20px;
+  bottom:15px
+}
+.sectionHeading {
+  align-items:flex-start;
+  flex-direction:column;
+  gap:14px
+}
+.sectionHeading h2 {
+  font-size:24px
+}
+.monthControl {
+  width:100%;
+  justify-content:space-between
+}
+.metrics {
+  grid-template-columns:1fr 1fr;
+  gap:10px
+}
+.metric {
+  padding:17px 14px;
+  border-radius:17px
+}
+.metricLabel {
+  font-size:10px;
+  gap:6px
+}
+.metricLabel>span {
+  width:24px;
+  height:24px;
+  font-size:16px;
+  border-radius:8px
+}
+.metric>strong {
+  font-size:clamp(18px,5vw,26px);
+  letter-spacing:-.7px;
+  margin:15px 0
+}
+.metric small {
+  font-size:9px
+}
+.net {
+  grid-column:1/-1;
+  min-height:140px
+}
+.net>strong {
+  font-size:30px;
+  margin:12px 0
+}
+.netDecoration {
+  right:16px;
+  bottom:0
+}
+.details {
+  grid-template-columns:1fr;
+  gap:16px
+}
+.card {
+  padding:22px 19px
+}
+.cardHeading h2 {
+  font-size:17px
+}
+.cardHeading .kicker {
+  font-size:8px;
+  letter-spacing:.8px
+}
+.activity li {
+  padding:17px 0
+}
+.activity b {
+  font-size:12px
+}
+.footnote {
+  line-height:1.7;
+  padding:0 10px
+}
+.cta {
+  font-size:11px
+}
+.donut {
+  width:190px;
+  height:190px
+}
+.legend li {
+  padding:12px 0
+}
+
+}
+
+@media(prefers-reduced-motion:no-preference) {
+  .hero {
+  animation:arrive .5s ease-out both
+}
+.metrics {
+  animation:arrive .5s .08s ease-out both
+}
+.details {
+  animation:arrive .5s .15s ease-out both
+}
+@keyframes arrive {
+  from {
+  opacity:0;
+  transform:translateY(10px)
+}
+to {
+  opacity:1;
+  transform:translateY(0)
+}
+
+}
+
+}
+
+/* Reading and controls use the friendly body face; heading styles stay intact. */
+.heroLabel { font-size: 11px; letter-spacing: .09em; }
+.hero p { font-size: 14px; line-height: 1.7; }
+.cta { font-size: 14px; }
+.heroCorner { font-size: 10px; letter-spacing: .08em; }
+.orbitNote { font-size: 12px; }
+.kicker { font-size: 11px; letter-spacing: .07em; }
+.monthControl span { font-size: 14px; min-width: 155px; }
+.metricLabel { font-size: 14px; }
+.metric small { font-size: 12px; line-height: 1.65; }
+.textLink { font-size: 13px; }
+.donut span, .donut small { font-size: 12px; }
+.legend li { font-size: 13px; }
+.legend li>span:last-child { font-size: 12px; }
+.activity strong { font-size: 14px; }
+.activity small { font-size: 12px; line-height: 1.6; }
+.activity b { font-size: 13px; }
+.insight strong { font-size: 14px; }
+.insight p, .empty p { font-size: 13px; line-height: 1.7; }
+.footnote { font-size: 12px; line-height: 1.7; }
+@media (max-width: 1150px) {
+  .cardHeading .kicker { font-size: 10px; letter-spacing: .05em; }
+}
+@media (max-width: 600px) {
+  .heroLabel { font-size: 10px; }
+  .hero p, .cta { font-size: 13px; }
+  .heroCorner { font-size: 9px; }
+  .metricLabel { font-size: 12px; }
+  .metric small { font-size: 11px; }
+  .activity b { font-size: 12px; }
+  .activity strong { font-size: 13px; }
+  .cardHeading .kicker { font-size: 10px; letter-spacing: .04em; }
+}
