@@ -1,0 +1,65 @@
+.dialog { width:min(540px,calc(100% - 40px)); max-width:none; max-height:calc(100dvh - 40px); padding:0; border:1px solid #fff; border-radius:30px; background:#fffefa; color:#234837; box-shadow:0 32px 100px #092e3740,0 4px 18px #092e3720; overflow:auto; overscroll-behavior:contain; }
+.dialog[open] { animation:arrive .24s cubic-bezier(.2,.8,.2,1); }
+.dialog::backdrop { background:#102f2bb3; backdrop-filter:blur(7px); }
+.surface { padding:27px 30px 24px; background:radial-gradient(ellipse at 0 0,#edf6dc80,transparent 50%),#fffefa; }
+.heading { display:flex; align-items:center; gap:13px; margin-bottom:25px; }
+.mark { position:relative; flex:0 0 48px; height:48px; }
+.mark img { display:block; border-radius:16px; transform:rotate(-7deg); }
+.mark>span { position:absolute; right:-5px; bottom:-3px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; border:2px solid #fffefa; background:#244d3d; color:#ddf5ad; font-size:17px; font-weight:700; }
+.eyebrow { display:block; font-size:10px; letter-spacing:.12em; font-weight:800; color:#73805e; margin-bottom:6px; }
+.heading h2 { font-size:24px; font-weight:750; letter-spacing:-.85px; line-height:1.15; margin:0; }
+.close { flex:0 0 44px; height:44px; display:grid; place-items:center; margin-left:auto; border:1px solid #e5e9dd; border-radius:50%; color:#52694c; background:#f4f6ed; }
+.form { --accent:#a05530; --tint:#fff0e4; --edge:#edc6aa; margin:0; font-variant-numeric:tabular-nums; }
+.form[data-kind=income] { --accent:#326a3c; --tint:#edf6df; --edge:#bdd7a0; }
+.form[data-kind=transfer] { --accent:#536aa0; --tint:#edf0ff; --edge:#c5ceee; }
+.formFields { display:grid; gap:16px; border:0; padding:0; margin:0; min-width:0; }
+.kindOptions { display:grid; grid-template-columns:1fr 1fr 1.35fr; gap:5px; border:1px solid #e7eadd; background:#f1f3ec; border-radius:17px; padding:5px; margin:0; min-width:0; }
+.kindOptions legend { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.form .kindChoice { position:relative; display:flex; align-items:center; justify-content:center; gap:6px; padding:11px 3px; min-height:46px; border:1px solid transparent; border-radius:12px; font-size:13px; font-weight:750; color:#69755e; cursor:pointer; transition:background .18s,color .18s,box-shadow .18s; }
+.kindChoice>span { font-size:21px; line-height:1; }
+.form .kindChoice input { position:absolute; width:1px; height:1px; padding:0; margin:0; opacity:0; }
+.form .kindChoice.chosen { background:#fffefa; color:var(--accent); border-color:#e5e7da; box-shadow:0 3px 7px #2d472514; }
+.form .kindChoice:has(input:focus-visible) { outline:3px solid #729b4b; outline-offset:2px; }
+.form label { color:#52634e; font-size:13px; font-weight:700; min-width:0; line-height:1.5; }
+.form input,.form select { width:100%; min-width:0; margin-top:6px; padding:11px 13px; min-height:46px; border:1px solid #dfe5d6; border-radius:12px; background:#fff; color:#284733; font-size:16px; line-height:1.5; transition:border-color .18s,box-shadow .18s; }
+.form input::placeholder { color:#8a947f; opacity:1; }
+.form input:focus-visible,.form select:focus-visible,.close:focus-visible,.save:focus-visible { outline:3px solid #729b4b; outline-offset:3px; }
+.form .amountLabel { display:block; text-align:center; border:1px solid var(--edge); border-radius:21px; background:radial-gradient(ellipse at 100% 0,#ffffff90,transparent),var(--tint); color:var(--accent); padding:15px 20px 18px; transition:background .2s,border-color .2s; }
+.amountInput { display:flex; justify-content:center; align-items:baseline; gap:9px; margin:3px auto 0; width:100%; }
+.amountInput>span { font-size:25px; font-weight:750; }
+.form .amountInput input { width:100%; field-sizing:content; max-width:100%; min-width:0; min-height:0; margin:0; padding:0; border:0; background:transparent; font-size:clamp(38px,6vw,52px); font-weight:800; letter-spacing:-2px; text-align:center; color:var(--accent); border-radius:5px; line-height:1.2; }
+.form .amountInput input::placeholder { color:var(--accent); opacity:.45; }
+.amountLabel:focus-within { outline:3px solid var(--edge); outline-offset:3px; }
+.form .amountInput input:focus-visible { outline:none; }
+.fieldPair { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; }
+.dateLabel input { display:block; }
+.message { margin:0; font-size:13px; line-height:1.5; }
+.message:empty { display:none; }
+.error:not(:empty) { padding:10px 13px; background:#fff0e5; color:#994c27; border:1px solid #edc6aa; border-radius:12px; }
+.success { color:#326a3c; }
+.save { display:flex; align-items:center; justify-content:center; gap:14px; width:100%; min-height:52px; padding:13px 16px; margin-top:4px; background:#d3ef95; color:#234b34; border:1px solid #bad880; border-radius:15px; font-size:16px; font-weight:800; box-shadow:0 4px 0 #9dbf63,0 7px 15px #688e4314; transition:transform .15s,box-shadow .15s; }
+.save>span { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#22483210; }
+.save:active:not(:disabled) { transform:translateY(3px); box-shadow:0 1px 0 #9dbf63; }
+.save:disabled { box-shadow:none; }
+.formFoot { margin:0; text-align:center; font-size:11px; color:#758269; line-height:1.4; }
+@keyframes arrive { from { opacity:0; transform:translateY(14px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+@media(max-width:600px) {
+  .dialog { width:calc(100% - 16px); max-height:calc(100dvh - 16px); margin:auto auto 8px; border-radius:26px; }
+  .surface { padding:23px 21px max(23px,env(safe-area-inset-bottom)); }
+  .heading { gap:11px; margin-bottom:21px; }
+  .heading h2 { font-size:22px; }
+  .mark { flex-basis:42px; height:42px; }
+  .mark img { width:42px; height:42px; border-radius:13px; }
+  .formFields { gap:14px; }
+  .form .kindChoice { gap:4px; font-size:12px; }
+  .form .amountLabel { padding:13px 14px 16px; }
+  .fieldPair { gap:10px; }
+}
+@media(max-width:370px) {
+  .surface { padding-inline:16px; }
+  .mark { display:none; }
+  .heading h2 { font-size:23px; }
+  .form .kindChoice { flex-direction:column; gap:5px; font-size:11px; }
+  .form input,.form select { padding-inline:10px; }
+}
+@media(prefers-reduced-motion:reduce) { .dialog[open] { animation:none; }.form * { transition:none; } }

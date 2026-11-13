@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./dashboard-shell.module.css";
+import ProfileMenu, { type SaveAvatarAction } from './profile-menu';
 
 export const navigation = [
   { id: "resumen", label: "Resumen" },
@@ -30,8 +31,8 @@ function Icon({ name }: { name: string }) {
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export default function DashboardShell({ active, demo = false, avatar = "E", onNavigate, sessionAction, children }: {
-  active: NavigationId; demo?: boolean; avatar?: string;
+export default function DashboardShell({ active, demo = false, avatar = "koala", saveAvatarAction, onNavigate, sessionAction, children }: {
+  active: NavigationId; demo?: boolean; avatar?: string; saveAvatarAction?: SaveAvatarAction;
   onNavigate?: (section: NavigationId) => void; sessionAction?: ReactNode; children: ReactNode;
 }) {
   const drawer = useRef<HTMLDialogElement>(null);
@@ -56,12 +57,12 @@ export default function DashboardShell({ active, demo = false, avatar = "E", onN
   function sidebar(mobile = false) {
     return <>
       <div className={styles.brandRow}><a className={styles.brand} href={demo ? "/demo" : "/privado"} aria-label="Finanzas personales, inicio"><img src="/koala.svg" width="48" height="48" alt="" /><span>finanzas<span className={styles.brandSub}>PERSONALES</span></span></a>{mobile && <button type="button" className={styles.closeButton} aria-label="Cerrar menú" onClick={close}><Icon name="close" /></button>}</div>
-      <div className={styles.workspace}><span className={styles.workspaceSymbol}><Icon name="shield" /></span><div><strong>Mi espacio personal</strong><span>{demo ? "Explora a tu ritmo" : "Un lugar para tus planes"}</span></div><span className={styles.liveDot} /></div>
+      <div className={styles.workspace}><span className={styles.workspaceSymbol}><Icon name="shield" /></span><div><strong>Mi espacio personal</strong></div><span className={styles.liveDot} /></div>
       <nav className={styles.navigation} aria-label="Navegación principal">
         <p className={styles.groupLabel}>TU DÍA A DÍA</p>
         {navigation.map((item, index) => <div key={item.id}>{index === 3 && <p className={styles.groupLabel}>CONSTRUYE TU FUTURO</p>}{destination(item.id, <><span className={styles.navIcon}><Icon name={item.id} /></span><span className={styles.navCopy}><strong>{item.label}</strong></span><span className={styles.activeDot} /></>, `${styles.navItem} ${active === item.id ? styles.active : ""}`)}</div>)}
       </nav>
-      <div className={styles.encouragement}><span className={styles.sparkle} aria-hidden="true">✦</span><span className={styles.cardEyebrow}>A TU PROPIO RITMO</span><h2>Pequeños pasos.<br />Grandes posibilidades.</h2><p>Tu próxima meta empieza con una decisión de hoy.</p>{destination("metas", <>Vamos por esa meta <Icon name="arrow" /></>, styles.goalLink)}</div>
+      <div className={styles.encouragement}><span className={styles.sparkle} aria-hidden="true">✦</span><span className={styles.cardEyebrow}>A TU PROPIO RITMO</span><h2>Pequeños pasos.<br />Grandes posibilidades.</h2><p>Tu próxima meta empieza con una decisión de hoy.</p></div>
     </>;
   }
   return <div className={`app-shell ${styles.shell} ${demo ? "" : "private-shell"}`}>
@@ -75,15 +76,9 @@ export default function DashboardShell({ active, demo = false, avatar = "E", onN
           <strong className={styles.sectionTitle}>{current.label}</strong>
         </div>
         <div className={styles.topActions}>
-          <span className={`${styles.modeBadge} ${demo ? styles.demoBadge : ""}`} title={demo ? "Datos de ejemplo. Los cambios no se guardan." : "Acceso a tu espacio privado"}><span aria-hidden="true" />{demo ? "Demo" : "Privado"}</span>
+          
           {destination("movimientos", <><Icon name="plus" /><span>Nuevo movimiento</span></>, styles.register)}
-          {sessionAction && <>
-            <button type="button" className={styles.accountButton} popoverTarget="dashboard-account-menu" aria-label="Abrir menú de cuenta" title="Mi cuenta">{avatar}</button>
-            <div id="dashboard-account-menu" popover="auto" className={styles.accountMenu}>
-              <div className={styles.accountHeading}><Icon name="shield" /><div><strong>Mi espacio</strong><span>Acceso privado · PEN</span></div></div>
-              <div className={styles.sessionAction}>{sessionAction}</div>
-            </div>
-          </>}
+          <ProfileMenu avatarId={avatar} demo={demo} saveAvatarAction={saveAvatarAction} sessionAction={sessionAction} />
         </div>
       </header>
       <div id="dashboard-content" tabIndex={-1} className={styles.contentAnchor}>{children}</div>

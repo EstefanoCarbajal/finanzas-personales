@@ -8,6 +8,7 @@ import MovementsWorkspace from "./movements-workspace";
 import MovementsTable from "@/app/privado/movements-table";
 import DemoMovementForm, { demoAccounts, demoCategories, type DemoMovementDraft } from "./demo-movement-form";
 import AccountsDemo from "./accounts-demo";
+import MovementModal from "./movement-modal";
 import { totals } from "@/lib/money.mjs";
 
 type Section = "Resumen" | "Movimientos" | "Cuentas" | "Planificación" | "Metas y ahorro" | "Hábitos y recompensas";
@@ -51,13 +52,12 @@ export default function Dashboard() {
   }
   return <DashboardShell demo active={navigation.find(item => item.label === section)!.id} onNavigate={id => { setSection(navigation.find(item => item.id === id)!.label); setNotice(""); }}>
       <div className="content">
-        <div className="page-heading"><div>{section !== "Cuentas" && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Cada paso cuenta." : section}</h1>{section !== "Cuentas" && <p>{section === "Resumen" ? "Una mirada clara a tu mes y a lo que quieres conseguir." : section === "Movimientos" ? "Registra y encuentra los movimientos del ejemplo." : section === "Planificación" ? "Dale un lugar a cada compromiso antes de que llegue." : section === "Metas y ahorro" ? "Cada aporte te acerca un poco más a lo que quieres." : "Reconoce tus avances cotidianos y suma puntos virtuales."}</p>}</div></div>
-        <div className="demo-note">{section === "Cuentas" ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
+        <div className="page-heading"><div>{(section !== "Cuentas" && section !== "Resumen") && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Tu resumen" : section}</h1>{(section !== "Cuentas" && section !== "Resumen") && <p>{section === "Movimientos" ? "Registra y encuentra los movimientos del ejemplo." : section === "Planificación" ? "Dale un lugar a cada compromiso antes de que llegue." : section === "Metas y ahorro" ? "Cada aporte te acerca un poco más a lo que quieres." : "Reconoce tus avances cotidianos y suma puntos virtuales."}</p>}</div></div>
+        <div className="demo-note">{(section === "Cuentas" || section === "Resumen") ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
         <p className="notice" role="status">{notice}</p>
-
         {section === "Resumen" && <>
           <MonthlySummary currentMonth="2026-11" balance={((income - expense) / 100).toFixed(2)} demo onRegister={() => setFormOpen(true)} onViewMovements={() => setSection("Movimientos")} movements={sharedMovements} />
-          <section className="panel summary-next"><div className="panel-heading"><div><h2>¿Qué quieres revisar?</h2><p>Elige una sección para explorarla</p></div></div><div className="summary-links">{sections.slice(1).map(item => <button className="summary-link" key={item.label} onClick={() => setSection(item.label)}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong><span aria-hidden="true">→</span></button>)}</div></section>
+          <section className="panel summary-next"><div className="panel-heading"><div><h2>Accesos rápidos</h2></div></div><div className="summary-links">{sections.slice(1).map(item => <button className="summary-link" key={item.label} onClick={() => setSection(item.label)}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong><span aria-hidden="true">→</span></button>)}</div></section>
         </>}
 
         {section === "Movimientos" && <MovementsWorkspace demo form={<DemoMovementForm onAdd={addMovement} accounts={accounts} categories={categories} />}><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
@@ -71,6 +71,6 @@ export default function Dashboard() {
 
         <footer>Hecho para avanzar a tu ritmo.<span>Vista previa · Datos ficticios</span></footer>
       </div>
-    {formOpen && <div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="form-title" onKeyDown={e => { if (e.key === "Escape") setFormOpen(false); if (e.key === "Tab") { const nodes = e.currentTarget.querySelectorAll<HTMLElement>("button, input, select"); const first = nodes[0]; const last = nodes[nodes.length - 1]; if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); } } }}><div className="panel-heading"><h2 id="form-title">Prueba un movimiento</h2><button className="close" aria-label="Cerrar formulario" onClick={() => setFormOpen(false)}>×</button></div><p>Solo para explorar la demo. No introduzcas datos reales.</p><DemoMovementForm onAdd={addMovement} accounts={accounts} categories={categories} autoFocus /></section></div>}
+    <MovementModal open={formOpen} onClose={() => setFormOpen(false)} demo><DemoMovementForm onAdd={addMovement} accounts={accounts} categories={categories} modal /></MovementModal>
   </DashboardShell>;
 }

@@ -3,12 +3,14 @@
 import { useState, type FormEvent } from 'react';
 import { toCents } from '@/lib/money.mjs';
 import MovementFields, { type MovementAccount, type MovementCategory } from './movement-fields';
-import s from './movements.module.css';
+import standard from './movements.module.css';
+import compact from './movement-modal.module.css';
 
 export type DemoMovementDraft = { name: string; category: string; amount: number; date: string; kind: string; account: string; destination: string | null };
 export const demoAccounts = [{ id: 'cash', name: 'Efectivo' }, { id: 'savings', name: 'Ahorros' }];
 export const demoCategories = [...['Alimentación', 'Transporte', 'Vivienda', 'Ocio', 'Salud', 'Otros'].map((name, i) => ({ id: `expense-${i}`, name, kind: 'expense' })), { id: 'income', name: 'Ingresos', kind: 'income' }];
-export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = demoAccounts, categories = demoCategories }: { onAdd: (movement: DemoMovementDraft) => void; autoFocus?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[] }) {
+export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = demoAccounts, categories = demoCategories, modal = false }: { onAdd: (movement: DemoMovementDraft) => void; autoFocus?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[]; modal?: boolean }) {
+  const s = modal ? compact : standard;
   const [kind, setKind] = useState('expense');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -31,8 +33,8 @@ export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = 
     onAdd({ name: description.trim(), category: category?.name || 'Transferencia', amount: Number(cents) * (kind === 'expense' ? -1 : 1), date, kind, account: account.name, destination: destination?.name || null });
     setDescription(''); setAmount(''); setSuccess(true); setMessage('¡Listo! Movimiento añadido a la demo. Se reinicia al recargar.');
   }
-  return <form className={s.form} onSubmit={submit} onReset={event => event.preventDefault()}><div className={s.formFields}>
-    <MovementFields autoFocus={autoFocus} accounts={accounts} categories={categories} today="2026-11-11" kind={kind} onKindChange={setKind} description={description} onDescriptionChange={setDescription} amount={amount} onAmountChange={setAmount} />
-    <p className={`${s.message} ${success ? s.success : s.error}`} role="status">{message}</p><button className={s.save}>Añadir a la demo <span aria-hidden="true">↗</span></button><p className={s.formFoot}>Solo datos ficticios. Nada se guarda fuera de esta página.</p>
+  return <form className={s.form} data-kind={kind} onSubmit={submit} onReset={event => event.preventDefault()}><div className={s.formFields}>
+    <MovementFields modal={modal} autoFocus={autoFocus} accounts={accounts} categories={categories} today="2026-11-11" kind={kind} onKindChange={setKind} description={description} onDescriptionChange={setDescription} amount={amount} onAmountChange={setAmount} />
+    <p className={`${s.message} ${success ? s.success : s.error}`} role="status">{modal && success ? '' : message}</p><button className={s.save}>{modal ? `Añadir ${kind === 'income' ? 'ingreso' : kind === 'transfer' ? 'transferencia' : 'gasto'}` : 'Añadir a la demo'} <span aria-hidden="true">✓</span></button><p className={s.formFoot}>{modal ? 'Datos ficticios · Se reinician al recargar' : 'Solo datos ficticios. Nada se guarda fuera de esta página.'}</p>
   </div></form>;
 }

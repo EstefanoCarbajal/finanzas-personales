@@ -11,12 +11,14 @@ import MovementForm from './movement-form';
 import MovementsWorkspace from '@/components/movements-workspace';
 import SetupForms from './setup-forms';
 import MovementsTable from './movements-table';
-import MonthlySummary from './monthly-summary';
+import SummaryWithRegistration from './summary-with-registration';
 import PlanningPanel from './planning-panel';
 import GoalsPanel from './goals-panel';
 import HabitsRewards from './habits-rewards';
 import DashboardShell from '@/components/dashboard-shell';
 import AccountsWorkspace from '@/components/accounts-workspace';
+import { readAvatar } from '@/lib/profile.mjs';
+import { updateAvatar } from './profile-actions';
 
 export const dynamic = 'force-dynamic';
 const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'metas', 'habitos'] as const;
@@ -29,7 +31,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const params = await searchParams;
   const requested = Array.isArray(params.seccion) ? params.seccion[0] : params.seccion;
   const section: Section = sections.includes(requested as Section) ? requested as Section : 'resumen';
-  const avatar = user.email.slice(0, 1).toUpperCase();
+  const avatar = await readAvatar(db(), user.id);
   const today = todayLima();
   const month = today.slice(0, 7);
   const needsDashboard = section !== 'habitos';
@@ -38,13 +40,13 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const goals = section === 'metas' || section === 'resumen' ? await readGoals(db(), user.id) : null;
   const habits = section === 'habitos' ? await readHabitDashboard(db(), user.id, today) : null;
 
-  return <DashboardShell active={section} avatar={avatar} sessionAction={<form action={signOut}><button type="submit">Cerrar sesión</button></form>}>
+  return <DashboardShell active={section} avatar={avatar} saveAvatarAction={updateAvatar} sessionAction={<form action={signOut}><button type="submit">Cerrar sesión</button></form>}>
       <div className="content">
         {section === 'resumen' && data && <>
-          <section className="page-heading" id="resumen"><div><span className="eyebrow">TU DINERO, CON PROPÓSITO · PEN</span><h1>Cada paso cuenta.</h1><p>Más claridad para hoy. Más posibilidades para mañana.</p></div></section>
-          <MonthlySummary movements={data.movements} currentMonth={month} balance={data.totals.balance} />
-          {goals?.[0] && <section className="private-goal-feature"><div className="goal-top"><span className="eyebrow">UNA META A LA VEZ</span><span className="goal-symbol" aria-hidden="true">☀</span></div><h2>{goals[0].name}</h2><p>Tu próximo paso empieza hoy.</p><div className="goal-amount"><strong>{soles(goals[0].saved)}</strong><span>de {soles(goals[0].target_amount)}</span></div><progress aria-label={`Avance de ${goals[0].name}`} value={Math.min(100, Number(BigInt(goals[0].saved.replace('.', '')) * BigInt(100) / BigInt(goals[0].target_amount.replace('.', ''))))} max={100} /><div className="goal-bottom"><span>Avanza a tu ritmo</span><a href="/privado?seccion=metas">Ver meta →</a></div></section>}
-          <section className="panel summary-next"><div className="panel-heading"><div><h2>Sigue a tu ritmo</h2><p>Elige una sección para continuar organizando tus finanzas.</p></div></div><div className="summary-links">{sections.slice(1).map(item => <a className="summary-link" key={item} href={`/privado?seccion=${item}`}><span aria-hidden="true">{sectionIcons[item]}</span><strong>{sectionLabels[item]}</strong><span aria-hidden="true">→</span></a>)}</div></section>
+          <section className="page-heading" id="resumen"><h1>Tu resumen</h1></section>
+          <SummaryWithRegistration movements={data.movements} currentMonth={month} balance={data.totals.balance} accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />
+          {goals?.[0] && <section className="private-goal-feature"><div className="goal-top"><span className="eyebrow">TU META</span><span className="goal-symbol" aria-hidden="true">☀</span></div><h2>{goals[0].name}</h2><div className="goal-amount"><strong>{soles(goals[0].saved)}</strong><span>de {soles(goals[0].target_amount)}</span></div><progress aria-label={`Avance de ${goals[0].name}`} value={Math.min(100, Number(BigInt(goals[0].saved.replace('.', '')) * BigInt(100) / BigInt(goals[0].target_amount.replace('.', ''))))} max={100} /><div className="goal-bottom"><a href="/privado?seccion=metas">Ver meta →</a></div></section>}
+          <section className="panel summary-next"><div className="panel-heading"><div><h2>Accesos rápidos</h2></div></div><div className="summary-links">{sections.slice(1).map(item => <a className="summary-link" key={item} href={`/privado?seccion=${item}`}><span aria-hidden="true">{sectionIcons[item]}</span><strong>{sectionLabels[item]}</strong><span aria-hidden="true">→</span></a>)}</div></section>
         </>}
         {section === 'movimientos' && data && <>
           <section className="page-heading"><div><span className="eyebrow">TU ACTIVIDAD FINANCIERA</span><h1>Movimientos</h1><p>Registra y encuentra ingresos, gastos y transferencias.</p></div></section>

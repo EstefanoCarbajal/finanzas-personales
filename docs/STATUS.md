@@ -1,5 +1,19 @@
 # Estado al 12 de noviembre de 2026
 
+## Resumen con menos texto · 12/11/2026
+
+- Se conserva la composición visual y se simplifica el contenido de demo/privado: «Tu resumen», «Saldo total», «Resumen mensual», «Gastos por categoría», «Últimos movimientos» y «Accesos rápidos». Se retiran sobre-títulos, frases motivadoras, texto decorativo del koala y notas redundantes. Demo identificada en una línea; saldo acumulado y fórmula del balance siguen explícitos.
+- Métricas con nombre/importe, barras conservadas y flecha del balance adaptada al signo. Estados vacíos breves con botón para registrar; pie de actividad reducido al número de movimientos. Tarjeta de meta privada conserva nombre, importe y progreso, con menos texto.
+- QA visual de demo a 1440, 390 y 320 px, sin desbordamiento horizontal. Octubre vacío y regreso a noviembre comprobados, saldo acumulado intacto; registro desde actividad vacía abre el modal. Build, typecheck y diff check correctos. Sin cambios de reglas monetarias ni permisos, sin publicación ni uso de datos privados.
+
+## Registro desde Resumen en modal · 12/11/2026
+
+- En codex/resumen-premium: el botón «Registrar movimiento» del Resumen privado deja de navegar a Movimientos. Modal compartido con la demo, CSS Module propio, importe grande, selector gasto/ingreso/transferencia, etiquetas breves, encabezado con koala y botón lima. Panel centrado en escritorio y situado abajo en móvil, con desplazamiento interior en pantallas de poca altura.
+- Diálogo HTML nativo: aislamiento del fondo, bloqueo del desplazamiento, foco inicial en importe, cierre por Escape/botón/fondo y devolución del foco al disparador. Cierre bloqueado durante guardado privado. Al guardar se cierra, anuncia el resultado y actualiza el resumen con la revalidación existente. Errores conservan datos; cierre manual conserva borrador en memoria y éxito limpia descripción/importe manteniendo selecciones. Formularios de Movimientos conservan su presentación. Campos compartidos aceptan coma decimal convirtiéndola en punto.
+- QA en /demo: gasto S/ 10,25 deja saldo S/ 3.952,75 y gastos S/ 247,25 sin cambiar de sección; transferencia S/ 25,50 conserva ambos importes, y transferencia a la misma cuenta muestra error conservando descripción/importe. Ingreso S/ 50 deja saldo S/ 4.002,75. Recarga restaura saldo inicial S/ 3.963,00. Escape devuelve foco y libera desplazamiento.
+- Revisión visual a 1440 × 1000, 390 × 844 y 320 × 568: sin desbordamiento horizontal; en pantalla baja los controles siguen accesibles mediante scroll interior. Sin errores de consola. Build, typecheck, diff check y las cuatro pruebas existentes correctos; build/pruebas necesitaron permisos de ejecución por bloqueo de procesos del entorno restringido.
+- No se publicó ni se accedió a datos privados. Pendiente QA del guardado, espera y errores del modal con una sesión privada autorizada. Sin cambios en acciones del servidor, esquema ni permisos.
+
 ## Cuentas con menos texto · 12/11/2026
 
 - Simplificación solicitada sobre el rediseño: cabecera solo con título; bloque verde con «Saldo total» e importe; tarjetas compactas con icono, nombre y saldo. Se eliminan subtítulos, notas explicativas repetidas, monedas redundantes y frases en la ilustración. Categorías conserva iconos de ingreso/gasto, agrupación y chips.
