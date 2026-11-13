@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./typography.css";
+import "./avatar-theme.css";
 
 const nunito = localFont({
   src: "./fonts/Nunito-Variable.ttf",

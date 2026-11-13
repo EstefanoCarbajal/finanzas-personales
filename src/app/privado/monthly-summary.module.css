@@ -6,6 +6,7 @@
   margin-top:28px;
   font-variant-numeric:tabular-nums
 }
+
 .hero {
   isolation:isolate;
   position:relative;
@@ -125,7 +126,7 @@
   place-items:center;
   transform:rotate(8deg)
 }
-.koala img {
+.koala>svg {
   width:100%;
   height:100%;
   border-radius:36px;
@@ -818,3 +819,21 @@ to {
   .activity strong { font-size: 13px; }
   .cardHeading .kicker { font-size: 10px; letter-spacing: .04em; }
 }
+
+/* Shared avatar palette; transaction colors retain their financial meaning. */
+.summary{--deep:var(--theme-deep);--quiet:var(--theme-muted)}
+.hero{background:radial-gradient(ellipse at 80% 0,var(--theme-glow),transparent 60%),var(--theme-deep)}
+.hero h2,.hero p{color:var(--theme-ondark)}
+.cta{background:var(--theme-accent);border-color:var(--theme-accent);color:var(--theme-deep);box-shadow:0 3px 0 var(--theme-shade)}
+.cta:hover{box-shadow:0 5px 0 var(--theme-shade)}
+.spark,.orbitPlus{color:var(--theme-accent)}
+.monthControl,.metric,.card{border-color:var(--theme-line)}
+.monthControl button{background:var(--theme-soft);color:var(--theme-ink)}
+.metricLabel{color:var(--theme-ink)}
+.net:not(.negative){background:var(--theme-soft);border-color:var(--theme-line)}
+.net:not(.negative) .metricLabel>span{background:var(--theme-accent);color:var(--theme-deep)}
+.net:not(.negative) small{color:var(--theme-muted)}
+.net:not(.negative) .netDecoration{color:color-mix(in srgb,var(--theme-shade) 35%,transparent)}
+.textLink,.cardIcon{color:var(--theme-strong)}
+.insight{background:var(--theme-soft);border-color:var(--theme-line)}
+.insight>span,.empty>span{color:var(--theme-strong)}

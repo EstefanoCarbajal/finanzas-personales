@@ -1,0 +1,2 @@
+# Migration checksums must match across Windows and other development machines.
+migrations/*.sql text eol=lf

@@ -1,0 +1,20 @@
+/* The avatar's saved ID is the only preference; palettes are shared by every view. */
+.app-shell[data-avatar-theme] {
+  --ink:var(--theme-ink); --muted:var(--theme-muted); --green:var(--theme-strong);
+  --bg:var(--theme-surface); --line:var(--theme-line); --lime:var(--theme-accent);
+  color:var(--theme-ink); background:var(--theme-surface);
+}
+.app-shell[data-avatar-theme] :is(h1,.page-heading h2,.goal-card-heading h3,.private-goal-feature h2) { color:var(--theme-ink); }
+.app-shell[data-avatar-theme] :is(.eyebrow,.subtle,.page-heading p,.panel-heading p) { color:var(--theme-muted); }
+.app-shell[data-avatar-theme] :is(.panel,.goal-card,.goal-create-form,.planning-form,.summary-link) { border-color:var(--theme-line); }
+.app-shell[data-avatar-theme] :is(.primary,.goal-contribution-form .primary) { background:var(--theme-deep); color:#fff; box-shadow:0 3px 0 var(--theme-strong); }
+.app-shell[data-avatar-theme] :is(.summary-link,.budget,.planning-form,.goal-create-form) { background:var(--theme-surface); color:var(--theme-ink); }
+.app-shell[data-avatar-theme] :is(.summary-link>span:first-child,.summary-link:hover,.goals-panel,.goal-feature,.private-goal-feature,.rewards,.date-tile,.goal-card-heading>strong) { background:var(--theme-soft); color:var(--theme-ink); border-color:var(--theme-line); }
+.app-shell[data-avatar-theme] :is(.goal-symbol,.goal-feature h2,.text-button,.goal-bottom a) { color:var(--theme-strong); }
+.app-shell[data-avatar-theme] :is(input,select) { border-color:var(--theme-line); }
+.app-shell[data-avatar-theme] progress::-webkit-progress-value { background:var(--theme-strong); }
+.app-shell[data-avatar-theme] progress::-moz-progress-bar { background:var(--theme-strong); }
+.app-shell[data-avatar-theme] :is(button,a,input,select,summary):focus-visible { outline-color:var(--theme-strong); }
+@media(prefers-reduced-motion:no-preference) {
+  .app-shell[data-avatar-theme],.app-shell[data-avatar-theme] :is(header,aside,section,article,button,a) { transition:background-color .3s,border-color .3s,color .3s,box-shadow .2s,transform .2s; }
+}

@@ -1,4 +1,13 @@
-# Estado al 12 de noviembre de 2026
+# Estado al 13 de noviembre de 2026
+
+## Perfil animado y temas por avatar · 13/11/2026
+
+- Se completa el menú de perfil iniciado antes de la interrupción: seis avatares SVG originales, vista previa con entrada y parpadeo breve, opciones escalonadas, selección por teclado, Escape/cierre exterior y retorno de foco. Topbar con avatar ilustrado y botón de movimiento con detalle animado. Animaciones desactivadas con movimiento reducido. Menú disponible en demo y privado; acción original de cierre de sesión conservada.
+- A petición del usuario, «Aplicar avatar y colores» cambia la paleta del sistema completo: koala/lima, zorro/durazno, gato/lavanda, panda/menta, conejo/rosa y oso/arena. La vista previa se limita al menú hasta confirmar. Tras éxito, colores y avatar se mantienen al navegar por las seis secciones y en el modal. Paletas centralizadas, sin nuevas dependencias; colores semánticos de transacciones/errores conservados.
+- Persistencia privada mediante readAvatar/saveAvatar y acción autenticada que toma el propietario de la sesión, nunca del cliente. Migraciones 005_profile_avatar.sql y 006_avatar_validation.sql aplicadas exclusivamente a u519053982_finanzas_test. La segunda rechaza ENUM vacío incluso sin modo estricto. Se verificó que los checksums antiguos diferían solo por CRLF; se normalizaron a LF y se fijó esa convención en .gitattributes sin cambiar SQL previo ni checksums almacenados.
+- QA en /demo a 1440 × 1000, 390 × 844 y 320 × 568: seis paletas aplicables, colores conservados al navegar, estados financieros diferenciados, cierre sin aplicar conserva estilo anterior, flechas cambian selección y Escape devuelve foco. Sin desbordamiento horizontal; menú desplazable en pantalla baja. Recarga restablece koala/verde. Modal de registro adopta el tema. Sin errores de consola.
+- Build, typecheck y diff check correctos; siete pruebas locales aprobadas, incluyendo contraste de texto/controles de todas las paletas. Integración específica MySQL aprobada: dos usuarios ficticios con elecciones independientes, actualización y lectura persistente, rechazo de avatar inválido/propietario inexistente y limpieza por cascada. Fixtures eliminados. El script de integración general incluye ahora esta prueba adicional.
+- Sin publicación ni uso de datos financieros reales. Pendiente QA con sesión privada autorizada para comprobar visualmente espera/error y cierre de sesión; persistencia y aislamiento ya comprobados por integración en la base de pruebas.
 
 ## Resumen con menos texto · 12/11/2026
 

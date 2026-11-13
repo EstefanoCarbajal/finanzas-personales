@@ -1,3 +1,4 @@
+import SelectedAvatar from '@/components/selected-avatar';
 import type { ReactNode } from 'react';
 import { soles } from '@/lib/money.mjs';
 import s from './accounts.module.css';
@@ -12,7 +13,7 @@ export function AccountIcon({ name = 'wallet' }: { name?: string }) {
 }
 
 function WalletArt() {
-  return <div className={s.walletArt} aria-hidden="true"><span className={s.orbit} /><span className={s.artSpark}>✦</span><div className={s.backCard}><i /></div><div className={s.frontCard}><img src="/koala.svg" alt="" width="36" height="36" /><span className={s.cardLines}><i /><i /></span></div><span className={s.artDot} /></div>;
+  return <div className={s.walletArt} aria-hidden="true"><span className={s.orbit} /><span className={s.artSpark}>✦</span><div className={s.backCard}><i /></div><div className={s.frontCard}><SelectedAvatar width={36} height={36} /><span className={s.cardLines}><i /><i /></span></div><span className={s.artDot} /></div>;
 }
 
 export default function AccountsWorkspace({ accounts, categories, balances, balance, accountForm, categoryForm }: {

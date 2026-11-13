@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import styles from "./dashboard-shell.module.css";
 import ProfileMenu, { type SaveAvatarAction } from './profile-menu';
+import { themeVariables } from '@/lib/avatar-themes.mjs';
+import SelectedAvatar, { AvatarContext } from './selected-avatar';
 
 export const navigation = [
   { id: "resumen", label: "Resumen" },
@@ -37,6 +39,8 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
 }) {
   const drawer = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState(avatar);
+  useEffect(() => { setTheme(avatar); }, [avatar]);
   const current = navigation.find(item => item.id === active)!;
   const close = () => drawer.current?.close();
   useEffect(() => {
@@ -56,7 +60,7 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
   }
   function sidebar(mobile = false) {
     return <>
-      <div className={styles.brandRow}><a className={styles.brand} href={demo ? "/demo" : "/privado"} aria-label="Finanzas personales, inicio"><img src="/koala.svg" width="48" height="48" alt="" /><span>finanzas<span className={styles.brandSub}>PERSONALES</span></span></a>{mobile && <button type="button" className={styles.closeButton} aria-label="Cerrar menú" onClick={close}><Icon name="close" /></button>}</div>
+      <div className={styles.brandRow}><a className={styles.brand} href={demo ? "/demo" : "/privado"} aria-label="Finanzas personales, inicio"><SelectedAvatar width={48} height={48} /><span>finanzas<span className={styles.brandSub}>PERSONALES</span></span></a>{mobile && <button type="button" className={styles.closeButton} aria-label="Cerrar menú" onClick={close}><Icon name="close" /></button>}</div>
       <div className={styles.workspace}><span className={styles.workspaceSymbol}><Icon name="shield" /></span><div><strong>Mi espacio personal</strong></div><span className={styles.liveDot} /></div>
       <nav className={styles.navigation} aria-label="Navegación principal">
         <p className={styles.groupLabel}>TU DÍA A DÍA</p>
@@ -65,7 +69,7 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
       <div className={styles.encouragement}><span className={styles.sparkle} aria-hidden="true">✦</span><span className={styles.cardEyebrow}>A TU PROPIO RITMO</span><h2>Pequeños pasos.<br />Grandes posibilidades.</h2><p>Tu próxima meta empieza con una decisión de hoy.</p></div>
     </>;
   }
-  return <div className={`app-shell ${styles.shell} ${demo ? "" : "private-shell"}`}>
+  return <AvatarContext.Provider value={theme}><div data-avatar-theme={theme} style={themeVariables(theme) as CSSProperties} className={`app-shell ${styles.shell} ${demo ? "" : "private-shell"}`}>
     <a className={styles.skipLink} href="#dashboard-content">Ir al contenido</a>
     <aside className={styles.sidebar}>{sidebar()}</aside>
     <dialog ref={drawer} className={styles.drawer} aria-label="Menú de navegación" onClose={() => setOpen(false)} onClick={event => { if (event.target === event.currentTarget) close(); }}><div className={styles.drawerInner}>{sidebar(true)}</div></dialog>
@@ -78,10 +82,10 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
         <div className={styles.topActions}>
           
           {destination("movimientos", <><Icon name="plus" /><span>Nuevo movimiento</span></>, styles.register)}
-          <ProfileMenu avatarId={avatar} demo={demo} saveAvatarAction={saveAvatarAction} sessionAction={sessionAction} />
+          <ProfileMenu avatarId={avatar} demo={demo} onAvatarChange={setTheme} saveAvatarAction={saveAvatarAction} sessionAction={sessionAction} />
         </div>
       </header>
       <div id="dashboard-content" tabIndex={-1} className={styles.contentAnchor}>{children}</div>
     </main>
-  </div>;
+  </div></AvatarContext.Provider>;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import SelectedAvatar from '@/components/selected-avatar';
 import { useMemo, useState } from 'react';
 import { decimal, soles, toCents } from '@/lib/money.mjs';
 import type { PrivateMovement } from './movements-table';
@@ -54,7 +55,7 @@ export default function MonthlySummary({ movements, currentMonth, balance, demo 
         <p>Acumulado en todas tus cuentas</p>
         <button className={s.cta} onClick={onRegister} aria-haspopup="dialog"><span aria-hidden="true">＋</span> Registrar movimiento</button>
       </div>
-      <div className={s.orbit} aria-hidden="true"><div className={s.orbitInner} /><span className={s.spark}>✦</span><div className={s.koala}><img src="/koala.svg" alt="" /></div><span className={s.orbitPlus}>＋</span></div>
+      <div className={s.orbit} aria-hidden="true"><div className={s.orbitInner} /><span className={s.spark}>✦</span><div className={s.koala}><SelectedAvatar /></div><span className={s.orbitPlus}>＋</span></div>
     </section>
     <section aria-labelledby="month-title">
       <div className={s.sectionHeading}><h2 id="month-title">Resumen mensual</h2><div className={s.monthControl}><button aria-label="Ver mes anterior" onClick={() => setMonth(value => shiftMonth(value, -1))}>‹</button><span aria-live="polite">{monthName(month)}</span><button aria-label="Ver mes siguiente" disabled={month >= currentMonth} onClick={() => setMonth(value => shiftMonth(value, 1))}>›</button></div></div>

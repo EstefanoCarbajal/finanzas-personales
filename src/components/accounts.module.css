@@ -11,7 +11,7 @@
 .backCard{position:absolute;inset:10px 25px 36px 20px;padding:17px;border:1px solid #e4f7c6;border-radius:17px;background:#dff1bd;transform:rotate(-13deg)}
 .backCard>i{display:block;width:30px;height:21px;border:1px solid #849e68;border-radius:5px;background:#bacf91}
 .frontCard{position:absolute;inset:43px 0 5px 32px;display:flex;align-items:center;gap:16px;padding:20px;border:1px solid #ffffff70;border-radius:19px;background:#fbf9e8;box-shadow:0 15px 35px #092c252e;transform:rotate(8deg)}
-.frontCard img{flex-shrink:0;border-radius:11px}
+.frontCard svg{width:36px;height:36px;flex-shrink:0;border-radius:11px}
 .cardLines{display:grid;gap:8px;flex:1}
 .cardLines>i{display:block;width:100%;height:5px;border-radius:9px;background:#bdd49b}
 .cardLines>i:last-child{width:60%;background:#dce7c9}
@@ -76,3 +76,18 @@
 @media(max-width:480px){.workspace{gap:22px}.hero{min-height:142px;padding:24px;border-radius:22px}.walletArt{display:none}.hero h2{font-size:13px}.total{font-size:39px}.sectionHeading h2{font-size:20px}.accountGrid{grid-template-columns:1fr;gap:12px}.accountCard{min-height:106px;padding:21px;gap:18px}.accountIcon{flex-basis:44px;height:44px;border-radius:14px}.accountBalance{font-size:28px}.composer>summary{padding:11px 15px;gap:10px}.composerBody{padding:4px 15px 14px}.categories{padding:21px 18px;border-radius:22px}.categoryGroups{gap:12px}.categoryGroup{padding:16px}.formFields{gap:14px}.formFields label,.formFields label:has(select){flex:1 1 100%}.formFields input,.formFields select{font-size:16px}.submit{width:100%}}
 @media(max-width:350px){.accountCard{padding:20px 16px;gap:12px}.accountBalance{font-size:25px}.total{font-size:34px}.count{min-width:23px}.sectionHeading h2{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.workspace *{transition:none!important}}
+
+/* Avatar palette. Income/expense groups and negative amounts stay semantic. */
+.workspace{--forest:var(--theme-deep);--lime:var(--theme-accent)}
+.hero{background:radial-gradient(ellipse at 100% 0,var(--theme-glow),transparent 65%),var(--theme-deep);border-color:var(--theme-glow)}
+.hero h2{color:var(--theme-ondark)}
+.backCard,.cardLines>i{background:var(--theme-accent);border-color:var(--theme-shade)}
+.count,.accountIcon,.tone1 .accountIcon,.addIcon{background:var(--theme-soft);border-color:var(--theme-line);color:var(--theme-strong)}
+.accountCard,.categories,.composer{border-color:var(--theme-line)}
+.accountCard:hover{border-color:var(--theme-shade)}
+.accountBalance:not(.negative),.composer summary strong{color:var(--theme-ink)}
+.accountCard h3,.chevron{color:var(--theme-muted)}
+.tone1,.composer>summary:hover{background:var(--theme-soft)}
+.composer{background:var(--theme-surface)}
+.submit{background:var(--theme-deep);border-color:var(--theme-deep);color:#fff}
+.submit:hover{background:var(--theme-glow)}

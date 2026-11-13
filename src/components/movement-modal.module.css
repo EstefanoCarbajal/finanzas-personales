@@ -4,7 +4,7 @@
 .surface { padding:27px 30px 24px; background:radial-gradient(ellipse at 0 0,#edf6dc80,transparent 50%),#fffefa; }
 .heading { display:flex; align-items:center; gap:13px; margin-bottom:25px; }
 .mark { position:relative; flex:0 0 48px; height:48px; }
-.mark img { display:block; border-radius:16px; transform:rotate(-7deg); }
+.mark>svg { display:block; border-radius:16px; transform:rotate(-7deg); }
 .mark>span { position:absolute; right:-5px; bottom:-3px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; border:2px solid #fffefa; background:#244d3d; color:#ddf5ad; font-size:17px; font-weight:700; }
 .eyebrow { display:block; font-size:10px; letter-spacing:.12em; font-weight:800; color:#73805e; margin-bottom:6px; }
 .heading h2 { font-size:24px; font-weight:750; letter-spacing:-.85px; line-height:1.15; margin:0; }
@@ -49,7 +49,7 @@
   .heading { gap:11px; margin-bottom:21px; }
   .heading h2 { font-size:22px; }
   .mark { flex-basis:42px; height:42px; }
-  .mark img { width:42px; height:42px; border-radius:13px; }
+  .mark>svg { width:42px; height:42px; border-radius:13px; }
   .formFields { gap:14px; }
   .form .kindChoice { gap:4px; font-size:12px; }
   .form .amountLabel { padding:13px 14px 16px; }
@@ -63,3 +63,15 @@
   .form input,.form select { padding-inline:10px; }
 }
 @media(prefers-reduced-motion:reduce) { .dialog[open] { animation:none; }.form * { transition:none; } }
+
+/* Form type colors remain fixed; the surrounding modal follows the avatar. */
+.dialog{background:var(--theme-surface);color:var(--theme-ink);border-color:var(--theme-line)}
+.surface{background:radial-gradient(ellipse at 0 0,var(--theme-soft),transparent 50%),var(--theme-surface)}
+.mark>span{background:var(--theme-deep);color:var(--theme-accent);border-color:var(--theme-surface)}
+.eyebrow,.form label{color:var(--theme-muted)}
+.close{background:var(--theme-soft);border-color:var(--theme-line);color:var(--theme-ink)}
+.kindOptions{background:var(--theme-soft);border-color:var(--theme-line)}
+.form .kindChoice{color:var(--theme-muted)}
+.save{background:var(--theme-accent);color:var(--theme-deep);border-color:var(--theme-shade);box-shadow:0 4px 0 var(--theme-shade)}
+.save:active:not(:disabled){box-shadow:0 1px 0 var(--theme-shade)}
+.formFoot{color:var(--theme-muted)}

@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, useTransition, type CSSProperties, type ReactNode } from 'react';
 import { avatars, validAvatar } from '@/lib/avatars.mjs';
 import AnimalAvatar from './animal-avatar';
 import s from './profile-menu.module.css';
+import { avatarTheme, themeVariables } from '@/lib/avatar-themes.mjs';
 
 export type SaveAvatarAction = (id: string) => Promise<{ success: boolean; message: string }>;
 
-export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvatarAction, sessionAction }: {
-  avatarId?: string; demo?: boolean; saveAvatarAction?: SaveAvatarAction; sessionAction?: ReactNode;
+export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvatarAction, sessionAction, onAvatarChange }: {
+  avatarId?: string; demo?: boolean; saveAvatarAction?: SaveAvatarAction; sessionAction?: ReactNode; onAvatarChange?: (id: string) => void;
 }) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
@@ -32,7 +33,8 @@ export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvat
         const result = demo ? { success: true, message: 'Avatar actualizado' } : await saveAvatarAction?.(draft);
         if (!result?.success) { setError(true); setMessage(result?.message || 'No pudimos guardar tu avatar. Inténtalo de nuevo.'); return; }
         setCurrent(draft);
-        setMessage('¡Te queda genial!');
+        onAvatarChange?.(draft);
+        setMessage('¡Tu nuevo estilo está listo!');
       } catch { setError(true); setMessage('No pudimos guardar tu avatar. Inténtalo de nuevo.'); }
     });
   }
@@ -43,10 +45,10 @@ export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvat
       <span className={s.triggerSpark} aria-hidden="true">✦</span>
       <svg className={s.chevron} width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m5 8 5 5 5-5" /></svg>
     </button>
-    <div ref={panel} id={id} popover="auto" className={s.panel} aria-labelledby={`${id}-title`}
+    <div ref={panel} id={id} popover="auto" className={s.panel} style={themeVariables(draft) as CSSProperties} aria-labelledby={`${id}-title`}
       onToggle={event => {
         const visible = event.newState === 'open'; setOpen(visible);
-        if (visible) { setDraft(current); setMessage(''); setError(false); }
+        if (visible && !pending) { setDraft(current); setMessage(''); setError(false); }
       }}>
       <div className={s.hero}>
         <div className={s.topline}><span className={s.mode}><i />{demo ? 'Perfil de demo' : 'Mi espacio'}</span><button type="button" className={s.close} aria-label="Cerrar perfil" onClick={() => { panel.current?.hidePopover(); trigger.current?.focus(); }}>×</button></div>
@@ -54,7 +56,7 @@ export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvat
         <span className={s.sparkOne} aria-hidden="true">✧</span><span className={s.sparkTwo} aria-hidden="true">✦</span>
         <div className={s.preview} key={draft}><AnimalAvatar id={draft} /><span className={s.previewBadge} aria-hidden="true">✦</span></div>
         <h2 id={`${id}-title`}>{preview.name}</h2>
-        <p>Tu espacio, tu estilo.</p>
+        <p className={s.palette}><span aria-hidden="true"><i /><i /><i /></span>{avatarTheme(draft).name}</p>
       </div>
       <form className={s.body} onSubmit={event => { event.preventDefault(); save(); }} aria-busy={pending}>
         <fieldset disabled={pending} className={s.picker}>
@@ -65,7 +67,7 @@ export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvat
             <span className={s.choiceName}>{avatar.short}</span>
           </label>)}</div>
         </fieldset>
-        <button className={s.save} disabled={pending || draft === current || (!demo && !saveAvatarAction)} type="submit">{pending ? 'Guardando…' : draft === current ? 'Tu avatar actual' : 'Usar este avatar'}<span aria-hidden="true">{draft === current ? '✓' : '→'}</span></button>
+        <button className={s.save} disabled={pending || draft === current || (!demo && !saveAvatarAction)} type="submit">{pending ? 'Guardando…' : draft === current ? 'Tu estilo actual' : 'Aplicar avatar y colores'}<span aria-hidden="true">{draft === current ? '✓' : '→'}</span></button>
         <p className={`${s.feedback} ${error ? s.error : ''}`} role="status">{message}</p>
         {demo && <p className={s.demoNote}>Se reinicia al recargar</p>}
       </form>

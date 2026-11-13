@@ -1,10 +1,10 @@
 import { avatars } from '@/lib/avatars.mjs';
 
 /** Original vector family: soft silhouettes, forest outlines and warm pastel backdrops. */
-export default function AnimalAvatar({ id, className }: { id: string; className?: string }) {
+export default function AnimalAvatar({ id, className, width, height }: { id: string; className?: string; width?: number; height?: number }) {
   const avatar = avatars.find(item => item.id === id) || avatars[0];
   const ink = '#23483c';
-  return <svg viewBox="0 0 100 100" className={className} aria-hidden="true" fill="none">
+  return <svg viewBox="0 0 100 100" className={className} width={width} height={height} data-avatar={avatar.id} aria-hidden="true" fill="none">
     <rect width="100" height="100" rx="32" fill={avatar.color} />
     <circle cx="77" cy="21" r="14" fill="#fff" opacity=".25" />
     <path d="m17 23 2-5 2 5 5 2-5 2-2 5-2-5-5-2Z" fill="#fff" opacity=".7" />
