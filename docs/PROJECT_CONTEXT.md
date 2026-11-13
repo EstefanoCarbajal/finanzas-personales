@@ -1,5 +1,27 @@
 # Contexto y decisiones
 
+## Ajuste del avatar: tigre blanco · 13/11/2026
+
+- Por aclaración del usuario, el tigre representa la variante blanca del tigre de Bengala: pelaje blanco, matices gris perla y rayas negras. Catálogo y nombre accesible actualizados a «Tigre blanco de Bengala».
+- Se conservan el identificador tiger, su compatibilidad de almacenamiento y el tema Carbón. Cambio exclusivamente de ilustración y nombre; sin nuevas mutaciones de base, migraciones ni cambios de reglas.
+- Validación de esta corrección: build, typecheck y diff --check. Sin nueva prueba de navegador ni integración; el QA y las nueve pruebas locales del apartado anterior son evidencia de la entrega previa.
+
+## Tigre de Bengala y modo oscuro · 13/11/2026
+
+- Panda sustituido por un tigre de Bengala SVG original, conservando seis opciones y el estilo de la familia. Tema «Carbón · Modo oscuro»: carbón/grafito, texto marfil y acento ámbar; superficies, formularios, tarjetas, gráficos, mensajes y controles adaptados en las seis secciones. El modal conserva estructura e interacción; solo incorpora colores oscuros.
+- Vista previa limitada al menú hasta confirmar. Aplicar otro avatar restaura su tema claro. Demo permanece en memoria; privado conserva preferencia por usuario. Los colores semánticos mantienen significado con variantes legibles sobre fondos oscuros.
+- Compatibilidad deliberada: la aplicación usa tiger; profile.mjs traduce el valor histórico MySQL panda al leer y guarda tiger como panda en el ENUM existente. Preferencias antiguas pasan al tigre sin perderse. No se modifica ni ejecuta ninguna migración; no escribir directamente identificadores de UI en la tabla sin este adaptador.
+- Validación: build y typecheck correctos, nueve pruebas locales (incluidos contraste oscuro y compatibilidad de preferencias). Integración específica de perfil aprobada en la base exclusiva de pruebas, con aislamiento de usuarios ficticios y limpieza. Primer intento bloqueado por red del sandbox (EACCES); repetición con permisos ampliados correcta. No se reejecutó la integración general.
+- QA nuevo de demo: vista previa oscura antes de aplicar, confirmación, navegación por las seis secciones, modal de registro y regreso al koala claro. Inspección de escritorio y móvil a 320/390 px; mediciones sin desbordamiento horizontal y sin errores de consola registrados. Pendientes: QA privado autenticado, revisión completa por teclado/movimiento reducido y resto de condiciones de producción. Sin publicación ni datos financieros reales.
+
+## Movimientos: coherencia con el selector de avatar · 13/11/2026
+
+- Rediseño limitado a la sección principal de Movimientos, compartida por demo y privado: superficies, bordes de 25 px, controles de 13 px, paletas por avatar y elevación suave inspirados en el selector de perfil. Cabecera y aviso demo simplificados; formulario en su zona de color e historial debajo.
+- Filas como tarjetas, importes con colores semánticos y signos, fechas agrupadas, filtros compactos con etiquetas accesibles y vacío breve. Entrada escalonada global limitada a 245 ms, transiciones con curva elástica, hover y pulsación; movimiento reducido desactiva animaciones. No se inventan estados pendientes para movimientos registrados.
+- Modales y campos compartidos sin modificaciones; nuevos estilos acotados al workspace. Conservados filtros, CSV, cálculo BigInt, acciones y persistencia. Sin dependencias nuevas.
+- Verificación nueva: build, typecheck y siete pruebas locales correctos; revisión del diff y diff --check. Demo inspeccionada en escritorio (1440 px) y móvil (320/390 px), sin desbordamiento horizontal en las mediciones móviles. Filtro de ingresos devuelve un registro y balance S/ 4,200.00; transferencias sin resultados deshabilita CSV; limpiar restaura cuatro registros y S/ 3,963.00.
+- Pendientes: QA privado autenticado, teclado exhaustivo, seis temas y preferencia de movimiento reducido en navegador. No se ejecutaron integración remota, migraciones ni publicación; resultados históricos no sustituyen estas verificaciones.
+
 ## Objetivo
 Aplicación personal para registrar gastos e ingresos, categorías, dashboards, presupuestos, ahorros, pagos futuros, metas, puntos y canjes. Evolución posterior a producto para otros usuarios.
 
@@ -36,6 +58,20 @@ Transferencias y aportes de ahorro no deben inflar gastos. Pagos futuros se mant
 Conexión bancaria, IA, SMS/WhatsApp, cobros de suscripción, premios comerciales, planes familiares, varias monedas y cálculo de intereses de tarjetas.
 
 ## Memoria
+
+### Reconciliación de README y QA · 13/11/2026
+
+- Limitación adicional detectada por lectura: `scripts/check-access.mjs` conserva aserciones de textos anteriores del resumen («Tus cuentas» y «Movimientos guardados»). Pendiente actualizarlas antes de reutilizar el script; no se modificó ni ejecutó en esta entrega.
+- README y `docs/QA.md` ya reflejan módulos privados persistentes, límites de la demo, seis migraciones y comandos actuales. Se completa el pendiente documental detectado en la auditoría de AGENTS; las referencias anteriores a ese pendiente son históricas.
+- QA separa evidencia histórica, cobertura de scripts y plan de pruebas pendientes. La integración actual contiene ocho subpruebas en el archivo general y una prueba adicional de perfil; no consta reejecución conjunta tras añadir perfil. Las siete pruebas locales aprobadas pertenecen a la auditoría previa del mismo día.
+- Esta continuación solo modifica documentación y verifica diff/coherencia; no repite pruebas locales, build/typecheck, navegador, integración remota ni migraciones. Los pendientes privados y de producción siguen abiertos.
+
+### Auditoría de continuidad · 13/11/2026
+
+- `AGENTS.md` se amplía como guía operativa del estado actual, contrastada con código, migraciones, scripts, pruebas y documentación disponible. Resume arquitectura, módulos construidos, seguridad, reglas monetarias, preferencias visuales, comandos y pendientes. No implica acceso al historial completo de otros chats.
+- STATUS conserva entregas históricas; afirmaciones antiguas como «sin base de datos» no describen el estado vigente. README y recuentos de QA requieren actualización: cuentas/categorías ya se crean desde la interfaz, planificación/metas/hábitos privados ya persisten, y hay siete pruebas locales más integración específica de perfil. No hay motor de recurrencia automática de pagos.
+- La demo comparte vistas pero conserva planificación/metas ilustrativas; sus hábitos también se reinician al cambiar de sección. Los ejemplos son de noviembre de 2026. No confundir esta simulación con las acciones persistentes del panel privado.
+- Esta entrega es documental: siete pruebas locales aprobadas, sin compilación nueva, QA interactivo, integración remota, migraciones ni publicación. Los pendientes de producción y de revisión privada de los rediseños siguen abiertos.
 Este documento es el contexto persistente del proyecto, guardado en Git; no supone memoria automática de todos los chats. Actualizarlo cuando se acuerden cambios.
 
 - Perfil y temas por avatar del 13/11/2026: menú del topbar con seis animales SVG originales (koala, zorro, gato, panda, conejo y oso), apertura animada, vista previa, selección por teclado y confirmación «Aplicar avatar y colores». Cada avatar define una paleta completa (lima, durazno, lavanda, menta, rosa y arena) para sidebar, topbar, botones, fondos, resumen, movimientos/modal, cuentas, planificación, metas y hábitos. Mantener colores semánticos de ingresos, gastos y errores y el koala de marca. Respetar movimiento reducido y conservar acceso al cierre de sesión.

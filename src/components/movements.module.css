@@ -172,3 +172,102 @@
 .typeFilters button.activeFilter{background:var(--theme-deep);border-color:var(--theme-deep);color:#fff}
 .filteredBalance{background:var(--theme-soft);border-color:var(--theme-line)}
 .filteredBalance span,.filteredBalance small{color:var(--theme-muted)}
+
+/* Main Movimientos view: the avatar picker's surfaces and tactile controls.
+   Scoped to the workspace so modal fields retain their existing design. */
+.workspace { gap:22px; color:var(--theme-ink); }
+.workspace .composer,.workspace .ledger { border-radius:25px; box-shadow:0 4px 12px #153f3408; }
+.workspace .composer { padding:24px; }
+.workspace .composerHeading { margin-bottom:20px; gap:16px; }
+.workspace .composerHeading h2 { margin:0; font-size:26px; letter-spacing:-.6px; }
+.workspace .composerHeading p { margin-top:8px; font-size:12px; }
+.workspace .composerMascot { flex-basis:56px; height:56px; margin:0 8px 0 0; }
+.workspace .composerMascot>svg { width:56px; height:56px; border:3px solid #ffffff30; border-radius:20px; }
+.workspace .composerMascot>span { font-size:21px; top:-9px; right:-8px; }
+.workspace .composer .formFields { gap:16px 22px; }
+.workspace .composer .form input,.workspace .composer .form select { background:var(--theme-surface); color:var(--theme-ink); border-color:var(--theme-line); border-radius:13px; }
+.workspace .composer .amountInput { background:var(--theme-surface); border-color:var(--theme-line); }
+.workspace .composer .form .amountInput input { background:transparent; }
+.workspace .composer .amountInput>span { color:var(--theme-muted); }
+.workspace .composer .form .kindChoice { border-radius:15px; min-height:48px; }
+.workspace .composer .save { border:1px solid var(--theme-shade); border-radius:13px; }
+.workspace .composer .formFoot { display:none; }
+.workspace .ledger { padding:24px; background:var(--theme-surface); }
+.workspace .ledger h2 { margin:0; font-size:24px; }
+.workspace .export { min-height:44px; border-radius:13px; box-shadow:0 2px 0 var(--theme-line); }
+.workspace .export:disabled { opacity:.5; box-shadow:none; }
+.workspace .filters { margin:20px 0 12px; gap:10px; }
+.workspace .filters input,.workspace .filters select { margin:0; background:var(--theme-soft); color:var(--theme-ink); border-color:var(--theme-line); border-radius:13px; height:46px; }
+.workspace .filters input::placeholder { color:var(--theme-muted); opacity:1; }
+.workspace .search svg { top:14px; color:var(--theme-muted); pointer-events:none; }
+.workspace .typeFilters { border-color:var(--theme-line); gap:8px; padding-bottom:16px; }
+.workspace .typeFilters button { min-height:44px; border-radius:13px; color:var(--theme-muted); background:var(--theme-surface); }
+.workspace .typeFilters button.activeFilter { color:var(--theme-deep); background:var(--theme-accent); border-color:var(--theme-shade); box-shadow:0 2px 0 var(--theme-shade); }
+.workspace .results { color:var(--theme-muted); }
+.workspace .results button { min-height:44px; color:var(--theme-strong); }
+.workspace .dateHeading { padding:0 2px 10px; background:none; }
+.workspace .dateHeading h3 { font-size:12px; font-weight:800; }
+.workspace .dateHeading>span { display:none; }
+.workspace .dateGroup { margin-bottom:20px; }
+.workspace .dateGroup ul { display:grid; gap:8px; }
+.workspace .movementRow { padding:15px; gap:13px; border:1px solid var(--theme-line); border-radius:17px; background:var(--theme-surface); }
+.workspace .movementIcon { flex-basis:44px; height:44px; border-radius:15px; }
+.workspace .movementCopy>strong { font-size:15px; }
+.workspace .typeBadge { font-size:11px; border-radius:7px; padding:2px 8px; }
+.workspace .movementAmount { font-size:19px; letter-spacing:-.5px; }
+.workspace .incomeAmount { color:#386b38; }
+.workspace .expenseAmount { color:#89562c; }
+.workspace .transferAmount { color:#50618d; }
+.workspace .filteredBalance { border-radius:15px; padding:18px; }
+.workspace .filteredBalance>strong { font-size:24px; }
+.workspace .empty { padding:28px 16px; border:1px dashed var(--theme-line); border-radius:17px; background:var(--theme-soft); }
+.workspace .empty>span,.workspace .empty a { color:var(--theme-strong); }
+.workspace .empty h3 { margin:8px 0; }
+.workspace .empty p { font-size:13px; margin-bottom:12px; }
+.workspace .empty a { display:inline-flex; align-items:center; min-height:44px; }
+.srOnly { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+.workspace :is(button,a,input,select):focus-visible { outline:3px solid var(--theme-strong); outline-offset:3px; }
+.workspace .composer :is(button,input,select):focus-visible { outline-color:var(--theme-accent); }
+@media (prefers-reduced-motion:no-preference) {
+  .workspace .movementRow { animation:rowArrive .32s cubic-bezier(.2,.85,.25,1.15) backwards; animation-delay:var(--row-delay,0ms); transition:transform .22s cubic-bezier(.2,.85,.25,1.15),box-shadow .22s,border-color .22s,background .22s; }
+  .workspace :is(.export,.save,.kindChoice,.typeFilters button) { transition:transform .22s cubic-bezier(.2,.85,.25,1.15),box-shadow .22s,background .22s; }
+  .workspace button:active:not(:disabled) { transform:translateY(2px); }
+  @keyframes rowArrive { from { opacity:0; transform:translateY(10px) scale(.99); } to { opacity:1; transform:translateY(0) scale(1); } }
+}
+@media (hover:hover) and (pointer:fine) {
+  .workspace .movementRow:hover { transform:translateY(-2px); border-color:var(--theme-shade); background:var(--theme-soft); box-shadow:0 5px 14px #153f340c; }
+  .workspace :is(.export,.typeFilters button):hover:not(:disabled),.workspace .kindChoice:hover:not(:has(input:disabled)) { transform:translateY(-2px); box-shadow:0 0 0 3px color-mix(in srgb,var(--theme-accent) 30%,transparent); }
+}
+@media(max-width:600px) {
+  .workspace .composer,.workspace .ledger { padding:20px 16px; }
+  .workspace .composerHeading h2 { font-size:23px; }
+  .workspace .ledgerHeading { flex-wrap:nowrap; gap:10px; }
+  .workspace .ledger h2 { font-size:22px; }
+  .workspace .export { font-size:11px; }
+  .workspace .typeFilters { display:grid; grid-template-columns:1fr 1fr; }
+  .workspace .typeFilters button { font-size:12px; }
+  .workspace .movementRow { display:grid; grid-template-columns:36px minmax(0,1fr); gap:8px 10px; padding:12px; }
+  .workspace .movementIcon { width:36px; height:36px; border-radius:12px; }
+  .workspace .movementCopy { min-width:0; }
+  .workspace .movementAmount { grid-column:2; margin:0; font-size:18px; overflow-wrap:anywhere; }
+  .workspace .filteredBalance { gap:10px; }
+  .workspace .composer .formFields { gap:16px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .workspace * { animation:none!important; transition:none!important; }
+  .workspace .movementRow:hover,.workspace button:hover,.workspace .kindChoice:hover { transform:none; }
+}
+
+/* Dark palette, without changing component geometry. */
+:global([data-avatar-theme="tiger"]) .workspace .ledger { background:var(--theme-raised); }
+:global([data-avatar-theme="tiger"]) .workspace .movementRow { background:var(--theme-raised); }
+:global([data-avatar-theme="tiger"]) .workspace .movementRow:hover { background:var(--theme-soft); }
+:global([data-avatar-theme="tiger"]) .workspace :is(.incomeAmount,.success) { color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) .workspace .expenseAmount { color:var(--theme-expense); }
+:global([data-avatar-theme="tiger"]) .workspace .transferAmount { color:var(--theme-transfer); }
+:global([data-avatar-theme="tiger"]) .workspace :is(.movementIcon.income,.typeBadge.income,.composer .form .kindChoice.chosen.income) { background:var(--theme-incomeBg); color:var(--theme-income); border-color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) .workspace :is(.movementIcon.expense,.typeBadge.expense,.composer .form .kindChoice.chosen.expense) { background:var(--theme-expenseBg); color:var(--theme-expense); border-color:var(--theme-expense); }
+:global([data-avatar-theme="tiger"]) .workspace :is(.movementIcon.transfer,.typeBadge.transfer,.composer .form .kindChoice.chosen.transfer) { background:var(--theme-transferBg); color:var(--theme-transfer); border-color:var(--theme-transfer); }
+:global([data-avatar-theme="tiger"]) .workspace .composer .form .kindChoice.chosen.income { background:var(--theme-incomeBg); color:var(--theme-income); border-color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) .workspace .composer .error:not(:empty) { background:var(--theme-errorBg); color:var(--theme-error); }
+:global([data-avatar-theme="tiger"]) .workspace .composer .success { background:var(--theme-incomeBg); color:var(--theme-income); }

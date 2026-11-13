@@ -185,3 +185,16 @@
 .ring>div{box-shadow:0 0 0 5px var(--theme-surface)}
 .rewardTrack i{background:var(--theme-strong)}
 .weekStat>span{background:var(--theme-soft);color:var(--theme-strong)}
+
+/* Dark palette, without changing component geometry. */
+:global([data-avatar-theme="tiger"]) :is(.routine,.habit,.reward) { background:var(--theme-raised); }
+:global([data-avatar-theme="tiger"]) :is(.heroBadge,.heroMascot b,.cost,.usedBadge,.empty) { background:var(--theme-soft); color:var(--theme-ink); border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) :is(.period,.weekStat,.addDetails[open]>summary) { border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) :is(.createForm label,.createForm>p) { color:var(--theme-muted); }
+:global([data-avatar-theme="tiger"]) :is(.notice,.message,.completed) { color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) .actionButton:not(:disabled):hover { color:var(--theme-deep); }
+:global([data-avatar-theme="tiger"]) .actionButton:disabled { background:var(--theme-soft); color:var(--theme-muted); border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .heroMascot>svg { box-shadow:0 10px 0 var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .rewardTrack { background:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .habitIcon { background:var(--theme-soft); color:var(--theme-accent); }
+:global([data-avatar-theme="tiger"]) .rewardArt { background:var(--theme-soft); color:var(--theme-accent); }

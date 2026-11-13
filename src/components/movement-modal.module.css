@@ -75,3 +75,17 @@
 .save{background:var(--theme-accent);color:var(--theme-deep);border-color:var(--theme-shade);box-shadow:0 4px 0 var(--theme-shade)}
 .save:active:not(:disabled){box-shadow:0 1px 0 var(--theme-shade)}
 .formFoot{color:var(--theme-muted)}
+
+/* Dark palette, without changing component geometry. */
+:global([data-avatar-theme="tiger"]) .form { --accent:var(--theme-expense); --tint:var(--theme-expenseBg); --edge:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .form[data-kind=income] { --accent:var(--theme-income); --tint:var(--theme-incomeBg); }
+:global([data-avatar-theme="tiger"]) .form[data-kind=transfer] { --accent:var(--theme-transfer); --tint:var(--theme-transferBg); }
+:global([data-avatar-theme="tiger"]) .form :is(input,select) { background:var(--theme-soft); color:var(--theme-ink); }
+:global([data-avatar-theme="tiger"]) .form .amountInput input { background:transparent; color:var(--accent); }
+:global([data-avatar-theme="tiger"]) .form .amountLabel { background:var(--tint); }
+:global([data-avatar-theme="tiger"]) .form .kindChoice.chosen { background:var(--tint); color:var(--accent); border-color:var(--edge); }
+:global([data-avatar-theme="tiger"]) .error:not(:empty) { background:var(--theme-errorBg); color:var(--theme-error); border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .success { color:var(--theme-income); }
+
+:global([data-avatar-theme="tiger"]) .dialog::backdrop { background:#08090bc9; }
+:global([data-avatar-theme="tiger"]) .form .amountInput input::placeholder { color:var(--accent); opacity:1; }

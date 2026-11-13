@@ -20,3 +20,17 @@ test('every avatar palette has readable text, controls and light-on-dark labels'
   assert.equal(avatarTheme('unknown'), avatarTheme('koala'));
   assert.equal(avatarTheme('__proto__'), avatarTheme('koala'));
 });
+
+
+test('dark tiger surfaces and semantic feedback retain readable contrast', () => {
+  const theme = avatarTheme('tiger');
+  for (const surface of ['surface', 'soft', 'raised']) {
+    assert.ok(luminance(theme[surface]) < .06, surface + ' must remain dark');
+    for (const text of ['ink', 'muted', 'strong', 'income', 'expense', 'transfer', 'error']) {
+      assert.ok(contrast(theme[text], theme[surface]) >= 4.5, text + '/' + surface);
+    }
+  }
+  for (const kind of ['income', 'expense', 'transfer', 'error']) {
+    assert.ok(contrast(theme[kind], theme[kind + 'Bg']) >= 4.5, kind);
+  }
+});

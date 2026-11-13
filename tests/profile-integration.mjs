@@ -15,12 +15,12 @@ test('MySQL: avatars persist per user, reject invalid values and clean up with t
     for (const user of users) await pool.execute('INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)', [user, `avatar-${user}@example.invalid`, 'not-a-login-hash']);
     assert.equal(await readAvatar(pool, users[0]), 'koala');
     await saveAvatar(pool, users[0], 'fox');
-    await saveAvatar(pool, users[1], 'panda');
+    await saveAvatar(pool, users[1], 'tiger');
     assert.equal(await readAvatar(pool, users[0]), 'fox');
-    assert.equal(await readAvatar(pool, users[1]), 'panda');
+    assert.equal(await readAvatar(pool, users[1]), 'tiger');
     await saveAvatar(pool, users[0], 'rabbit');
     assert.equal(await readAvatar(pool, users[0]), 'rabbit');
-    assert.equal(await readAvatar(pool, users[1]), 'panda');
+    assert.equal(await readAvatar(pool, users[1]), 'tiger');
     await assert.rejects(saveAvatar(pool, users[0], 'invalid'));
     await assert.rejects(saveAvatar(pool, randomUUID(), 'koala'));
     await assert.rejects(pool.execute('UPDATE user_preferences SET avatar_id = ? WHERE user_id = ?', ['invalid', users[0]]));

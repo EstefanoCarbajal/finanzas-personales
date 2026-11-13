@@ -20,3 +20,18 @@ test('profile rejects invalid choices before writing and scopes reads/writes to 
   await saveAvatar(pool, 'owner-a', 'rabbit');
   assert.deepEqual(calls[1].values, ['owner-a', 'rabbit', 'rabbit']);
 });
+
+
+test('Bengal tiger replaces panda while preserving the deployed storage slot', async () => {
+  assert.equal(validAvatar('tiger'), true);
+  assert.equal(validAvatar('panda'), false);
+  const writes = [];
+  const pool = { execute: async (sql, values) => {
+    if (sql.startsWith('SELECT')) return [[{ avatar_id: 'panda' }], []];
+    writes.push(values); return [[], []];
+  } };
+  assert.equal(await readAvatar(pool, 'owner-a'), 'tiger');
+  await saveAvatar(pool, 'owner-a', 'tiger');
+  assert.deepEqual(writes, [['owner-a', 'panda', 'panda']]);
+  await assert.rejects(saveAvatar(pool, 'owner-a', 'panda'));
+});

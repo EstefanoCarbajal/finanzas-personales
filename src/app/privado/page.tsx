@@ -49,7 +49,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
           <section className="panel summary-next"><div className="panel-heading"><div><h2>Accesos rápidos</h2></div></div><div className="summary-links">{sections.slice(1).map(item => <a className="summary-link" key={item} href={`/privado?seccion=${item}`}><span aria-hidden="true">{sectionIcons[item]}</span><strong>{sectionLabels[item]}</strong><span aria-hidden="true">→</span></a>)}</div></section>
         </>}
         {section === 'movimientos' && data && <>
-          <section className="page-heading"><div><span className="eyebrow">TU ACTIVIDAD FINANCIERA</span><h1>Movimientos</h1><p>Registra y encuentra ingresos, gastos y transferencias.</p></div></section>
+          <section className="page-heading"><div><h1>Movimientos</h1></div></section>
           <MovementsWorkspace form={<MovementForm accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />}><MovementsTable movements={data.movements} /></MovementsWorkspace>
         </>}
         {section === 'cuentas' && data && <>

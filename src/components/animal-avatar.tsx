@@ -3,7 +3,7 @@ import { avatars } from '@/lib/avatars.mjs';
 /** Original vector family: soft silhouettes, forest outlines and warm pastel backdrops. */
 export default function AnimalAvatar({ id, className, width, height }: { id: string; className?: string; width?: number; height?: number }) {
   const avatar = avatars.find(item => item.id === id) || avatars[0];
-  const ink = '#23483c';
+  const ink = avatar.id === 'tiger' ? '#17191c' : '#23483c';
   return <svg viewBox="0 0 100 100" className={className} width={width} height={height} data-avatar={avatar.id} aria-hidden="true" fill="none">
     <rect width="100" height="100" rx="32" fill={avatar.color} />
     <circle cx="77" cy="21" r="14" fill="#fff" opacity=".25" />
@@ -27,12 +27,16 @@ export default function AnimalAvatar({ id, className, width, height }: { id: str
         <ellipse cx="50" cy="69" rx="17" ry="11" fill="#edeafb" stroke="none" />
         <path d="m46 62 4 4 4-4Z" fill={ink} /><path d="m24 62-10-2m11 9-9 3m60-10 10-2m-11 9 9 3" />
       </>}
-      {avatar.id === 'panda' && <>
-        <circle cx="28" cy="34" r="12" fill={ink} /><circle cx="72" cy="34" r="12" fill={ink} />
-        <ellipse cx="50" cy="57" rx="31" ry="28" fill="#faf9ec" />
-        <ellipse cx="37" cy="54" rx="9" ry="12" transform="rotate(25 37 54)" fill="#55766a" stroke="none" />
-        <ellipse cx="63" cy="54" rx="9" ry="12" transform="rotate(-25 63 54)" fill="#55766a" stroke="none" />
-        <ellipse cx="50" cy="65" rx="5" ry="3" fill={ink} />
+      {avatar.id === 'tiger' && <>
+        <circle cx="27" cy="34" r="12" fill="#e8ebee" /><circle cx="73" cy="34" r="12" fill="#e8ebee" />
+        <circle cx="27" cy="34" r="6" fill="#d9dce1" /><circle cx="73" cy="34" r="6" fill="#d9dce1" />
+        <path d="M20 53c0-18 13-26 30-26s30 8 30 26v8c0 16-14 25-30 25S20 77 20 61Z" fill="#f7f8fa" />
+        <path d="M26 62c6-5 17-4 24 2 7-6 18-7 24-2-1 14-12 21-24 21S27 76 26 62Z" fill="#ffffff" stroke="none" />
+        <g fill={ink} stroke="none">
+          <path d="m45 28 5 17 5-17ZM32 32l9 12-3-14ZM68 32l-9 12 3-14Z" />
+          <path d="m21 45 12 5-12 2ZM20 56l12 2-11 5ZM79 45l-12 5 12 2ZM80 56l-12 2 11 5Z" />
+        </g>
+        <path d="m45 63 5 5 5-5Z" fill={ink} /><path d="M50 68v5m-19-5-9-1m9 6-8 2m46-7 9-1m-9 6 8 2" strokeWidth="1.8" />
       </>}
       {avatar.id === 'rabbit' && <>
         <path d="M30 43C13-4 42 5 43 39M57 39C58 5 87-4 70 43" fill="#fff5e9" />
@@ -48,7 +52,7 @@ export default function AnimalAvatar({ id, className, width, height }: { id: str
         <ellipse cx="50" cy="68" rx="15" ry="12" fill="#f5e9ce" stroke="none" />
         <ellipse cx="50" cy="63" rx="6" ry="4" fill={ink} />
       </>}
-      <g data-avatar-eyes="" stroke={avatar.id === 'panda' ? '#fffbed' : ink}>
+      <g data-avatar-eyes="" stroke={ink}>
         <path d="M37 53v3m26-3v3" strokeWidth="3.8" />
       </g>
       <path d="M44 72q6 6 12 0" />

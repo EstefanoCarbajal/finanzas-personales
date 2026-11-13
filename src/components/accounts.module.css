@@ -91,3 +91,19 @@
 .composer{background:var(--theme-surface)}
 .submit{background:var(--theme-deep);border-color:var(--theme-deep);color:#fff}
 .submit:hover{background:var(--theme-glow)}
+
+/* Dark palette, without changing component geometry. */
+:global([data-avatar-theme="tiger"]) :is(.accountCard,.categories,.composer[open],.empty) { background:var(--theme-raised); border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .workspace h2 { color:var(--theme-ink); }
+:global([data-avatar-theme="tiger"]) .hero h2 { color:var(--theme-ondark); }
+:global([data-avatar-theme="tiger"]) :is(.categoryGroup,.incomeGroup) { background:var(--theme-soft); border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) :is(.chips li,.incomeGroup .chips li) { background:var(--theme-raised); border-color:var(--theme-line); color:var(--theme-ink); }
+:global([data-avatar-theme="tiger"]) .categoryGroup h3 { color:var(--theme-expense); }
+:global([data-avatar-theme="tiger"]) .incomeGroup h3 { color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) :is(.categoryGroup h3>span,.emptyCategory,.formFields label,.feedback) { color:var(--theme-muted); }
+:global([data-avatar-theme="tiger"]) .formFields :is(input,select) { background:var(--theme-soft); color:var(--theme-ink); }
+:global([data-avatar-theme="tiger"]) .negative,.error { color:var(--theme-error); }
+:global([data-avatar-theme="tiger"]) .success { color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) .submit { background:var(--theme-accent); color:var(--theme-deep); border-color:var(--theme-shade); }
+:global([data-avatar-theme="tiger"]) .submit:hover { background:var(--theme-accent); }
+:global([data-avatar-theme="tiger"]) .frontCard { background:var(--theme-soft); border-color:var(--theme-line); }

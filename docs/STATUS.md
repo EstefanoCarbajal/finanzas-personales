@@ -1,5 +1,45 @@
 # Estado al 13 de noviembre de 2026
 
+## Ajuste del avatar: tigre blanco · 13/11/2026
+
+- Por aclaración del usuario, el tigre representa la variante blanca del tigre de Bengala: pelaje blanco, matices gris perla y rayas negras. Catálogo y nombre accesible actualizados a «Tigre blanco de Bengala».
+- Se conservan el identificador tiger, su compatibilidad de almacenamiento y el tema Carbón. Cambio exclusivamente de ilustración y nombre; sin nuevas mutaciones de base, migraciones ni cambios de reglas.
+- Validación de esta corrección: build, typecheck y diff --check. Sin nueva prueba de navegador ni integración; el QA y las nueve pruebas locales del apartado anterior son evidencia de la entrega previa.
+
+## Tigre de Bengala y modo oscuro · 13/11/2026
+
+- Panda sustituido por un tigre de Bengala SVG original, conservando seis opciones y el estilo de la familia. Tema «Carbón · Modo oscuro»: carbón/grafito, texto marfil y acento ámbar; superficies, formularios, tarjetas, gráficos, mensajes y controles adaptados en las seis secciones. El modal conserva estructura e interacción; solo incorpora colores oscuros.
+- Vista previa limitada al menú hasta confirmar. Aplicar otro avatar restaura su tema claro. Demo permanece en memoria; privado conserva preferencia por usuario. Los colores semánticos mantienen significado con variantes legibles sobre fondos oscuros.
+- Compatibilidad deliberada: la aplicación usa tiger; profile.mjs traduce el valor histórico MySQL panda al leer y guarda tiger como panda en el ENUM existente. Preferencias antiguas pasan al tigre sin perderse. No se modifica ni ejecuta ninguna migración; no escribir directamente identificadores de UI en la tabla sin este adaptador.
+- Validación: build y typecheck correctos, nueve pruebas locales (incluidos contraste oscuro y compatibilidad de preferencias). Integración específica de perfil aprobada en la base exclusiva de pruebas, con aislamiento de usuarios ficticios y limpieza. Primer intento bloqueado por red del sandbox (EACCES); repetición con permisos ampliados correcta. No se reejecutó la integración general.
+- QA nuevo de demo: vista previa oscura antes de aplicar, confirmación, navegación por las seis secciones, modal de registro y regreso al koala claro. Inspección de escritorio y móvil a 320/390 px; mediciones sin desbordamiento horizontal y sin errores de consola registrados. Pendientes: QA privado autenticado, revisión completa por teclado/movimiento reducido y resto de condiciones de producción. Sin publicación ni datos financieros reales.
+
+## Movimientos: coherencia con el selector de avatar · 13/11/2026
+
+- Rediseño limitado a la sección principal de Movimientos, compartida por demo y privado: superficies, bordes de 25 px, controles de 13 px, paletas por avatar y elevación suave inspirados en el selector de perfil. Cabecera y aviso demo simplificados; formulario en su zona de color e historial debajo.
+- Filas como tarjetas, importes con colores semánticos y signos, fechas agrupadas, filtros compactos con etiquetas accesibles y vacío breve. Entrada escalonada global limitada a 245 ms, transiciones con curva elástica, hover y pulsación; movimiento reducido desactiva animaciones. No se inventan estados pendientes para movimientos registrados.
+- Modales y campos compartidos sin modificaciones; nuevos estilos acotados al workspace. Conservados filtros, CSV, cálculo BigInt, acciones y persistencia. Sin dependencias nuevas.
+- Verificación nueva: build, typecheck y siete pruebas locales correctos; revisión del diff y diff --check. Demo inspeccionada en escritorio (1440 px) y móvil (320/390 px), sin desbordamiento horizontal en las mediciones móviles. Filtro de ingresos devuelve un registro y balance S/ 4,200.00; transferencias sin resultados deshabilita CSV; limpiar restaura cuatro registros y S/ 3,963.00.
+- Pendientes: QA privado autenticado, teclado exhaustivo, seis temas y preferencia de movimiento reducido en navegador. No se ejecutaron integración remota, migraciones ni publicación; resultados históricos no sustituyen estas verificaciones.
+
+## README y QA reconciliados · 13/11/2026
+
+- Inspección de `scripts/check-access.mjs`: las aserciones de contenido aún buscan textos del resumen anterior. Se documenta en QA y AGENTS su actualización pendiente antes de reusarlo; sin cambios de código ni ejecución HTTP.
+- README actualizado con funcionalidades construidas, diferencias privado/demo, rutas, arquitectura, seis migraciones y configuración/ejecución segura. Retiradas las afirmaciones de que cuentas/categorías no se crean y de que planificación/metas aún son futuras; recurrencia automática se mantiene como no implementada.
+- QA conserva el escenario privado aprobado del 11/11 y resume la evidencia histórica de integración, módulos, demo y perfil. Añade cobertura actual (siete pruebas locales; ocho subpruebas de integración general más perfil), límites de esa evidencia, preparación/limpieza de fixtures y plan autenticado pendiente. No se declara una reejecución conjunta de integración tras añadir perfil.
+- AGENTS y contexto sincronizados: completado el pendiente de actualizar README/QA. Permanecen QA privado de rediseños, zoom, Excel, Node 24/Hostinger, respaldo/restauración, recuperación de acceso y HTTPS/cookies de producción.
+- Validación de esta continuación documental: revisión cruzada con scripts y estado, enlaces locales y `git diff --check`. No se repitieron npm test, build/typecheck, navegador, integración remota ni migraciones; el resultado local 7/7 sigue siendo el de la auditoría anterior del mismo día. Sin publicación. Cambio previo de `next-env.d.ts` conservado.
+
+## Auditoría documental y guía de agentes · 13/11/2026
+
+- `AGENTS.md` actualizado tras contrastar contexto/estado, README/QA, package.json, rutas, componentes compartidos, acciones privadas, lógica de dominio, configuración de conexión, seis migraciones, scripts y pruebas. Incluye arquitectura implementada, módulos privados frente a demo, reglas de seguridad/dinero, diseño aprobado y validaciones exigidas. El bloque administrado por Next.js se conserva íntegro.
+- Estado vigente: seis módulos privados y perfil persistente, base exclusiva de pruebas en Hostinger, demo aislada en memoria; sin publicación ni autorización para datos financieros reales. Esta auditoría no vuelve a comprobar conectividad, esquema remoto ni permisos ejecutados en Hostinger; distingue esas verificaciones históricas de la inspección actual.
+- Discrepancias documentales localizadas: README aún niega creación de cuentas/categorías y propone módulos persistentes ya construidos como próxima entrega; QA mantiene recuentos iniciales de pruebas. Se registra su actualización como pendiente, sin reescribir los resultados históricos. No existe recurrencia automática de pagos; planificación y metas de demo son ilustrativas.
+- Validación nueva: `npm test` correcto, **7/7** pruebas locales. Entrega exclusivamente documental: no se ejecutaron build/typecheck, QA de navegador, integración remota ni migraciones. Revisión final con `git diff --check`. Se conserva el cambio previo de `next-env.d.ts`, ajeno a esta entrega. Trabajo sobre la rama de mejora existente `codex/resumen-premium`.
+- Pendientes vigentes: QA privado ficticio de rediseños recientes (incluidos modal, perfil, estados de espera/error y logout), sidebar con zoom elevado, CSV en Excel, Node 24/Hostinger, respaldo/restauración, recuperación de acceso y HTTPS/cookies de producción. No convertir QA de demo o integración histórica en aprobación de producción.
+
+Los apartados siguientes conservan la evidencia de cada entrega en su fecha; las limitaciones de las primeras versiones no describen necesariamente el estado actual.
+
 ## Perfil animado y temas por avatar · 13/11/2026
 
 - Se completa el menú de perfil iniciado antes de la interrupción: seis avatares SVG originales, vista previa con entrada y parpadeo breve, opciones escalonadas, selección por teclado, Escape/cierre exterior y retorno de foco. Topbar con avatar ilustrado y botón de movimiento con detalle animado. Animaciones desactivadas con movimiento reducido. Menú disponible en demo y privado; acción original de cierre de sesión conservada.

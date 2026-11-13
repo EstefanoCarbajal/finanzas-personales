@@ -18,3 +18,22 @@
 @media(prefers-reduced-motion:no-preference) {
   .app-shell[data-avatar-theme],.app-shell[data-avatar-theme] :is(header,aside,section,article,button,a) { transition:background-color .3s,border-color .3s,color .3s,box-shadow .2s,transform .2s; }
 }
+
+/* Bengal tiger: dark surfaces, retaining the existing layout and semantics. */
+body:has(.app-shell[data-avatar-theme="tiger"]) { background:#1b1e22; color-scheme:dark; }
+.app-shell[data-avatar-theme="tiger"] { color-scheme:dark; --white:var(--theme-raised); }
+.app-shell[data-avatar-theme="tiger"] :is(h2,h3,h4,label) { color:var(--theme-ink); }
+.app-shell[data-avatar-theme="tiger"] :is(.panel,.goal-card,.goal-create-form,.planning-form,.summary-link) { background:var(--theme-raised); color:var(--theme-ink); }
+.app-shell[data-avatar-theme="tiger"] :is(input,select,textarea) { background:var(--theme-soft); color:var(--theme-ink); border-color:var(--theme-line); }
+.app-shell[data-avatar-theme="tiger"] :is(input,textarea)::placeholder { color:var(--theme-muted); }
+.app-shell[data-avatar-theme="tiger"] :is(.demo-note,.secondary,.payment-cancel,.reward-item) { background:var(--theme-soft); color:var(--theme-muted); border-color:var(--theme-line); }
+.app-shell[data-avatar-theme="tiger"] :is(.primary,.goal-contribution-form .primary) { background:var(--theme-accent); color:var(--theme-deep); box-shadow:0 3px 0 var(--theme-shade); }
+.app-shell[data-avatar-theme="tiger"] :is(.panel-foot,.upcoming,.goal-contribution-form,.reward-item) { border-color:var(--theme-line); }
+.app-shell[data-avatar-theme="tiger"] :is(.notice,.setup-message.success,.planning-message.success,.goal-message.success) { color:var(--theme-income); }
+.app-shell[data-avatar-theme="tiger"] .payment-confirm { background:var(--theme-incomeBg); color:var(--theme-income); }
+.app-shell[data-avatar-theme="tiger"] progress { background:var(--theme-soft); }
+.app-shell[data-avatar-theme="tiger"] progress::-webkit-progress-bar { background:var(--theme-soft); }
+.app-shell[data-avatar-theme="tiger"] footer { color:var(--theme-muted); }
+
+
+.app-shell[data-avatar-theme="tiger"] :is(.rewards p,.private-goal-feature>p) { color:var(--theme-muted); }

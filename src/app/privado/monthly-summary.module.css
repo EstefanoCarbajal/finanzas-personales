@@ -837,3 +837,17 @@ to {
 .textLink,.cardIcon{color:var(--theme-strong)}
 .insight{background:var(--theme-soft);border-color:var(--theme-line)}
 .insight>span,.empty>span{color:var(--theme-strong)}
+
+/* Dark palette, without changing component geometry. */
+:global([data-avatar-theme="tiger"]) :is(.monthControl,.metric,.card) { background:var(--theme-raised); color:var(--theme-ink); }
+:global([data-avatar-theme="tiger"]) .donut>div { background:var(--theme-raised); box-shadow:0 0 0 6px var(--theme-raised); }
+:global([data-avatar-theme="tiger"]) :is(.bar,.insight) { background:var(--theme-soft); }
+:global([data-avatar-theme="tiger"]) :is(.legend li,.activity li) { border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .inIcon { background:var(--theme-incomeBg); color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) .outIcon { background:var(--theme-expenseBg); color:var(--theme-expense); }
+:global([data-avatar-theme="tiger"]) .transferIcon { background:var(--theme-transferBg); color:var(--theme-transfer); }
+:global([data-avatar-theme="tiger"]) .incomeAmount { color:var(--theme-income); }
+:global([data-avatar-theme="tiger"]) .negative { background:var(--theme-expenseBg); border-color:var(--theme-line); }
+:global([data-avatar-theme="tiger"]) .negative small { color:var(--theme-expense); }
+:global([data-avatar-theme="tiger"]) .negative .metricLabel>span { background:var(--theme-expenseBg); color:var(--theme-expense); }
+:global([data-avatar-theme="tiger"]) .insight strong { color:var(--theme-ink); }

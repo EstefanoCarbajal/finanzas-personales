@@ -68,3 +68,7 @@
 @media(max-width:900px){.shell.shell{display:block}}
 
 @media(min-width:901px) and (max-height:1000px){.workspace{margin-top:22px;margin-bottom:18px}.navItem{min-height:54px}.encouragement{margin-top:22px;padding:16px}.encouragement h2{font-size:18px;margin-block:10px}.encouragement p{display:none}.goalLink{margin-top:12px}.profile{min-height:72px;padding-top:18px}}
+
+:global([data-avatar-theme="tiger"]) .sidebar { scrollbar-color:var(--theme-line) transparent; }
+:global([data-avatar-theme="tiger"]) .liveDot { background:var(--theme-accent); box-shadow:0 0 0 4px #efc58c12; }
+:global([data-avatar-theme="tiger"]) .drawer::backdrop { background:#08090bc9; }

@@ -45,7 +45,7 @@ export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvat
       <span className={s.triggerSpark} aria-hidden="true">✦</span>
       <svg className={s.chevron} width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m5 8 5 5 5-5" /></svg>
     </button>
-    <div ref={panel} id={id} popover="auto" className={s.panel} style={themeVariables(draft) as CSSProperties} aria-labelledby={`${id}-title`}
+    <div ref={panel} id={id} popover="auto" data-color-scheme={draft === 'tiger' ? 'dark' : 'light'} className={s.panel} style={themeVariables(draft) as CSSProperties} aria-labelledby={`${id}-title`}
       onToggle={event => {
         const visible = event.newState === 'open'; setOpen(visible);
         if (visible && !pending) { setDraft(current); setMessage(''); setError(false); }
