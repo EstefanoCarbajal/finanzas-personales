@@ -13,7 +13,7 @@
 .kindChoice>span { font-size:20px; }
 .form .kindChoice input { position:absolute; width:1px; height:1px; opacity:0; margin:0; padding:0; }
 .kindChoice:has(input:focus-visible) { outline:3px solid #8a9c43; outline-offset:3px; }
-.form .kindChoice.chosen { background:#fceddf; color:#a26737; border-color:#e3bc96; box-shadow:0 2px 0 #eed8c0; }
+.form .kindChoice.chosen { background:var(--theme-expenseBg); color:var(--theme-expense); border-color:var(--theme-expenseEdge); box-shadow:0 2px 0 var(--theme-expenseEdge); }
 .form .kindChoice.chosen.income { background:#ecf4db; color:#557c34; border-color:#afc789; box-shadow:0 2px 0 #dfebc8; }
 .form .kindChoice.chosen.transfer { background:#edf0fb; color:#6a79a7; border-color:#bbc4e3; box-shadow:0 2px 0 #e0e5f4; }
 .amountInput { display:flex; align-items:center; gap:10px; margin-top:7px; padding:12px 15px; border:1px solid #dde6d2; border-radius:14px; background:#f6f9ee; }
@@ -51,7 +51,7 @@
 .dateGroup ul { list-style:none; padding:0; margin:0; }
 .movementRow { display:flex; gap:11px; align-items:center; padding:17px 0; border-bottom:1px solid #edf1e8; min-width:0; }
 .movementIcon { flex:0 0 37px; height:37px; display:grid; place-items:center; border-radius:12px; font-size:21px; }
-.expense { color:#af7a3f; background:#fcf0df; }
+.expense { color:var(--theme-expense); background:var(--theme-expenseBg); }
 .income { color:#67883d; background:#edf5df; }
 .transfer { color:#7184ad; background:#edf1fb; }
 .movementCopy { min-width:0; flex:1; }
@@ -85,7 +85,7 @@
 .composer .form label,.composer .kindOptions legend { color:#d9e8d2; font-size:14px; }
 .composer .kindOptions { grid-column:1/-1; grid-row:1; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
 .composer .form .kindChoice { flex-direction:row; gap:9px; background:#ffffff09; border-color:#9fbd9a50; color:#caddc4; font-size:14px; padding:12px; box-shadow:none; }
-.composer .form .kindChoice.chosen { background:#fce9d5; border-color:#fce9d5; color:#89562c; box-shadow:0 3px 0 #041f1925; }
+.composer .form .kindChoice.chosen { background:var(--theme-expenseBg); border-color:var(--theme-expenseBg); color:var(--theme-expense); box-shadow:0 3px 0 #041f1925; }
 .composer .form .kindChoice.chosen.income { background:#d9efb0; border-color:#d9efb0; color:#456329; }
 .composer .form .kindChoice.chosen.transfer { background:#e3e9fc; border-color:#e3e9fc; color:#50618d; }
 .composer .amountLabel { grid-column:1; grid-row:2; }
@@ -165,7 +165,7 @@
 .composerMascot>span,.composerTip>span,.eyebrow{color:var(--theme-accent)}
 .composer .form .kindChoice{color:var(--theme-ondark)}
 .composer .save{background:var(--theme-accent);color:var(--theme-deep);box-shadow:0 3px 0 var(--theme-shade)}
-.composer .form .kindChoice.chosen{color:#89562c}.composer .form .kindChoice.chosen.income{color:#456329}.composer .form .kindChoice.chosen.transfer{color:#50618d}
+.composer .form .kindChoice.chosen{color:var(--theme-expense)}.composer .form .kindChoice.chosen.income{color:#456329}.composer .form .kindChoice.chosen.transfer{color:#50618d}
 .ledger,.export,.typeFilters button{border-color:var(--theme-line)}
 .export,.dateHeading{background:var(--theme-soft);color:var(--theme-ink)}
 .dateHeading h3,.kicker,.dateHeading>span{color:var(--theme-muted)}
@@ -216,7 +216,7 @@
 .workspace .typeBadge { font-size:11px; border-radius:7px; padding:2px 8px; }
 .workspace .movementAmount { font-size:19px; letter-spacing:-.5px; }
 .workspace .incomeAmount { color:#386b38; }
-.workspace .expenseAmount { color:#89562c; }
+.workspace .expenseAmount { color:var(--theme-expense); }
 .workspace .transferAmount { color:#50618d; }
 .workspace .filteredBalance { border-radius:15px; padding:18px; }
 .workspace .filteredBalance>strong { font-size:24px; }
@@ -297,3 +297,9 @@
 @media (hover:none) { .rowActions { opacity:1; transform:none; } }
 @media (prefers-reduced-motion:reduce) { .rowActions { transition:none; } }
 @media(max-width:600px) { .editSurface,.deleteSurface { padding:23px 20px max(23px,env(safe-area-inset-bottom)); }.dialogHeading h2,.deleteSurface h2 { font-size:22px; }.rowActions { grid-column:2; margin-left:0; }.rowActions button { width:40px; height:40px; }.deleteActions { flex-direction:column-reverse; }.keepButton,.deleteButton { width:100%; } }
+
+/* Expense amounts use the same red in the composer and editing dialog. */
+.form[data-kind=expense] .amountInput { background:var(--theme-expenseBg); border-color:var(--theme-expenseEdge); }
+.form[data-kind=expense] .amountInput>span,.form[data-kind=expense] .amountInput input { color:var(--theme-expense); }
+.workspace .composer .form[data-kind=expense] .amountInput { background:var(--theme-expenseBg); border-color:var(--theme-expenseEdge); }
+.workspace .composer .form[data-kind=expense] .amountInput>span,.workspace .composer .form[data-kind=expense] .amountInput input { color:var(--theme-expense); }

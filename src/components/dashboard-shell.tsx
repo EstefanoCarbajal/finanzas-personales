@@ -33,9 +33,9 @@ function Icon({ name }: { name: string }) {
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export default function DashboardShell({ active, demo = false, avatar = "koala", saveAvatarAction, onNavigate, sessionAction, children }: {
+export default function DashboardShell({ active, demo = false, avatar = "koala", saveAvatarAction, onNavigate, onNewMovement, sessionAction, children }: {
   active: NavigationId; demo?: boolean; avatar?: string; saveAvatarAction?: SaveAvatarAction;
-  onNavigate?: (section: NavigationId) => void; sessionAction?: ReactNode; children: ReactNode;
+  onNavigate?: (section: NavigationId) => void; onNewMovement: () => void; sessionAction?: ReactNode; children: ReactNode;
 }) {
   const drawer = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
@@ -81,7 +81,7 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
         </div>
         <div className={styles.topActions}>
           
-          {destination("movimientos", <><Icon name="plus" /><span>Nuevo movimiento</span></>, styles.register)}
+          <button type="button" className={styles.register} aria-haspopup="dialog" onClick={onNewMovement}><Icon name="plus" /><span>Nuevo movimiento</span></button>
           <ProfileMenu avatarId={avatar} demo={demo} onAvatarChange={setTheme} saveAvatarAction={saveAvatarAction} sessionAction={sessionAction} />
         </div>
       </header>

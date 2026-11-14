@@ -7,7 +7,6 @@ import { readPlanning } from '@/lib/planning.mjs';
 import { readGoals } from '@/lib/goals.mjs';
 import { readHabitDashboard } from '@/lib/habits.mjs';
 import { signOut } from '@/app/login/actions';
-import MovementForm from './movement-form';
 import MovementsWorkspace from '@/components/movements-workspace';
 import SetupForms from './setup-forms';
 import MovementsTable from './movements-table';
@@ -15,7 +14,7 @@ import SummaryWithRegistration from './summary-with-registration';
 import PlanningPanel from './planning-panel';
 import GoalsPanel from './goals-panel';
 import HabitsRewards from './habits-rewards';
-import DashboardShell from '@/components/dashboard-shell';
+import PrivateDashboardShell from './private-dashboard-shell';
 import AccountsWorkspace from '@/components/accounts-workspace';
 import { readAvatar } from '@/lib/profile.mjs';
 import { updateAvatar } from './profile-actions';
@@ -23,8 +22,6 @@ import { updateAvatar } from './profile-actions';
 export const dynamic = 'force-dynamic';
 const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'metas', 'habitos'] as const;
 type Section = typeof sections[number];
-const sectionLabels: Record<Section, string> = { resumen: 'Resumen', movimientos: 'Movimientos', cuentas: 'Cuentas', planificacion: 'Planificación', metas: 'Metas y ahorro', habitos: 'Hábitos y recompensas' };
-const sectionIcons: Record<Section, string> = { resumen: '◫', movimientos: '↔', cuentas: '▦', planificacion: '◷', metas: '◇', habitos: '✧' };
 
 export default async function PrivatePage({ searchParams }: { searchParams: Promise<{ seccion?: string | string[] }> }) {
   const user = await requireUser();
@@ -34,23 +31,21 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const avatar = await readAvatar(db(), user.id);
   const today = todayLima();
   const month = today.slice(0, 7);
-  const needsDashboard = section !== 'habitos';
-  const data = needsDashboard ? await readDashboard(db(), user.id) : null;
+  const data = await readDashboard(db(), user.id);
   const planning = section === 'planificacion' ? await readPlanning(db(), user.id, month) : null;
   const goals = section === 'metas' || section === 'resumen' ? await readGoals(db(), user.id) : null;
   const habits = section === 'habitos' ? await readHabitDashboard(db(), user.id, today) : null;
 
-  return <DashboardShell active={section} avatar={avatar} saveAvatarAction={updateAvatar} sessionAction={<form action={signOut}><button type="submit">Cerrar sesión</button></form>}>
+  return <PrivateDashboardShell active={section} avatar={avatar} saveAvatarAction={updateAvatar} accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} sessionAction={<form action={signOut}><button type="submit">Cerrar sesión</button></form>}>
       <div className="content">
         {section === 'resumen' && data && <>
           <section className="page-heading" id="resumen"><h1>Tu resumen</h1></section>
-          <SummaryWithRegistration movements={data.movements} currentMonth={month} balance={data.totals.balance} accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />
+          <SummaryWithRegistration movements={data.movements} currentMonth={month} balance={data.totals.balance} />
           {goals?.[0] && <section className="private-goal-feature"><div className="goal-top"><span className="eyebrow">TU META</span><span className="goal-symbol" aria-hidden="true">☀</span></div><h2>{goals[0].name}</h2><div className="goal-amount"><strong>{soles(goals[0].saved)}</strong><span>de {soles(goals[0].target_amount)}</span></div><progress aria-label={`Avance de ${goals[0].name}`} value={Math.min(100, Number(BigInt(goals[0].saved.replace('.', '')) * BigInt(100) / BigInt(goals[0].target_amount.replace('.', ''))))} max={100} /><div className="goal-bottom"><a href="/privado?seccion=metas">Ver meta →</a></div></section>}
-          <section className="panel summary-next"><div className="panel-heading"><div><h2>Accesos rápidos</h2></div></div><div className="summary-links">{sections.slice(1).map(item => <a className="summary-link" key={item} href={`/privado?seccion=${item}`}><span aria-hidden="true">{sectionIcons[item]}</span><strong>{sectionLabels[item]}</strong><span aria-hidden="true">→</span></a>)}</div></section>
         </>}
         {section === 'movimientos' && data && <>
           <section className="page-heading"><div><h1>Movimientos</h1></div></section>
-          <MovementsWorkspace form={<MovementForm accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />}><MovementsTable movements={data.movements} accounts={data.accounts} categories={data.categories} today={today} /></MovementsWorkspace>
+          <MovementsWorkspace><MovementsTable movements={data.movements} accounts={data.accounts} categories={data.categories} today={today} /></MovementsWorkspace>
         </>}
         {section === 'cuentas' && data && <>
           <section className="page-heading"><h1>Cuentas</h1></section>
@@ -61,5 +56,5 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         {section === 'habitos' && habits && <><section className="page-heading"><div><span className="eyebrow">PEQUEÑOS PASOS, TODOS LOS DÍAS</span><h1>Hábitos y recompensas</h1><p>Reconoce tus avances cotidianos y elige premios personales.</p></div></section><HabitsRewards data={habits} today={today} /></>}
         <footer>Hecho para avanzar a tu ritmo.<span>Tus datos están en tu espacio privado</span></footer>
       </div>
-  </DashboardShell>;
+  </PrivateDashboardShell>;
 }

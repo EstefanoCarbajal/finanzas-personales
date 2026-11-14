@@ -32,7 +32,7 @@ export default function MovementModal({ open, onClose, pending = false, demo = f
     <div className={s.surface}>
       <header className={s.heading}>
         <span className={s.mark} aria-hidden="true"><SelectedAvatar width={48} height={48} /><span>＋</span></span>
-        <div><span className={s.eyebrow}>{demo ? 'MODO DEMO' : 'UN PASO MÁS'}</span><h2 id={title}>Nuevo movimiento</h2></div>
+        <div className={s.headingCopy}>{demo && <span className={s.eyebrow}>MODO DEMO</span>}<h2 id={title}>Nuevo movimiento</h2></div>
         <button type="button" className={s.close} onClick={onClose} disabled={pending} aria-label="Cerrar formulario"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
       </header>
       {children}

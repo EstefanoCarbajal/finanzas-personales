@@ -2,14 +2,15 @@
 .dialog[open] { animation:arrive .24s cubic-bezier(.2,.8,.2,1); }
 .dialog::backdrop { background:#102f2bb3; backdrop-filter:blur(7px); }
 .surface { padding:27px 30px 24px; background:radial-gradient(ellipse at 0 0,#edf6dc80,transparent 50%),#fffefa; }
-.heading { display:flex; align-items:center; gap:13px; margin-bottom:25px; }
+.heading { display:flex; align-items:center; gap:13px; margin-bottom:20px; }
+.headingCopy { flex:1; min-width:0; }
 .mark { position:relative; flex:0 0 48px; height:48px; }
 .mark>svg { display:block; border-radius:16px; transform:rotate(-7deg); }
 .mark>span { position:absolute; right:-5px; bottom:-3px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; border:2px solid #fffefa; background:#244d3d; color:#ddf5ad; font-size:17px; font-weight:700; }
 .eyebrow { display:block; font-size:10px; letter-spacing:.12em; font-weight:800; color:#73805e; margin-bottom:6px; }
 .heading h2 { font-size:24px; font-weight:750; letter-spacing:-.85px; line-height:1.15; margin:0; }
 .close { flex:0 0 44px; height:44px; display:grid; place-items:center; margin-left:auto; border:1px solid #e5e9dd; border-radius:50%; color:#52694c; background:#f4f6ed; }
-.form { --accent:#a05530; --tint:#fff0e4; --edge:#edc6aa; margin:0; font-variant-numeric:tabular-nums; }
+.form { --accent:var(--theme-expense); --tint:var(--theme-expenseBg); --edge:var(--theme-expenseEdge); margin:0; font-variant-numeric:tabular-nums; }
 .form[data-kind=income] { --accent:#326a3c; --tint:#edf6df; --edge:#bdd7a0; }
 .form[data-kind=transfer] { --accent:#536aa0; --tint:#edf0ff; --edge:#c5ceee; }
 .formFields { display:grid; gap:16px; border:0; padding:0; margin:0; min-width:0; }
@@ -24,11 +25,11 @@
 .form input,.form select { width:100%; min-width:0; margin-top:6px; padding:11px 13px; min-height:46px; border:1px solid #dfe5d6; border-radius:12px; background:#fff; color:#284733; font-size:16px; line-height:1.5; transition:border-color .18s,box-shadow .18s; }
 .form input::placeholder { color:#8a947f; opacity:1; }
 .form input:focus-visible,.form select:focus-visible,.close:focus-visible,.save:focus-visible { outline:3px solid #729b4b; outline-offset:3px; }
-.form .amountLabel { display:block; text-align:center; border:1px solid var(--edge); border-radius:21px; background:radial-gradient(ellipse at 100% 0,#ffffff90,transparent),var(--tint); color:var(--accent); padding:15px 20px 18px; transition:background .2s,border-color .2s; }
-.amountInput { display:flex; justify-content:center; align-items:baseline; gap:9px; margin:3px auto 0; width:100%; }
+.form .amountLabel { display:block; text-align:center; border:1px solid var(--edge); border-radius:21px; background:radial-gradient(ellipse at 100% 0,#ffffff90,transparent),var(--tint); color:var(--accent); padding:18px 20px; transition:background .2s,border-color .2s; }
+.amountInput { display:flex; justify-content:center; align-items:baseline; gap:9px; margin:0 auto; width:100%; }
 .amountInput>span { font-size:25px; font-weight:750; }
 .form .amountInput input { width:100%; field-sizing:content; max-width:100%; min-width:0; min-height:0; margin:0; padding:0; border:0; background:transparent; font-size:clamp(38px,6vw,52px); font-weight:800; letter-spacing:-2px; text-align:center; color:var(--accent); border-radius:5px; line-height:1.2; }
-.form .amountInput input::placeholder { color:var(--accent); opacity:.45; }
+.form .amountInput input::placeholder { color:var(--accent); opacity:1; }
 .amountLabel:focus-within { outline:3px solid var(--edge); outline-offset:3px; }
 .form .amountInput input:focus-visible { outline:none; }
 .fieldPair { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; }
@@ -47,13 +48,13 @@
 @media(max-width:600px) {
   .dialog { width:calc(100% - 16px); max-height:calc(100dvh - 16px); margin:auto auto 8px; border-radius:26px; }
   .surface { padding:23px 21px max(23px,env(safe-area-inset-bottom)); }
-  .heading { gap:11px; margin-bottom:21px; }
+  .heading { gap:11px; margin-bottom:18px; }
   .heading h2 { font-size:22px; }
   .mark { flex-basis:42px; height:42px; }
   .mark>svg { width:42px; height:42px; border-radius:13px; }
   .formFields { gap:14px; }
   .form .kindChoice { gap:4px; font-size:12px; }
-  .form .amountLabel { padding:13px 14px 16px; }
+  .form .amountLabel { padding:16px 14px; }
   .fieldPair { gap:10px; }
 }
 @media(max-width:370px) {

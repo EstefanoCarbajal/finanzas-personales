@@ -22,15 +22,6 @@ const initial: Movement[] = [
 ];
 const money = (cents: number) => new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(cents / 100);
 
-const sections: { label: Section; icon: string }[] = [
-  { label: "Resumen", icon: "◫" },
-  { label: "Movimientos", icon: "↔" },
-  { label: "Cuentas", icon: "▤" },
-  { label: "Planificación", icon: "▦" },
-  { label: "Metas y ahorro", icon: "◇" },
-  { label: "Hábitos y recompensas", icon: "✧" },
-];
-
 
 export default function Dashboard() {
   const [section, setSection] = useState<Section>("Resumen");
@@ -50,17 +41,16 @@ export default function Dashboard() {
     setFormOpen(false);
     setNotice("Movimiento añadido a la demo. Se borrará al recargar la página.");
   }
-  return <DashboardShell demo active={navigation.find(item => item.label === section)!.id} onNavigate={id => { setSection(navigation.find(item => item.id === id)!.label); setNotice(""); }}>
+  return <DashboardShell demo active={navigation.find(item => item.label === section)!.id} onNewMovement={() => setFormOpen(true)} onNavigate={id => { setSection(navigation.find(item => item.id === id)!.label); setNotice(""); }}>
       <div className="content">
         <div className="page-heading"><div>{(section !== "Cuentas" && section !== "Resumen" && section !== "Movimientos") && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Tu resumen" : section}</h1>{(section !== "Cuentas" && section !== "Resumen" && section !== "Movimientos") && <p>{section === "Planificación" ? "Dale un lugar a cada compromiso antes de que llegue." : section === "Metas y ahorro" ? "Cada aporte te acerca un poco más a lo que quieres." : "Reconoce tus avances cotidianos y suma puntos virtuales."}</p>}</div></div>
         <div className="demo-note">{(section === "Cuentas" || section === "Resumen" || section === "Movimientos") ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
         <p className="notice" role="status">{notice}</p>
         {section === "Resumen" && <>
           <MonthlySummary currentMonth="2026-11" balance={((income - expense) / 100).toFixed(2)} demo onRegister={() => setFormOpen(true)} onViewMovements={() => setSection("Movimientos")} movements={sharedMovements} />
-          <section className="panel summary-next"><div className="panel-heading"><div><h2>Accesos rápidos</h2></div></div><div className="summary-links">{sections.slice(1).map(item => <button className="summary-link" key={item.label} onClick={() => setSection(item.label)}><span aria-hidden="true">{item.icon}</span><strong>{item.label}</strong><span aria-hidden="true">→</span></button>)}</div></section>
         </>}
 
-        {section === "Movimientos" && <MovementsWorkspace demo form={<DemoMovementForm onAdd={addMovement} accounts={accounts} categories={categories} />}><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
+        {section === "Movimientos" && <MovementsWorkspace><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
         {section === "Cuentas" && <AccountsDemo accounts={accounts} categories={categories} balances={accountTotals.accounts} balance={accountTotals.balance} onAddAccount={name => setAccounts(current => [...current, { id: crypto.randomUUID(), name }])} onAddCategory={(name, kind) => setCategories(current => [...current, { id: crypto.randomUUID(), name, kind }])} />}
 
         {section === "Planificación" && <div className="two-columns"><section className="panel"><div className="panel-heading"><div><h2>Presupuestos de ejemplo</h2><p>Un límite que te ayuda a decidir</p></div></div>{[{ name: "Alimentación", limit: 80000 }, { name: "Transporte", limit: 25000 }, { name: "Ocio", limit: 20000 }].map(b => { const spent = -movements.filter(m => m.category === b.name && m.amount < 0).reduce((s, m) => s + m.amount, 0); return <div className="budget" key={b.name}><div><strong>{b.name}</strong><span>{money(spent)} / {money(b.limit)}</span></div><progress aria-label={`Presupuesto de ${b.name}`} value={spent} max={Math.max(b.limit, spent)} /><small>{spent > b.limit ? `Exceso: ${money(spent - b.limit)}` : `Quedan ${money(b.limit - spent)}`}</small></div>; })}</section><section className="panel"><div className="panel-heading"><div><h2>Próximos pagos</h2><p>Ejemplos previstos, no descontados del saldo</p></div></div>{[{ day: "15", name: "Internet de casa", amount: 9900 }, { day: "20", name: "Suscripción de música", amount: 2090 }].map(p => <div className="upcoming" key={p.day}><span className="date-tile"><small>NOV</small>{p.day}</span><strong>{p.name}</strong><span>{money(p.amount)}</span></div>)}<p className="panel-foot">La confirmación de pagos está disponible en el espacio privado.</p></section></div>}

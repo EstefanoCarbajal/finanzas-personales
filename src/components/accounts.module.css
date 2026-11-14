@@ -27,7 +27,7 @@
 .accountCopy{min-width:0;flex:1}
 .accountCard h3{font:700 14px/1.4 var(--font-body);color:#61735e;overflow-wrap:anywhere}
 .accountBalance{display:block;margin-top:6px;color:#234838;font-size:clamp(23px,2.2vw,30px);font-weight:850;line-height:1.25;letter-spacing:-.8px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.negative{color:#a44e3a}
+.negative{color:var(--theme-expense)}
 .tone1{background:#f2f6e9;border-color:#dfe7d2}
 .tone1 .accountIcon{background:#e3edcc;border-color:#d3e1b6;color:#526c30}
 .tone2 .accountIcon{background:#faf1e1;border-color:#efe3cc;color:#927046}
@@ -44,8 +44,8 @@
 .composerBody{padding:4px 18px 14px}
 .categories{padding:24px;border:1px solid #e0e7d9;border-radius:24px;background:#fff}
 .categoryGroups{display:grid;grid-template-columns:1.35fr 1fr;gap:20px}
-.categoryGroup{min-width:0;padding:18px;border:1px solid #ede8dd;border-radius:17px;background:#fcfaf5}
-.categoryGroup h3{display:flex;align-items:center;gap:8px;font:800 12px var(--font-body);color:#805e3b}
+.categoryGroup{min-width:0;padding:18px;border:1px solid var(--theme-expenseEdge);border-radius:17px;background:var(--theme-expenseBg)}
+.categoryGroup h3{display:flex;align-items:center;gap:8px;font:800 12px var(--font-body);color:var(--theme-expense)}
 .categoryGroup h3 svg{width:16px;height:16px}
 .categoryGroup h3>span{margin-left:auto;font-size:11px;font-weight:650;color:#897b68}
 .incomeGroup{border-color:#e2e9d8;background:#f6f9f0}
@@ -107,3 +107,5 @@
 :global([data-avatar-theme="tiger"]) .submit { background:var(--theme-accent); color:var(--theme-deep); border-color:var(--theme-shade); }
 :global([data-avatar-theme="tiger"]) .submit:hover { background:var(--theme-accent); }
 :global([data-avatar-theme="tiger"]) .frontCard { background:var(--theme-soft); border-color:var(--theme-line); }
+
+.categoryGroup:not(.incomeGroup) .chips li { color:var(--theme-expense); border-color:var(--theme-expenseEdge); }

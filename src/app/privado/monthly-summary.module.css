@@ -246,8 +246,8 @@
   color:#487c32
 }
 .outIcon {
-  background:#fff0df;
-  color:#a56632
+  background:var(--theme-expenseBg);
+  color:var(--theme-expense)
 }
 .transferIcon {
   background:#edf0ff;
@@ -281,7 +281,7 @@
   transition:width .4s
 }
 .expenseBar i {
-  background:#efb16c
+  background:var(--theme-expenseBar)
 }
 .net {
   background:#e9f3cf;
@@ -309,14 +309,14 @@
   pointer-events:none
 }
 .negative {
-  background:#fff0e7;
-  border-color:#f0dac8
+  background:var(--theme-expenseBg);
+  border-color:var(--theme-expenseEdge)
 }
 .negative small {
-  color:#875635
+  color:var(--theme-expense)
 }
 .negative .netDecoration {
-  color:#f0cfb470
+  color:color-mix(in srgb,var(--theme-expense) 20%,transparent)
 }
 .details {
   display:grid;
@@ -519,12 +519,6 @@
   font-size:12px;
   color:var(--quiet);
   max-width:260px
-}
-.footnote {
-  font-size:10px;
-  color:var(--quiet);
-  text-align:center;
-  margin:-13px 0 0
 }
 .summary button:focus-visible,.summary a:focus-visible {
   outline:3px solid #7f983b;
@@ -745,10 +739,6 @@
 .activity b {
   font-size:12px
 }
-.footnote {
-  line-height:1.7;
-  padding:0 10px
-}
 .cta {
   font-size:11px
 }
@@ -805,7 +795,6 @@ to {
 .activity b { font-size: 13px; }
 .insight strong { font-size: 14px; }
 .insight p, .empty p { font-size: 13px; line-height: 1.7; }
-.footnote { font-size: 12px; line-height: 1.7; }
 @media (max-width: 1150px) {
   .cardHeading .kicker { font-size: 10px; letter-spacing: .05em; }
 }
@@ -851,3 +840,7 @@ to {
 :global([data-avatar-theme="tiger"]) .negative small { color:var(--theme-expense); }
 :global([data-avatar-theme="tiger"]) .negative .metricLabel>span { background:var(--theme-expenseBg); color:var(--theme-expense); }
 :global([data-avatar-theme="tiger"]) .insight strong { color:var(--theme-ink); }
+
+.expenseAmount { color:var(--theme-expense); }
+
+.expenseMetric>strong,.negative>strong { color:var(--theme-expense); }
