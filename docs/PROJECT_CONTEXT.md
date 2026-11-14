@@ -1,5 +1,34 @@
 # Contexto y decisiones
 
+## Edición y eliminación de movimientos · 14/11/2026
+
+- La sección privada de Movimientos permite editar o eliminar registros desde cada fila. Editar conserva el mismo formulario visual dentro de un diálogo, precarga tipo, importe, descripción, cuentas, categoría y fecha, y mantiene los datos si el servidor devuelve un error. Eliminar requiere una confirmación explícita.
+- `src/lib/repository.mjs` valida y persiste actualizaciones/eliminaciones con el `userId` de `requireUser()`, transacciones y bloqueos. No se aceptan IDs de cuentas, categorías o movimientos ajenos. Los aportes de metas no se pueden editar/eliminar para conservar la coherencia de su progreso.
+- El rediseño añade acciones contextuales, mejor jerarquía visual y estados táctiles sin alterar demo, CSV, filtros, cálculo exacto con céntimos ni la regla de transferencias como una sola fila.
+- Estado de validación de esta entrega: typecheck y build correctos; `npm test` 8/9 por la aserción histórica `fox: deep/accent`; `git diff --check` correcto. QA privado autenticado e integración remota siguen pendientes.
+
+## Rediseño de acceso con constelación de avatares · 13/11/2026
+
+- `/login` ahora usa una composición de alto impacto visual con identidad propia: escenario verde/lima, marca koala, mensaje de bienvenida, tarjeta de acceso elevada y enlace secundario a la demo.
+- Los seis avatares SVG existentes se muestran como decoración orbital alrededor del login; son elementos `aria-hidden` y no alteran autenticación, persistencia ni datos. Se conserva el tigre blanco y el catálogo vigente.
+- El formulario mantiene `useActionState`, validación HTML, estados de espera/error y deshabilitado cuando la base no está configurada. Los estilos quedan encapsulados en `src/app/login/login.module.css`, con responsive para móvil, foco visible y movimiento reducido.
+- Validación nueva: `npm run typecheck`, `npm run build` y `git diff --check` correctos. `npm test` ejecutó 8 de 9 pruebas; falló la aserción preexistente de contraste `fox: deep/accent`, relacionada con los cambios locales de paleta de avatar y no con el login. El primer intento de build/test fue bloqueado por `spawn EPERM` del sandbox y terminó correctamente al repetir con permisos ampliados. La revisión visual en navegador quedó pendiente porque el controlador de Windows no pudo identificar con suficiente confianza la URL de la ventana existente; no se inició sesión ni se tocaron datos.
+
+## Ajuste de colores profundos de zorro, oso y gato · 13/11/2026
+
+- El tema del zorro usa `--theme-deep: #995439`, el del oso `#7b6341` y el del gato `#4b416b`. Se conservan las demás variables, la coneja y los otros avatares.
+- Validación realizada: typecheck, build y diff --check; sin cambios de datos ni migraciones.
+
+## Ajuste del color profundo de la coneja · 13/11/2026
+
+- El tema Rosa suave de la coneja usa `--theme-deep: #83546b` en lugar de `#603c4e`. El resto de la paleta y los demás avatares no cambian.
+- Validación realizada: typecheck, build y diff --check; sin cambios de datos ni migraciones.
+
+## Ajuste de mejillas de avatares · 13/11/2026
+
+- Se retiró el rubor de las ilustraciones de koala, zorro y tigre. Se conserva en gato, conejo y oso; no cambian catálogos, temas, persistencia ni reglas.
+- Validación realizada: typecheck, build y diff --check; sin cambios de datos ni migraciones. El primer build fue bloqueado por `spawn EPERM` del sandbox y el segundo terminó correctamente con permisos ampliados.
+
 
 ## Ajuste del avatar: tigre blanco · 13/11/2026
 

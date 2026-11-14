@@ -46,6 +46,48 @@ export async function saveMovement(pool, userId, input) {
   } finally { connection.release(); }
 }
 
+async function validateMovementReferences(connection, userId, value) {
+  const [accounts] = await connection.execute('SELECT id FROM accounts WHERE user_id = ? AND id IN (?, ?) FOR UPDATE', [userId, value.account_id, value.destination_id]);
+  if (accounts.length !== (value.kind === 'transfer' ? 2 : 1)) throw new InputError('La cuenta seleccionada no está disponible.');
+  if (value.category_id) {
+    const [[category]] = await connection.execute('SELECT id FROM categories WHERE user_id = ? AND id = ? AND kind = ? FOR UPDATE', [userId, value.category_id, value.kind]);
+    if (!category) throw new InputError('La categoría no corresponde a este movimiento.');
+  }
+}
+
+export async function updateMovement(pool, userId, movementId, input) {
+  if (!uuid(movementId)) throw new InputError('El movimiento seleccionado no es válido.');
+  const value = validateMovement(input);
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [[movement]] = await connection.execute('SELECT id FROM movements WHERE user_id = ? AND id = ? FOR UPDATE', [userId, movementId]);
+    if (!movement) throw new InputError('No encontramos ese movimiento. Actualiza la página e inténtalo de nuevo.');
+    const [[linked]] = await connection.execute('SELECT movement_id FROM goal_contributions WHERE user_id = ? AND movement_id = ? FOR UPDATE', [userId, movementId]);
+    if (linked) throw new InputError('Este movimiento pertenece a un aporte de meta y no se puede editar.');
+    await validateMovementReferences(connection, userId, value);
+    await connection.execute(`UPDATE movements SET kind = ?, account_id = ?, destination_id = ?, category_id = ?, amount = ?, description = ?, occurred_on = ? WHERE user_id = ? AND id = ?`,
+      [value.kind, value.account_id, value.destination_id, value.category_id, value.amount, value.description, value.occurred_on, userId, movementId]);
+    await connection.commit();
+  } catch (error) { await connection.rollback(); throw error; }
+  finally { connection.release(); }
+}
+
+export async function deleteMovement(pool, userId, movementId) {
+  if (!uuid(movementId)) throw new InputError('El movimiento seleccionado no es válido.');
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [[movement]] = await connection.execute('SELECT id FROM movements WHERE user_id = ? AND id = ? FOR UPDATE', [userId, movementId]);
+    if (!movement) throw new InputError('No encontramos ese movimiento. Actualiza la página e inténtalo de nuevo.');
+    const [[linked]] = await connection.execute('SELECT movement_id FROM goal_contributions WHERE user_id = ? AND movement_id = ? FOR UPDATE', [userId, movementId]);
+    if (linked) throw new InputError('Este movimiento pertenece a un aporte de meta y no se puede eliminar.');
+    await connection.execute('DELETE FROM movements WHERE user_id = ? AND id = ?', [userId, movementId]);
+    await connection.commit();
+  } catch (error) { await connection.rollback(); throw error; }
+  finally { connection.release(); }
+}
+
 export async function readDashboard(pool, userId) {
   const [accounts] = await pool.execute('SELECT id, name FROM accounts WHERE user_id = ? ORDER BY name', [userId]);
   const [categories] = await pool.execute('SELECT id, name, kind FROM categories WHERE user_id = ? ORDER BY name', [userId]);

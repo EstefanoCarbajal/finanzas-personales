@@ -50,7 +50,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         </>}
         {section === 'movimientos' && data && <>
           <section className="page-heading"><div><h1>Movimientos</h1></div></section>
-          <MovementsWorkspace form={<MovementForm accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />}><MovementsTable movements={data.movements} /></MovementsWorkspace>
+          <MovementsWorkspace form={<MovementForm accounts={data.accounts} categories={data.categories} today={today} requestId={randomUUID()} />}><MovementsTable movements={data.movements} accounts={data.accounts} categories={data.categories} today={today} /></MovementsWorkspace>
         </>}
         {section === 'cuentas' && data && <>
           <section className="page-heading"><h1>Cuentas</h1></section>

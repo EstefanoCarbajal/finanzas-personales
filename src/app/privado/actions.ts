@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/server/auth';
 import { db } from '@/server/db';
-import { InputError, saveMovement } from '@/lib/repository.mjs';
+import { deleteMovement, InputError, saveMovement, updateMovement } from '@/lib/repository.mjs';
 import { randomUUID } from 'node:crypto';
 import { cancelPayment, PlanningInputError, saveBudget, schedulePayment, settlePayment } from '@/lib/planning.mjs';
 import { contributeToGoal, createGoal, GoalInputError } from '@/lib/goals.mjs';
@@ -18,6 +18,28 @@ export async function addMovement(_previous: { message: string; success: boolean
   }
   revalidatePath('/privado');
   return { message: 'Movimiento guardado.', success: true };
+}
+
+export async function editMovement(_previous: { message: string; success: boolean }, form: FormData) {
+  const user = await requireUser();
+  try {
+    await updateMovement(db(), user.id, form.get('movement_id'), Object.fromEntries(form));
+  } catch (error) {
+    return { message: error instanceof InputError ? error.message : 'No pudimos actualizar el movimiento. Inténtalo de nuevo.', success: false };
+  }
+  revalidatePath('/privado');
+  return { message: 'Movimiento actualizado.', success: true };
+}
+
+export async function removeMovement(form: FormData) {
+  const user = await requireUser();
+  try {
+    await deleteMovement(db(), user.id, form.get('movement_id'));
+  } catch (error) {
+    return { message: error instanceof InputError ? error.message : 'No pudimos eliminar el movimiento. Inténtalo de nuevo.', success: false };
+  }
+  revalidatePath('/privado');
+  return { message: 'Movimiento eliminado.', success: true };
 }
 
 async function createOwnedName(table: 'accounts' | 'categories', userId: string, name: unknown, kind?: unknown) {

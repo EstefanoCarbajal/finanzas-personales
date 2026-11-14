@@ -56,7 +56,7 @@ export default function AnimalAvatar({ id, className, width, height }: { id: str
         <path d="M37 53v3m26-3v3" strokeWidth="3.8" />
       </g>
       <path d="M44 72q6 6 12 0" />
-      <g fill="#e9a79a" opacity=".65" stroke="none"><ellipse cx="30" cy="65" rx="5" ry="3" /><ellipse cx="70" cy="65" rx="5" ry="3" /></g>
+      {['cat', 'rabbit', 'bear'].includes(avatar.id) && <g fill="#e9a79a" opacity=".65" stroke="none"><ellipse cx="30" cy="65" rx="5" ry="3" /><ellipse cx="70" cy="65" rx="5" ry="3" /></g>}
     </g>
   </svg>;
 }

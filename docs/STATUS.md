@@ -1,5 +1,34 @@
 # Estado al 13 de noviembre de 2026
 
+## Edición y eliminación de movimientos · 14/11/2026
+
+- La vista privada de Movimientos ahora muestra acciones de editar y eliminar por fila: discretas al pasar el cursor, visibles al enfocarlas y siempre disponibles en dispositivos táctiles. La edición abre un diálogo compacto con los datos precargados; eliminar exige confirmación y muestra el impacto sobre el saldo.
+- Añadidas `editMovement` y `removeMovement` como Server Actions. El repositorio valida propietario, cuentas, categorías, fechas e importes dentro de transacciones con bloqueo; los saldos, resumen y filtros se recalculan mediante `revalidatePath`.
+- Los movimientos que respaldan aportes a metas quedan protegidos para evitar inconsistencias entre una transferencia y el progreso de la meta; se informa la razón al usuario. No se modifican migraciones ni se añaden dependencias.
+- Validación nueva: `npm run typecheck`, `npm run build` y `git diff --check` correctos. `npm test` ejecutó 9 pruebas: 8 correctas y 1 fallida en `avatar-theme.test.mjs` por la aserción preexistente `fox: deep/accent`; no se ejecutó QA privado, integración remota ni revisión visual nueva.
+
+## Rediseño de acceso con constelación de avatares · 13/11/2026
+
+- Rediseñados `src/app/login/page.tsx` y `src/app/login/login-form.tsx`; añadido `src/app/login/login.module.css`.
+- La pantalla deja el panel centrado anterior y pasa a una composición editorial: marca koala, titular de bienvenida, tarjeta privada con campos renovados, CTA principal, enlace a demo y seis avatares decorativos orbitando alrededor. La decoración no es interactiva ni transmite información.
+- Se conservan las acciones de servidor, mensajes de autenticación, límite de configuración de base y enlace `/demo`. Se añadieron placeholders, jerarquía de labels, estados de foco, media queries para 390 px y movimiento reducido.
+- Comprobaciones realizadas: `npm run typecheck`, `npm run build` y `git diff --check`. Build final correcto con permisos ampliados después de un `spawn EPERM` inicial del sandbox. `npm test` ejecutó 9 pruebas: 8 correctas y 1 fallida en `avatar-theme.test.mjs` por `fox: deep/accent`, una aserción de contraste asociada a los cambios locales de paleta previos, no al login. No se ejecutaron pruebas de integración ni QA privado; la inspección visual con navegador quedó pendiente por bloqueo del controlador de Windows al no poder determinar la URL de la ventana existente.
+
+## Ajuste de colores profundos de zorro, oso y gato · 13/11/2026
+
+- Actualizados los valores de `--theme-deep`: zorro `#995439`, oso `#7b6341` y gato `#4b416b`.
+- Cambio limitado a la paleta visual; no afecta persistencia, reglas ni migraciones. Validación realizada: typecheck, build y diff --check.
+
+## Ajuste del color profundo de la coneja · 13/11/2026
+
+- Actualizado el valor de `--theme-deep` de la coneja a `#83546b`, aplicado desde `src/lib/avatar-themes.mjs`.
+- No se modifican las demás variables de la paleta ni otros avatares. Validación realizada: typecheck, build y diff --check.
+
+## Ajuste de mejillas de avatares · 13/11/2026
+
+- El rubor SVG ahora se muestra únicamente en gato, conejo y oso; se eliminó visualmente de koala, zorro y tigre.
+- Cambio acotado a `src/components/animal-avatar.tsx`; no afecta datos, temas ni persistencia. Validación realizada: typecheck, build y diff --check. El primer build fue bloqueado por `spawn EPERM` del sandbox y el segundo terminó correctamente con permisos ampliados.
+
 ## Ajuste del avatar: tigre blanco · 13/11/2026
 
 - Por aclaración del usuario, el tigre representa la variante blanca del tigre de Bengala: pelaje blanco, matices gris perla y rayas negras. Catálogo y nombre accesible actualizados a «Tigre blanco de Bengala».

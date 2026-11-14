@@ -1,19 +1,30 @@
 'use client';
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useActionState, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { soles, decimal, toCents } from '@/lib/money.mjs';
 import s from '@/components/movements.module.css';
+import MovementForm from './movement-form';
+import { removeMovement } from './actions';
+import type { MovementAccount, MovementCategory } from '@/components/movement-fields';
 
-export type PrivateMovement = { id: string; kind: string; description: string; occurred_on: string; amount: string; account_name: string; destination_name: string | null; category_name: string | null };
+export type PrivateMovement = { id: string; kind: string; description: string; occurred_on: string; amount: string; account_id: string; destination_id: string | null; category_id?: string | null; account_name: string; destination_name: string | null; category_name: string | null };
 const kinds: Record<string, string> = { income: 'Ingreso', expense: 'Gasto', transfer: 'Transferencia' };
 const icons: Record<string, string> = { income: '↙', expense: '↗', transfer: '↔' };
 const dateName = (date: string, options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('es-PE', { ...options, timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 const safeCell = (value: string) => `"${(/^[=+@\-\t\r]/.test(value) ? `'${value}` : value).replaceAll('"', '""')}"`;
 
-export default function MovementsTable({ movements, demo = false }: { movements: PrivateMovement[]; demo?: boolean }) {
+export default function MovementsTable({ movements, demo = false, accounts = [], categories = [], today = '' }: { movements: PrivateMovement[]; demo?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[]; today?: string }) {
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState('all');
   const [month, setMonth] = useState('all');
+  const [editing, setEditing] = useState<PrivateMovement | null>(null);
+  const [removing, setRemoving] = useState<PrivateMovement | null>(null);
+  const editDialog = useRef<HTMLDialogElement>(null);
+  const removeDialog = useRef<HTMLDialogElement>(null);
+  const [removeState, removeAction, removePending] = useActionState((_previous: { message: string; success: boolean }, form: FormData) => removeMovement(form), { message: '', success: false });
+  useEffect(() => { if (editing) editDialog.current?.showModal(); }, [editing]);
+  useEffect(() => { if (removing) removeDialog.current?.showModal(); }, [removing]);
+  useEffect(() => { if (removeState.success) setRemoving(null); }, [removeState.success]);
   const months = useMemo(() => [...new Set(movements.map(m => m.occurred_on.slice(0, 7)))].sort().reverse(), [movements]);
   const filtered = useMemo(() => movements.filter(m => {
     const text = `${m.description} ${m.account_name} ${m.destination_name || ''} ${m.category_name || ''}`.toLocaleLowerCase('es-PE');
@@ -37,8 +48,14 @@ export default function MovementsTable({ movements, demo = false }: { movements:
     <div className={s.filters}><label className={s.search}><span className={s.srOnly}>Buscar movimientos</span><div><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Descripción, cuenta o categoría" /></div></label><label><span className={s.srOnly}>Mes</span><select value={month} onChange={event => setMonth(event.target.value)}><option value="all">Todos los meses</option>{months.map(value => <option key={value} value={value}>{dateName(`${value}-01`, { month: 'long', year: 'numeric' })}</option>)}</select></label></div>
     <div className={s.typeFilters} role="group" aria-label="Filtrar por tipo de movimiento">{[['all', 'Todos'], ['income', 'Ingresos'], ['expense', 'Gastos'], ['transfer', 'Transferencias']].map(([value, label]) => <button key={value} aria-pressed={kind === value} className={kind === value ? s.activeFilter : ''} onClick={() => setKind(value)}>{value !== 'all' && <span aria-hidden="true">{icons[value]}</span>}{label}</button>)}</div>
     <div className={s.results}><span aria-live="polite">{filtered.length} {filtered.length === 1 ? 'movimiento' : 'movimientos'}{hasFilters ? (filtered.length === 1 ? ' encontrado' : ' encontrados') : ''}</span>{hasFilters && <button onClick={resetFilters}>Limpiar filtros ×</button>}</div>
-    <div className={s.groups}>{[...groups].map(([date, items]) => <section className={s.dateGroup} key={date} aria-label={dateName(date, { dateStyle: 'full' })}><div className={s.dateHeading}><h3>{dateName(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h3><span>{items.length} {items.length === 1 ? 'movimiento' : 'movimientos'}</span></div><ul>{items.map(m => <li key={m.id} className={s.movementRow} style={{ "--row-delay": `${Math.min(rowOrder.get(m.id) ?? 0, 7) * 35}ms` } as CSSProperties}><span className={`${s.movementIcon} ${s[m.kind]}`} aria-hidden="true">{icons[m.kind]}</span><div className={s.movementCopy}><strong>{m.description}</strong><span>{m.account_name}{m.kind === 'transfer' ? ` → ${m.destination_name || 'Cuenta de destino'}` : ` · ${m.category_name || kinds[m.kind]}`}</span><small className={`${s.typeBadge} ${s[m.kind]}`}>{kinds[m.kind]}</small></div><strong className={`${s.movementAmount} ${m.kind === 'income' ? s.incomeAmount : m.kind === 'expense' ? s.expenseAmount : s.transferAmount}`}>{m.kind === 'income' ? '+' : m.kind === 'expense' ? '−' : ''}{soles(m.amount)}</strong></li>)}</ul></section>)}</div>
+    <div className={s.groups}>{[...groups].map(([date, items]) => <section className={s.dateGroup} key={date} aria-label={dateName(date, { dateStyle: 'full' })}><div className={s.dateHeading}><h3>{dateName(date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h3><span>{items.length} {items.length === 1 ? 'movimiento' : 'movimientos'}</span></div><ul>{items.map(m => <li key={m.id} className={s.movementRow} style={{ "--row-delay": `${Math.min(rowOrder.get(m.id) ?? 0, 7) * 35}ms` } as CSSProperties}><span className={`${s.movementIcon} ${s[m.kind]}`} aria-hidden="true">{icons[m.kind]}</span><div className={s.movementCopy}><strong>{m.description}</strong><span>{m.account_name}{m.kind === 'transfer' ? ` → ${m.destination_name || 'Cuenta de destino'}` : ` · ${m.category_name || kinds[m.kind]}`}</span><small className={`${s.typeBadge} ${s[m.kind]}`}>{kinds[m.kind]}</small></div><strong className={`${s.movementAmount} ${m.kind === 'income' ? s.incomeAmount : m.kind === 'expense' ? s.expenseAmount : s.transferAmount}`}>{m.kind === 'income' ? '+' : m.kind === 'expense' ? '−' : ''}{soles(m.amount)}</strong>{!demo && <div className={s.rowActions}><button type="button" onClick={() => setEditing(m)} aria-label={`Editar ${m.description}`} title="Editar">✎</button><button type="button" className={s.dangerAction} onClick={() => setRemoving(m)} aria-label={`Eliminar ${m.description}`} title="Eliminar">×</button></div>}</li>)}</ul></section>)}</div>
     {!filtered.length && <div className={s.empty}><span aria-hidden="true">{movements.length ? '⌕' : '↔'}</span><h3>{movements.length ? 'Sin resultados' : 'Aún no hay movimientos'}</h3><p>{movements.length ? 'Prueba otra búsqueda o limpia los filtros.' : 'Tu primer registro aparecerá aquí.'}</p>{hasFilters ? <button className={s.export} onClick={resetFilters}>Ver todos los movimientos</button> : <a href="#movement-entry">Registrar movimiento ↗</a>}</div>}
     {!!filtered.length && <div className={s.filteredBalance}><div><span>Balance de selección</span><small>Ingresos menos gastos · Transferencias excluidas</small></div><strong>{soles(decimal(net))}</strong></div>}
+    <dialog ref={editDialog} className={s.editDialog} onClose={() => setEditing(null)} onCancel={() => setEditing(null)}>
+      {editing && <div className={s.editSurface}><div className={s.dialogHeading}><div><span className={s.eyebrow}>AJUSTA LOS DETALLES</span><h2>Editar movimiento</h2></div><button type="button" className={s.dialogClose} onClick={() => editDialog.current?.close()} aria-label="Cerrar edición">×</button></div><MovementForm key={editing.id} accounts={accounts} categories={categories} today={today} requestId={crypto.randomUUID()} modal editingMovement={{ ...editing, category_id: editing.category_id ?? null }} onSuccess={() => editDialog.current?.close()} onCancel={() => editDialog.current?.close()} /></div>}
+    </dialog>
+    <dialog ref={removeDialog} className={s.deleteDialog} onClose={() => setRemoving(null)} onCancel={() => setRemoving(null)}>
+      {removing && <div className={s.deleteSurface}><span className={s.deleteIcon} aria-hidden="true">!</span><h2>¿Eliminar este movimiento?</h2><p><strong>{removing.description}</strong><br />{soles(removing.amount)} · {dateName(removing.occurred_on, { day: 'numeric', month: 'long', year: 'numeric' })}</p><p className={s.deleteHint}>Esta acción actualizará tus saldos y no se puede deshacer.</p>{removeState.message && !removeState.success && <p className={s.deleteError} role="alert">{removeState.message}</p>}<form action={removeAction}><input type="hidden" name="movement_id" value={removing.id} /><div className={s.deleteActions}><button type="button" className={s.keepButton} onClick={() => removeDialog.current?.close()} disabled={removePending}>Conservar</button><button type="submit" className={s.deleteButton} disabled={removePending}>{removePending ? 'Eliminando…' : 'Sí, eliminar'}</button></div></form></div>}
+    </dialog>
   </section>;
 }

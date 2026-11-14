@@ -41,6 +41,7 @@
 .save>span { display:grid; place-items:center; width:24px; height:24px; border-radius:50%; background:#22483210; }
 .save:active:not(:disabled) { transform:translateY(3px); box-shadow:0 1px 0 #9dbf63; }
 .save:disabled { box-shadow:none; }
+.cancel { width:100%; min-height:42px; margin-top:9px; border:0; background:transparent; color:#758269; font-size:13px; font-weight:750; }
 .formFoot { margin:0; text-align:center; font-size:11px; color:#758269; line-height:1.4; }
 @keyframes arrive { from { opacity:0; transform:translateY(14px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
 @media(max-width:600px) {
@@ -75,6 +76,7 @@
 .save{background:var(--theme-accent);color:var(--theme-deep);border-color:var(--theme-shade);box-shadow:0 4px 0 var(--theme-shade)}
 .save:active:not(:disabled){box-shadow:0 1px 0 var(--theme-shade)}
 .formFoot{color:var(--theme-muted)}
+.cancel{color:var(--theme-muted)}
 
 /* Dark palette, without changing component geometry. */
 :global([data-avatar-theme="tiger"]) .form { --accent:var(--theme-expense); --tint:var(--theme-expenseBg); --edge:var(--theme-line); }
