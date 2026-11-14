@@ -109,3 +109,63 @@
 :global([data-avatar-theme="tiger"]) .frontCard { background:var(--theme-soft); border-color:var(--theme-line); }
 
 .categoryGroup:not(.incomeGroup) .chips li { color:var(--theme-expense); border-color:var(--theme-expenseEdge); }
+
+/* Wallet cards: the decoration is deliberately abstract, not a real card number. */
+.accountGrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:16px}
+.accountCard,.accountCard.tone1,.accountCard.tone2,:global([data-avatar-theme="tiger"]) .accountCard{position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:stretch;gap:0;min-width:0;min-height:220px;padding:21px 23px;overflow:hidden;border:1px solid #ffffff32;border-radius:23px;background:linear-gradient(135deg,var(--theme-deep),var(--theme-glow));box-shadow:0 12px 25px #142d261c,inset 0 1px #ffffff24;color:#fff;transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,border-color .3s}
+.accountCard.tone1{background:linear-gradient(135deg,#334f51,#64857b)}
+.accountCard.tone2{background:linear-gradient(135deg,#50475f,#86718c)}
+.accountCard::before,.accountCard::after{position:absolute;z-index:-1;content:"";pointer-events:none;border:1px solid #ffffff20;border-radius:50%;width:230px;height:230px;right:-95px;top:-105px;box-shadow:0 0 0 28px #ffffff09,0 0 0 58px #ffffff08,0 0 0 90px #ffffff06}
+.accountCard::after{width:160px;height:160px;right:auto;left:-110px;top:auto;bottom:-130px;box-shadow:0 0 0 28px #ffffff08,0 0 0 58px #ffffff06}
+.accountCard:hover{transform:translateY(-5px) rotate(-.35deg);border-color:#ffffff70;box-shadow:0 20px 32px #142d2630,inset 0 1px #ffffff40}
+.accountCard.dragging{transform:scale(1.035) rotate(1deg);z-index:2;box-shadow:0 24px 42px #142d2645;opacity:.85}
+.cardTop,.cardMiddle,.cardBottom{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cardBrand{display:flex;align-items:center;gap:7px;color:#ffffffd9;font-size:10px;font-weight:900;letter-spacing:.14em}
+.brandMark{display:grid;place-items:center;width:25px;height:25px;border:1px solid #ffffff50;border-radius:9px;color:#fff;font-size:14px}
+.dragHandle,.orderControls button{display:grid;place-items:center;border:1px solid #ffffff40;background:#ffffff12;color:#fff;cursor:pointer}
+.dragHandle{width:38px;height:38px;border-radius:12px;touch-action:none;cursor:grab;font-size:21px;line-height:1}
+.dragHandle:active{cursor:grabbing}
+.cardMiddle{justify-content:flex-start;gap:11px;margin:14px 0 17px}
+.cardChip{position:relative;width:35px;height:26px;overflow:hidden;border:1px solid #fff8;border-radius:6px;background:linear-gradient(135deg,#eadfa9,#b5a56b)}
+.cardChip::before,.cardChip::after,.cardChip i{position:absolute;content:"";border:1px solid #877c5570}
+.cardChip::before{inset:6px 10px;border-radius:4px}.cardChip::after{left:0;right:0;top:12px}.cardChip i{left:16px;top:0;bottom:0}
+.contactless{color:#ffffffb5;font-size:16px;letter-spacing:-3px;transform:rotate(90deg)}
+.cardBottom{align-items:flex-end;margin-top:auto}
+.accountCard h3,.accountCard .accountCopy h3{color:#fff;font:800 16px/1.25 var(--font-body);overflow-wrap:anywhere}
+.balanceLabel{display:block;margin-top:11px;color:#ffffffb8;font-size:9px;font-weight:800;letter-spacing:.12em}
+.accountCard .accountBalance,.accountCard .accountBalance:not(.negative){margin-top:3px;color:#fff;font-size:clamp(22px,2vw,28px);line-height:1.15;letter-spacing:-.7px}
+.accountCard .accountBalance.negative{color:#ffe0dc}
+.orderControls{display:flex;gap:5px;flex-shrink:0}
+.orderControls button{width:32px;height:32px;border-radius:10px;font-size:16px}
+.orderControls button:hover:not(:disabled),.dragHandle:hover{background:#ffffff30}
+.orderControls button:disabled{opacity:.3;cursor:default}
+.workspace :is(.dragHandle,.orderControls button):focus-visible{outline-color:#fff;outline-offset:2px}
+.orderNote{margin:10px 2px 0;color:var(--theme-muted);font-size:11px}
+.srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:700px){.accountGrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}}
+@media(max-width:480px){.accountGrid{grid-template-columns:1fr}.accountCard,.accountCard.tone1,.accountCard.tone2{min-height:210px;padding:20px 22px}.accountCard .accountBalance{font-size:27px}}
+@media(prefers-reduced-motion:reduce){.accountCard{transition:none}.accountCard:hover,.accountCard.dragging{transform:none}}
+
+/* Creation occupies a card in the same grid and expands in place. */
+.accountGrid{align-items:start}
+.newAccountCard{min-width:0;overflow:hidden;border:1.5px dashed var(--theme-shade);border-radius:23px;background:var(--theme-surface);transition:border-color .25s,box-shadow .25s,background .25s}
+.newAccountCard>summary{position:relative;display:flex;min-height:217px;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:20px;overflow:hidden;list-style:none;text-align:center;cursor:pointer}
+.newAccountCard>summary::-webkit-details-marker{display:none}
+.newAccountCard>summary::before,.newAccountCard>summary::after{position:absolute;content:"";width:150px;height:150px;border:1px solid var(--theme-line);border-radius:50%;pointer-events:none;opacity:.65}
+.newAccountCard>summary::before{top:-93px;right:-52px;box-shadow:0 0 0 22px var(--theme-soft),0 0 0 23px var(--theme-line)}
+.newAccountCard>summary::after{bottom:-120px;left:-55px}
+.newAccountCard:hover,.newAccountCard[open]{border-color:var(--theme-strong);background:var(--theme-soft);box-shadow:0 12px 25px #142d2614}
+.newCardArt{position:relative;display:grid;place-items:center;width:76px;height:53px;margin-bottom:8px;border:1px solid var(--theme-shade);border-radius:13px;background:var(--theme-surface);box-shadow:0 6px 14px #142d2614;transform:rotate(-8deg);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.newCardArt::before{position:absolute;content:"";inset:0;border:1px solid var(--theme-shade);border-radius:13px;background:var(--theme-soft);transform:rotate(16deg);z-index:0}
+.newCardArt>span{position:relative;z-index:1;display:grid;place-items:center;width:33px;height:33px;border-radius:11px;background:var(--theme-deep);color:var(--theme-ondark)}
+.newCardArt svg{width:18px;height:18px}
+.newAccountCard:hover .newCardArt,.newAccountCard[open] .newCardArt{transform:rotate(0deg) translateY(-3px)}
+.newAccountCard summary strong{position:relative;color:var(--theme-ink);font-size:16px;font-weight:850}
+.newCardCaption{position:relative;color:var(--theme-muted);font-size:12px;line-height:1.4}
+.newCardToggle{position:absolute;right:16px;bottom:12px;color:var(--theme-strong);font-size:20px;line-height:1;transition:transform .25s}
+.newAccountCard[open] .newCardToggle{transform:rotate(180deg)}
+.newAccountForm{padding:0 20px 20px}
+.newAccountForm .formFields label,.newAccountForm .submit{flex:1 1 100%}
+.newAccountForm .submit{width:100%}
+@media(max-width:480px){.newAccountCard>summary{min-height:207px}.newAccountForm{padding:0 18px 18px}}
+@media(prefers-reduced-motion:reduce){.newAccountCard,.newCardArt,.newCardToggle{transition:none}.newAccountCard:hover .newCardArt,.newAccountCard[open] .newCardArt{transform:rotate(-8deg)}}

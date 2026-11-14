@@ -20,11 +20,12 @@ function DemoSetupForm({ category = false, existing, onCreate }: { category?: bo
   return <form onSubmit={submit}><AccountSetupFields category={category} name={name} onNameChange={setName} kind={kind} onKindChange={setKind} message={feedback.message} success={feedback.success} /></form>;
 }
 
-export default function AccountsDemo({ accounts, categories, balances, balance, onAddAccount, onAddCategory }: {
+export default function AccountsDemo({ accounts, categories, balances, balance, onAddAccount, onAddCategory, saveOrder }: {
   accounts: Account[]; categories: Category[]; balances: Record<string, string>; balance: string;
   onAddAccount: (name: string) => void; onAddCategory: (name: string, kind: string) => void;
+  saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>;
 }) {
-  return <AccountsWorkspace accounts={accounts} categories={categories} balances={balances} balance={balance}
+  return <AccountsWorkspace accounts={accounts} categories={categories} balances={balances} balance={balance} saveOrder={saveOrder}
     accountForm={<DemoSetupForm existing={accounts} onCreate={onAddAccount} />}
     categoryForm={<DemoSetupForm category existing={categories} onCreate={onAddCategory} />} />;
 }

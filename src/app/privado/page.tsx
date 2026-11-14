@@ -18,6 +18,7 @@ import PrivateDashboardShell from './private-dashboard-shell';
 import AccountsWorkspace from '@/components/accounts-workspace';
 import { readAvatar } from '@/lib/profile.mjs';
 import { updateAvatar } from './profile-actions';
+import { updateAccountOrder } from './actions';
 
 export const dynamic = 'force-dynamic';
 const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'metas', 'habitos'] as const;
@@ -49,7 +50,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         </>}
         {section === 'cuentas' && data && <>
           <section className="page-heading"><h1>Cuentas</h1></section>
-          <AccountsWorkspace accounts={data.accounts} categories={data.categories} balances={data.totals.accounts} balance={data.totals.balance} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
+          <AccountsWorkspace accounts={data.accounts} categories={data.categories} balances={data.totals.accounts} balance={data.totals.balance} saveOrder={updateAccountOrder} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
         </>}
         {section === 'planificacion' && data && planning && <><section className="page-heading"><div><span className="eyebrow">PLANIFICA CON CALMA</span><h1>Planificación</h1><p>Presupuestos y pagos futuros en un solo lugar.</p></div></section><PlanningPanel accounts={data.accounts} categories={data.categories} budgets={planning.budgets} payments={planning.payments} month={month} today={today} /></>}
         {section === 'metas' && data && goals && <><section className="page-heading"><div><span className="eyebrow">AHORRA A TU MANERA</span><h1>Metas y ahorro</h1><p>Define un objetivo y avanza con aportes entre tus cuentas.</p></div></section><GoalsPanel accounts={data.accounts} goals={goals} today={today} /></>}

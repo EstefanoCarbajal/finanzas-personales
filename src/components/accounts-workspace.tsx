@@ -1,9 +1,10 @@
 import SelectedAvatar from '@/components/selected-avatar';
 import type { ReactNode } from 'react';
 import { soles } from '@/lib/money.mjs';
+import AccountCards from './account-cards';
 import s from './accounts.module.css';
 
-export type Account = { id: string; name: string };
+export type Account = { id: string; name: string; sort_order?: number | null };
 export type Category = Account & { kind: string };
 
 export function AccountIcon({ name = 'wallet' }: { name?: string }) {
@@ -16,9 +17,10 @@ function WalletArt() {
   return <div className={s.walletArt} aria-hidden="true"><span className={s.orbit} /><span className={s.artSpark}>✦</span><div className={s.backCard}><i /></div><div className={s.frontCard}><SelectedAvatar width={36} height={36} /><span className={s.cardLines}><i /><i /></span></div><span className={s.artDot} /></div>;
 }
 
-export default function AccountsWorkspace({ accounts, categories, balances, balance, accountForm, categoryForm }: {
+export default function AccountsWorkspace({ accounts, categories, balances, balance, accountForm, categoryForm, saveOrder }: {
   accounts: Account[]; categories: Category[]; balances: Record<string, string>; balance: string;
   accountForm: ReactNode; categoryForm: ReactNode;
+  saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>;
 }) {
   return <div className={s.workspace}>
     <section className={s.hero} aria-labelledby="accounts-balance-title">
@@ -28,15 +30,10 @@ export default function AccountsWorkspace({ accounts, categories, balances, bala
 
     <section aria-labelledby="accounts-list-title">
       <div className={s.sectionHeading}><h2 id="accounts-list-title">Tus cuentas <span className={s.count}>{accounts.length}</span></h2></div>
-      {accounts.length ? <div className={s.accountGrid}>{accounts.map((account, index) => {
-        const amount = balances[account.id] || '0.00';
-        const negative = amount.startsWith('-');
-        return <article key={account.id} className={`${s.accountCard} ${s[`tone${index % 3}`]}`}>
-          <span className={s.accountIcon}><AccountIcon /></span>
-          <div className={s.accountCopy}><h3>{account.name}</h3><strong className={`${s.accountBalance} ${negative ? s.negative : ''}`}>{soles(amount)}</strong></div>
-        </article>;
-      })}</div> : <div className={s.empty}><AccountIcon /><h3>Añade tu primera cuenta</h3></div>}
-      <details className={s.composer}><summary><span className={s.addIcon}><AccountIcon name="plus" /></span><strong>Nueva cuenta</strong><span className={s.chevron} aria-hidden="true">⌄</span></summary><div className={s.composerBody}>{accountForm}</div></details>
+      <AccountCards accounts={accounts} balances={balances} saveOrder={saveOrder} creationCard={<details className={s.newAccountCard}>
+        <summary><span className={s.newCardArt} aria-hidden="true"><span><AccountIcon name="plus" /></span></span><strong>Nueva cuenta</strong><span className={s.newCardCaption}>Añade una tarjeta a tu espacio</span><span className={s.newCardToggle} aria-hidden="true">⌄</span></summary>
+        <div className={s.newAccountForm}>{accountForm}</div>
+      </details>} />
     </section>
 
     <section className={s.categories} aria-labelledby="categories-title">

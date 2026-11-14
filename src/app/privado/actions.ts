@@ -8,6 +8,14 @@ import { randomUUID } from 'node:crypto';
 import { cancelPayment, PlanningInputError, saveBudget, schedulePayment, settlePayment } from '@/lib/planning.mjs';
 import { contributeToGoal, createGoal, GoalInputError } from '@/lib/goals.mjs';
 import { createHabit, createPersonalReward, HabitInputError, markHabitComplete, redeemPersonalReward } from '@/lib/habits.mjs';
+import { saveAccountOrder } from '@/lib/account-order.mjs';
+
+export async function updateAccountOrder(ids: string[]) {
+  const user = await requireUser();
+  try { await saveAccountOrder(db(), user.id, ids); }
+  catch { return { success: false, message: 'No pudimos guardar el orden. Actualiza la página e inténtalo de nuevo.' }; }
+  return { success: true, message: 'Orden guardado.' };
+}
 
 export async function addMovement(_previous: { message: string; success: boolean }, form: FormData) {
   const user = await requireUser();

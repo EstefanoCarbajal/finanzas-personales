@@ -1,5 +1,36 @@
 # Contexto y decisiones
 
+## Texto de ordenación retirado · 14/11/2026
+
+- Eliminada la indicación visible de arrastre y flechas en cuentas; se conservan los controles y la ordenación. Build y typecheck correctos; sin QA de navegador ni integración nueva.
+
+## Nueva cuenta integrada en tarjetas · 14/11/2026
+
+- «Nueva cuenta» ocupa una tarjeta gráfica dentro de la cuadrícula compartida y despliega allí el formulario existente. Funciona también sin cuentas; conserva los temas, el control nativo de expansión y la preferencia de movimiento reducido. Sin cambios en persistencia ni reglas de cuentas.
+- Build y typecheck correctos; diff --check correcto. Sin QA visual o de interacción en navegador, pruebas unitarias ni integración remota nuevas; pendientes revisión responsive, teclado y temas en demo y privado.
+
+## Orden persistente de cuentas · 14/11/2026
+
+- En privado, la migración 007 añade posición a cada cuenta. El orden se guarda con sesión autenticada, validación de propiedad y transacción; cuentas nuevas aparecen al final. Fallos de guardado restauran el orden anterior y muestran el error. En demo se conserva al cambiar de sección y se reinicia al recargar, como sus demás datos.
+- Migración 007 aplicada en la base exclusiva de pruebas con TLS. Integración nueva aprobada con dos usuarios ficticios, aislamiento y limpieza; dos pruebas locales específicas aprobadas. Build y typecheck correctos. Suite local 10/11: persiste el fallo anterior de contraste fox: deep/accent. Sin QA de navegador autenticado o de demo.
+
+## Tarjetas de cuentas · 14/11/2026
+
+- «Tus cuentas» presenta tarjetas con diseño de billetera, animación y orden por arrastre de ratón o tacto; también ofrece flechas accesibles y anuncia cambios de posición. El orden vive solo mientras la sección está abierta, tanto en demo como en privado; no se guarda en navegador ni en MySQL. No cambia saldos ni reglas financieras.
+- Validación nueva: build y typecheck correctos; pendiente revisión en navegador de arrastre, teclado, movimiento reducido, temas y móvil, incluido privado autenticado. Sin integración remota ni publicación.
+
+## Texto de confirmación simplificado · 14/11/2026
+
+- Retiradas las tres frases solicitadas del diálogo de eliminación; la tarjeta conserva la descripción accesible del movimiento y se ajusta el espacio bajo el título.
+- Validación nueva: build, typecheck y diff --check correctos; diff revisado. Sin QA de navegador, pruebas unitarias ni integración remota.
+
+
+## Confirmación de eliminación de movimientos · 14/11/2026
+
+- Rediseñado el diálogo privado con ilustración, tarjeta del movimiento, aviso de efecto en saldos y acciones diferenciadas. Entrada y detalles animados solo sin preferencia de movimiento reducido; estilos adaptados a los temas y a móvil. El diálogo tiene nombre y descripción accesibles, enfoca Conservar y bloquea Escape mientras se elimina.
+- Validación nueva: build, typecheck y diff --check correctos; diff revisado. No se realizaron pruebas de navegador, QA privado autenticado, pruebas unitarias ni integración remota. Queda pendiente verificar visualmente los temas, móvil, teclado y estados de espera/error.
+
+
 ## Movimientos solo con historial · 14/11/2026
 
 - Retirados el balance bajo la tabla y los indicadores y gráficos inferiores en demo y privado, junto con sus cálculos y estilos exclusivos. Permanecen la tabla, filtros, exportación y acciones privadas.

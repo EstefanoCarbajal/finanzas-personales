@@ -287,7 +287,6 @@
 .deleteSurface { padding:34px 30px 28px; text-align:center; }
 .deleteIcon { display:grid; place-items:center; width:48px; height:48px; margin:0 auto 17px; border-radius:16px; background:var(--theme-errorBg); color:var(--theme-error); font-size:26px; font-weight:900; }
 .deleteSurface p { margin:12px auto 0; color:var(--theme-muted); font-size:14px; line-height:1.6; }
-.deleteHint { max-width:340px; font-size:12px!important; }
 .deleteError { padding:10px 12px; border:1px solid var(--theme-line); border-radius:11px; color:var(--theme-error)!important; background:var(--theme-errorBg); }
 .deleteActions { display:flex; gap:10px; justify-content:center; margin-top:25px; }
 .keepButton,.deleteButton { min-height:46px; padding:11px 17px; border-radius:13px; border:1px solid var(--theme-line); font-weight:800; }
@@ -303,3 +302,31 @@
 .form[data-kind=expense] .amountInput>span,.form[data-kind=expense] .amountInput input { color:var(--theme-expense); }
 .workspace .composer .form[data-kind=expense] .amountInput { background:var(--theme-expenseBg); border-color:var(--theme-expenseEdge); }
 .workspace .composer .form[data-kind=expense] .amountInput>span,.workspace .composer .form[data-kind=expense] .amountInput input { color:var(--theme-expense); }
+
+/* Delete confirmation: a focused, theme-aware moment before a destructive action. */
+.deleteDialog { width:min(500px,calc(100% - 32px)); overflow:visible; }
+.deleteSurface { position:relative; overflow:hidden; padding:28px 32px 30px; border-radius:27px; background:radial-gradient(ellipse at 50% -25%,var(--theme-expenseBg),transparent 56%),var(--theme-surface); }
+.deleteArtwork { position:relative; display:grid; place-items:center; width:112px; height:88px; margin:0 auto 13px; }
+.deleteOrbit { position:absolute; width:83px; height:83px; border:1px solid var(--theme-expenseEdge); border-radius:50%; opacity:.75; }
+.deleteIcon { position:relative; width:62px; height:62px; margin:0; border:1px solid var(--theme-expenseEdge); border-radius:21px; background:var(--theme-expenseBg); color:var(--theme-expense); box-shadow:0 7px 0 color-mix(in srgb,var(--theme-expenseEdge) 50%,transparent); }
+.deleteIcon svg { width:29px; height:29px; }
+.deleteSpark,.deleteSparkSmall { position:absolute; color:var(--theme-expense); }.deleteSpark { top:3px; right:5px; font-size:22px; }.deleteSparkSmall { bottom:3px; left:5px; font-size:18px; }
+.deleteSurface h2 { color:var(--theme-ink); font-size:27px; line-height:1.18; }
+.deleteRecord { margin-top:20px; display:flex; align-items:center; gap:12px; padding:14px; text-align:left; border:1px solid var(--theme-line); border-radius:17px; background:var(--theme-soft); }
+.deleteRecordIcon { display:grid; place-items:center; flex:none; width:42px; height:42px; border-radius:14px; background:var(--theme-surface); color:var(--theme-strong); font-size:22px; font-weight:800; }
+.deleteRecordIcon.expense { color:var(--theme-expense); background:var(--theme-expenseBg); }
+.deleteRecord>div { flex:1; min-width:0; }.deleteRecord strong,.deleteRecord small { display:block; overflow-wrap:anywhere; }.deleteRecord strong { font-size:14px; line-height:1.3; }.deleteRecord small { margin-top:4px; color:var(--theme-muted); font-size:11px; }.deleteRecord b { flex:none; color:var(--theme-ink); font-size:14px; font-variant-numeric:tabular-nums; }
+.deleteActions { margin-top:22px; }.keepButton,.deleteButton { flex:1; min-height:48px; }.keepButton { background:var(--theme-soft); }.deleteButton { background:#a52e27; border-color:#a52e27; color:#fff; }.keepButton:disabled,.deleteButton:disabled { opacity:.65; cursor:wait; }
+.deleteDialog :is(button):focus-visible { outline:3px solid var(--theme-strong); outline-offset:3px; }
+@media (prefers-reduced-motion:no-preference) {
+  .deleteDialog[open] { animation:deleteEnter .28s cubic-bezier(.2,.8,.2,1) both; }
+  .deleteDialog[open] .deleteIcon { animation:deleteIconEnter .42s cubic-bezier(.2,.9,.3,1.2) both; }
+  .deleteDialog[open] .deleteSpark,.deleteDialog[open] .deleteSparkSmall { animation:deleteSparkEnter .5s .12s ease-out both; }
+  .deleteDialog :is(.keepButton,.deleteButton) { transition:transform .18s,box-shadow .18s; }
+  @keyframes deleteEnter { from { opacity:0; transform:translateY(12px) scale(.97); } to { opacity:1; transform:none; } }
+  @keyframes deleteIconEnter { from { opacity:0; transform:scale(.7) rotate(-12deg); } to { opacity:1; transform:scale(1) rotate(0); } }
+  @keyframes deleteSparkEnter { from { opacity:0; transform:scale(.5); } to { opacity:1; transform:scale(1); } }
+}
+@media (hover:hover) and (pointer:fine) { .deleteDialog button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 4px 12px #00000018; } }
+@media (max-width:600px) { .deleteSurface { padding:23px 20px max(23px,env(safe-area-inset-bottom)); }.deleteSurface h2 { font-size:23px; }.deleteRecord { flex-wrap:wrap; }.deleteRecord b { margin-left:54px; }.deleteActions { flex-direction:column-reverse; } }
+@media (prefers-reduced-motion:reduce) { .deleteDialog button:hover { transform:none; } }
