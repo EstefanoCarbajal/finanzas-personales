@@ -1,5 +1,6 @@
 # Contexto y decisiones
 
+
 ## Ajuste del avatar: tigre blanco · 13/11/2026
 
 - Por aclaración del usuario, el tigre representa la variante blanca del tigre de Bengala: pelaje blanco, matices gris perla y rayas negras. Catálogo y nombre accesible actualizados a «Tigre blanco de Bengala».
