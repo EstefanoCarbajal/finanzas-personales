@@ -1,5 +1,7 @@
 # Finanzas personales
 
+Tarjetas de crédito disponibles en Cuentas y Configuración: línea, deuda inicial, compras categorizadas y pagos manuales parciales o totales desde cuentas propias. El saldo de cuentas se separa de la deuda; pagar la tarjeta no duplica el gasto. Solo últimos cuatro dígitos opcionales, sin vinculación bancaria ni cálculo de intereses/cuotas. Requiere migración 009.
+
 Aplicación en español para registrar ingresos y gastos, planificar pagos, ahorrar y llevar hábitos con recompensas personales. Construida con Next.js, TypeScript y MySQL para el plan Hostinger Business existente, sin nuevos servicios de pago.
 
 ## Estado al 13/11/2026
@@ -10,7 +12,7 @@ La aplicación se ejecuta localmente y dispone de acceso privado con persistenci
 | --- | --- | --- |
 | Resumen | Saldo acumulado, métricas mensuales, categorías, actividad y registro en modal. | Datos ficticios y registro en memoria. |
 | Movimientos | Ingresos, gastos, transferencias, búsqueda, filtros y CSV. | Simulación en memoria con filtros y CSV. |
-| Cuentas y categorías | Creación, validación de duplicados y saldos calculados. | Creación en memoria, disponible también al registrar movimientos. |
+| Cuentas y categorías | Creación, nombres de cuenta editables y bajas sin vínculos; categorías con nombre/tipo/icono editables y eliminación sin movimientos/presupuestos/pagos. Tipo conservado si la categoría está en uso. | Altas, edición y bajas sin uso en memoria hasta recargar. |
 | Planificación | Presupuestos mensuales; programar, confirmar o cancelar pagos. | Presupuestos y pagos ilustrativos; sin confirmación persistente. |
 | Metas y ahorro | Metas con cuenta de ahorro y aportes mediante transferencias. | Meta ilustrativa sin vínculo a cuentas. |
 | Hábitos y recompensas | Hábitos iniciales/personalizados, puntos diarios y canjes con límite semanal. | Marcas, creación y canjes simulados. |
@@ -46,7 +48,7 @@ Copiar `.env.example` a `.env.local` **solo si el archivo privado no existe**. C
 
 La base autorizada es `u519053982_finanzas_test`. El servicio MySQL de Hostinger informa MariaDB 11.8.9; TLS e integración en ese motor constan como comprobados en [el historial](docs/STATUS.md). Esta actualización documental no volvió a conectarse al alojamiento. No reactivar la antigua instancia local de MariaDB en `.local-db`.
 
-Las seis migraciones constan como aplicadas exclusivamente a la base de pruebas:
+Las ocho migraciones constan como aplicadas exclusivamente a la base de pruebas (001–006: historial inicial; 007: 14/11; 008: 15/11/2026):
 
 | Migración | Contenido |
 | --- | --- |
@@ -56,6 +58,8 @@ Las seis migraciones constan como aplicadas exclusivamente a la base de pruebas:
 | 004_habits_rewards.sql | Hábitos, marcas, recompensas y canjes. |
 | 005_profile_avatar.sql | Preferencias de avatar por usuario. |
 | 006_avatar_validation.sql | Rechazo de avatar vacío, incluso sin modo SQL estricto. |
+| 007_account_order.sql | Posición persistente de las cuentas. |
+| 008_category_icons.sql | Iconos opcionales de categorías y catálogo validado por CHECK. |
 
 Para una instalación nueva en una base exclusiva, `npm run db:migrate` aplica las migraciones pendientes. Comprueba SHA-256 y bloqueo de ejecución; no editar migraciones aplicadas ni checksums. Conservar finales LF según `.gitattributes`. DDL autoconfirma y un fallo parcial requiere revisión antes de reintentar. No ejecutar sobre bases de otros sitios.
 

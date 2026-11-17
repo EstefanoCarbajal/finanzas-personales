@@ -20,7 +20,7 @@ export async function createGoal(pool, userId, input) {
   const target = amountValue(input.target_amount);
   const targetOn = input.target_on || null;
   if (targetOn && (!validDate(targetOn) || targetOn < todayLima())) throw new GoalInputError('La fecha objetivo debe ser hoy o una fecha futura.');
-  const [[account]] = await pool.execute('SELECT id FROM accounts WHERE user_id = ? AND id = ?', [userId, input.account_id]);
+  const [[account]] = await pool.execute(`SELECT id FROM accounts WHERE user_id = ? AND account_type = 'asset' AND id = ?`, [userId, input.account_id]);
   if (!account) throw new GoalInputError('La cuenta seleccionada no está disponible.');
   await pool.execute('INSERT INTO goals (id, user_id, account_id, name, target_amount, target_on) VALUES (?, ?, ?, ?, ?, ?)',
     [randomUUID(), userId, input.account_id, input.name.trim(), target, targetOn]);
@@ -35,7 +35,7 @@ export async function contributeToGoal(pool, userId, input) {
     const [[goal]] = await connection.execute('SELECT id, account_id, name FROM goals WHERE id = ? AND user_id = ? FOR UPDATE', [input.goal_id, userId]);
     if (!goal) throw new GoalInputError('La meta seleccionada no está disponible.');
     if (goal.account_id === input.account_id) throw new GoalInputError('Elige una cuenta de origen distinta a la cuenta de ahorro.');
-    const [accounts] = await connection.execute('SELECT id FROM accounts WHERE user_id = ? AND id IN (?, ?) FOR UPDATE', [userId, input.account_id, goal.account_id]);
+    const [accounts] = await connection.execute(`SELECT id FROM accounts WHERE user_id = ? AND account_type = 'asset' AND id IN (?, ?) FOR UPDATE`, [userId, input.account_id, goal.account_id]);
     if (accounts.length !== 2) throw new GoalInputError('La cuenta seleccionada no está disponible.');
     const movementId = randomUUID();
     await connection.execute(`INSERT INTO movements (id, user_id, request_id, kind, account_id, destination_id, amount, description, occurred_on)

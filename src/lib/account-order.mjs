@@ -5,7 +5,7 @@ export async function saveAccountOrder(pool, userId, ids) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [accounts] = await connection.execute('SELECT id FROM accounts WHERE user_id = ? FOR UPDATE', [userId]);
+    const [accounts] = await connection.execute(`SELECT id FROM accounts WHERE user_id = ? AND account_type = 'asset' FOR UPDATE`, [userId]);
     const owned = new Set(accounts.map(account => account.id));
     if (ids.length !== owned.size || ids.some(id => !owned.has(id))) throw new Error('Las cuentas cambiaron. Actualiza la página e inténtalo de nuevo.');
     for (const [position, id] of ids.entries()) {

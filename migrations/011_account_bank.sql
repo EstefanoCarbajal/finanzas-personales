@@ -1,0 +1,1 @@
+ALTER TABLE accounts ADD COLUMN bank_code VARCHAR(24) NULL;

@@ -1,5 +1,224 @@
 # Contexto y decisiones
 
+## Exportación nativa a Excel · 16/11/2026
+
+- Movimientos sustituye CSV por un archivo .xlsx real en privado/demo, con los filtros actuales, cabecera fija, autofiltro, ancho de columnas e importes numéricos con dos decimales. Textos almacenados como cadenas, sin fórmulas; fecha civil conservada como texto y columna Moneda separada. ExcelJS 4.4.0 añadido al lockfile y cargado al exportar; generación local en memoria, sin envío de datos a terceros. Botón bloqueado durante generación y error recuperable.
+- Build, typecheck y prueba de ida/vuelta XLSX aprobados: acentos, prefijos de fórmula como texto, moneda, pago de tarjeta, céntimos y máximo DECIMAL(13,2). Diff revisado y git diff --check ejecutado. No se reejecutó suite general ni integración; descarga en navegador y apertura en Microsoft Excel pendientes. Esta exportación reemplaza los requisitos históricos de BOM/separador CSV.
+
+
+## Últimos movimientos sin contador mensual · 16/11/2026
+
+- Retirado el pie «N movimientos en el mes» del Resumen compartido entre privado y demo, por petición del usuario. Conservados listado, filtros mensuales y acceso Ver todos.
+- Build y typecheck correctos; diff revisado y git diff --check ejecutado. Cambio visual sin nuevas pruebas de navegador ni integración.
+
+
+## Restauración de carrera sencilla · 16/11/2026
+
+- Por petición del usuario se revierte exclusivamente la última animación articulada: retirados brazos, rodillas, pies y sombra animada. Restaurada la carrera continua sencilla del cuerpo/piernas, conservando posición según ahorro y movimiento reducido. La entrada anterior de carrera articulada queda como historial, no estado actual.
+- Build y typecheck correctos; cambios revisados y git diff --check ejecutado. Sin QA nuevo de navegador ni cambios de datos.
+
+
+## Carrera articulada del avatar · 16/11/2026
+
+- Avatar del Resumen con brazos y antebrazos, piernas con flexión de rodilla y pies. Ciclo continuo de 680 ms con extremidades alternadas y brazos en contrafase, rebote leve del cuerpo y sombra sincronizada. Posición horizontal conservada según porcentaje ahorrado; movimiento reducido desactiva animaciones.
+- Build y typecheck finales correctos; diff revisado y git diff --check ejecutado. Sin cambios monetarios ni persistencia. No se realizó QA visual de navegador; pendiente valorar movimiento en móvil, escritorio y distintos avatares.
+
+
+## Carrera continua del avatar del Resumen · 16/11/2026
+
+- Cuerpo y piernas corren en bucle en el lugar correspondiente al porcentaje ahorrado, también al completar la meta. Retirado el desplazamiento inicial desde cero y la animación finita que lo dejaba quieto. La posición horizontal continúa derivada del ahorro; movimiento reducido desactiva las animaciones.
+- Cambio exclusivo de CSS, sin modificar datos ni cálculos. Build y typecheck correctos; diff revisado y git diff --check ejecutado. No se realizó QA de navegador en esta entrega.
+
+
+## Retirada del resumen de crédito · 16/11/2026
+
+- Eliminado CreditSnapshot (Deuda en tarjetas / Saldo menos deuda) del Resumen privado y demo, junto con su componente y estilos exclusivos, por petición del usuario. No cambia el cálculo de saldos ni la billetera.
+- Build y typecheck aprobados; diff revisado y comprobación de espacios ejecutada. Sin QA de navegador ni pruebas de integración nuevas para esta retirada visual.
+
+
+## Meta del Resumen con avatar corredor · 16/11/2026
+
+- Nueva tarjeta compartida SummaryGoal en Resumen privado/demo: avatar seleccionado con piernas animadas, pista de progreso y bandera. Avanza hasta el porcentaje de ahorro real, limitado visualmente al 100%; conserva importes exactos BigInt y muestra celebración al completar. Animación breve finita y desactivada con movimiento reducido. Temas existentes, CSS adaptable y enlace al módulo de metas.
+- Estado sin meta invita a crear la primera; demo muestra el ejemplo de S/ 480 de S/ 1200 (40%) y navega a Metas y ahorro. No cambia persistencia, aportes ni reglas de negocio; sin dependencias nuevas.
+- Validación nueva: build y typecheck aprobados. Diff revisado y comprobación de espacios ejecutada. No se realizó QA de navegador ni integración en esta entrega; quedan pendientes revisión visual móvil/oscuro, animación y estados 0/100% con fixture. Se conservan cambios locales anteriores; sin publicación ni datos reales.
+
+
+## Planificación visual y agenda de pagos · 16/11/2026
+
+- Planificación comparte ahora PlanningWorkspace entre privado y demo: cabecera compacta, calendario con avatar aplicado, próximo compromiso y contadores, resumen circular y tarjetas de presupuesto con iconos de categorías, agenda ordenada y filtros Todos/Próximos 7 días/Vencidos. Las cifras derivadas usan céntimos BigInt; fechas civiles recibidas del servidor, sin depender de la zona horaria del navegador. No se modificaron reglas ni consultas de persistencia.
+- Formularios desplegables compartidos, normalización de coma decimal, borradores controlados conservados al fallar/cerrar, controles bloqueados durante envío y cierre/foco al guardar. Confirmar/cancelar un pago exige un segundo paso dentro de su tarjeta; explica el efecto antes de ejecutar, bloquea reenvíos de la interfaz y anuncia resultados. Las acciones existentes devuelven errores controlados conservando autenticación y revalidación.
+- CSS Module adaptable a temas/oscuro y móvil; animaciones breves de entrada, calendario/avatar y barras, elevación al pasar el puntero y movimiento reducido. Sin nuevas dependencias, recursos externos ni migraciones. Demo conserva ejemplos de noviembre de 2026: filtros y despliegues interactivos; formularios en vista previa sin guardar ni invocar acciones privadas.
+- Validación nueva: build y typecheck finales correctos; Diff de la entrega revisado y git diff --check correcto. suite local 23/26, con fallo histórico fox: deep/accent y dos aserciones de crédito que no contemplan byCurrency/bank_code (código/pruebas de crédito no modificados en esta entrega). QA demo: navegación, filtros (2 todos / 1 próximo / 0 vencidos), estado vacío, formularios desplegables, tema tigre y revisión móvil 320/390 px sin desbordamiento medido; sin errores de consola capturados. No se ejecutó integración ni QA privado de guardado/confirmación/error/espera. Sigue pendiente ese escenario con fixture ficticio, teclado completo, movimiento reducido y otras paletas. El módulo conserva el alcance monetario PEN de la planificación anterior; su adaptación integral a cuentas USD continúa pendiente. Sin publicación ni datos reales.
+
+## Espaciado de grupos bancarios · 16/11/2026
+
+- Los encabezados de banco mantienen una separación mayor respecto de sus tarjetas para evitar que el nombre y la primera cuenta se perciban juntos.
+
+## Diseño unificado de tarjetas · 16/11/2026
+
+- El frente de las tarjetas de crédito comparte el lenguaje visual de las cuentas: degradado oscuro, chip dorado, formas decorativas, bordes redondeados y sombras. La sección inferior conserva los datos específicos de deuda, línea y pagos.
+
+## Acceso al alta de categorías · 16/11/2026
+
+- La cabecera de Categorías usa el botón «Nueva categoría» en lugar de los iconos decorativos. Abre el mismo menú/formulario existente por encima de los grupos Gastos e Ingresos.
+- El botón permanece en la esquina superior derecha, mientras que el panel abierto ocupa la fila inferior completa, antes de Gastos.
+
+## Saldo inicial al crear cuentas · 16/11/2026
+
+- El alta de una cuenta permite indicar un saldo inicial opcional en la moneda elegida. Se persiste en `accounts.opening_balance` y se incorpora al saldo acumulado sin crear un ingreso, movimiento ni gasto.
+- La migración `012_account_opening_balance.sql` deja el valor en cero para cuentas existentes; la validación conserva importes DECIMAL exactos y la demo replica el comportamiento en memoria.
+
+## Filtro de moneda en la billetera · 16/11/2026
+
+- El control PEN/USD de «Tu billetera» es interactivo. Filtra cuentas y tarjetas por `currency`, actualiza los totales de la moneda elegida y muestra importes USD con `$`; Configuración conserva la vista completa de tarjetas.
+
+## Etiquetas compactas en billetera · 16/11/2026
+
+- Las tarjetas visuales de cuentas y crédito muestran directamente el importe, sin las etiquetas «Saldo disponible», «Crédito disponible» ni «CRÉDITO · PEN». El resumen de la billetera usa «Crédito» como etiqueta breve.
+- El botón de edición de cuentas y tarjetas permanece en la esquina superior derecha de cada tarjeta.
+
+## Edición del banco de una cuenta · 16/11/2026
+
+- El diálogo de edición de cuentas muestra ahora el selector de banco agrupado del mismo catálogo usado en el alta. Permite cambiar nombre y banco en una sola operación, conserva errores y bloquea ambos campos mientras guarda.
+- La demo conecta también el banco al alta y a la edición en memoria, por lo que las cuentas se mantienen en el grupo bancario elegido. El servidor ya recibía y persistía `bank_code`; no se añadió migración ni dependencia.
+
+## Agrupación visual por banco · 16/11/2026
+
+- La billetera separa las cuentas por banco en bloques con encabezado propio; las cuentas sin banco histórico se muestran en «Otro banco». Las tarjetas conservan el banco asociado para futuras agrupaciones y lo muestran en su identidad visual.
+
+## Banco asociado a cuentas y tarjetas · 16/11/2026
+
+- El alta de cuentas incluye banco obligatorio con catálogo cerrado de diez entidades: BCP, BBVA, Interbank, Scotiabank, BanBif, Banco Pichincha, Banco Falabella, Banco Ripley, Caja Arequipa y Mibanco. El selector usa grupos visuales para reducir ruido.
+- Las tarjetas guardan el mismo código de banco; no se almacenan números completos, CVV ni credenciales. La migración 011 deja registros antiguos compatibles.
+
+## Monedas por cuenta · 16/11/2026
+
+- Las cuentas y tarjetas pueden ser PEN o USD; las cuentas existentes conservan PEN. El alta muestra un selector breve y la billetera identifica ambas monedas sin convertir ni sumar saldos de monedas distintas.
+- Cada movimiento hereda la moneda de su cuenta de origen. El servidor rechaza transferencias entre monedas distintas, persiste la moneda y mantiene cálculos exactos en céntimos; el tipo de cambio queda fuera de alcance.
+- Migración 010 añade `currency` a cuentas y movimientos con valores cerrados PEN/USD. Build y typecheck correctos; no se publicaron datos reales. Pendiente QA privado y prueba de migración en la base de pruebas autorizada.
+
+## Editar y eliminar tarjetas de crédito · 16/11/2026
+
+- Cada tarjeta incorpora el mismo botón discreto de lápiz que las cuentas, con Editar tarjeta/Eliminar tarjeta. Disponible en la billetera y Configuración, en privado y demo. Editor de nombre, línea de crédito y últimos cuatro dígitos opcionales; deuda inicial e historial no se editan. Mantiene las paletas, diálogos nativos, foco inicial/restaurado, Escape/exterior y bloqueo durante envío. Al borrar enfoca otra tarjeta o Nueva tarjeta si no quedan.
+- Nuevas acciones autenticadas de edición/borrado y utilidades credit.mjs con parámetros y propietario de requireUser. Ambas bloquean la fila del usuario y la tarjeta, como las operaciones de movimientos. Editar conserva apertura, valida línea contra deuda inicial y libro actual y revierte ante duplicado/límite incompatible. No modifica movimientos ni sus importes; los nombres leídos del historial reflejan el cambio. Solo se elimina una tarjeta credit propia sin deuda inicial ni referencias: claves foráneas bloquean historial incluso a deuda cero; sin cascada ni desvinculación. La demo replica restricciones en memoria.
+- Se reutilizan los estilos de opciones de cuentas y se bloquean acciones/alta/pagos entre sí durante mutaciones; borradores y errores se conservan. Sin migraciones ni dependencias nuevas. Sigue sin haber cálculo de intereses/cuotas, devoluciones ni ejecución bancaria de pagos.
+- Validación nueva: build/typecheck correctos, diff revisado y diff --check correcto. npm test 25/26: nueva prueba de identificadores de edición/borrado aprobada y persiste fallo histórico fox: deep/accent. Integración específica de crédito ampliada y aprobada con dos usuarios ficticios en base exclusiva y TLS, limpieza comprobada: edición/no-op, propietario/tipo, duplicados, límites, últimos dígitos, deuda inicial inmutable ante campo falsificado, historial monetario intacto, borrado vacío, rechazo por apertura/historial a deuda cero y carrera entre reducción de línea y compra. No se reejecutó toda la integración general.
+- QA nuevo demo: duplicado Efectivo conserva formulario con error; Visa personal→Visa Oro, línea 6000,50→6000.50 y dígitos 4321 actualizan tarjeta/total disponible sin tocar efectivo. Conservar cancela, foco vuelve al lápiz; eliminar la tarjeta vacía cierra diálogo y enfoca Nueva tarjeta con disponible cero. Recarga restaura ejemplos. Editor claro de escritorio, eliminación clara a 320 px y editor oscuro a 390 px inspeccionados; medidas de ambos móviles sin desbordamiento, Escape devuelve foco y consola sin errores capturados. Viewport restaurado. Pendientes QA privado de navegador, errores reales/espera, eliminación usada en demo, resto de paletas, cierre exterior y teclado/movimiento reducido exhaustivos. Sin publicación ni datos financieros reales.
+
+
+## Billetera unificada · 15/11/2026
+
+- Cuentas reúne cuentas y tarjetas dentro de una única sección Tu billetera, con grupos identificados como Cuentas/Tu dinero y Tarjetas de crédito/Tu línea. Categorías queda después de toda la billetera. Se retira la cabecera repetida de Cuentas y el hero ilustrado anterior; cabecera compacta con moneda y tres cifras: dinero en cuentas, deuda y crédito disponible (suma exacta BigInt de disponibles de tarjetas, sin sumarlo al dinero propio).
+- Composición compartida entre privado y demo mediante creditSection en AccountsWorkspace/AccountsDemo. Se conservan ordenación/acciones de cuentas, alta de tarjetas y registro de pagos. La vista independiente de tarjetas en Configuración recibe también cabecera/espaciados simplificados. Sin cambios de reglas, consultas, acciones, migraciones ni dependencias.
+- CSS Module wallet con panel continuo, divisores, cuadrículas adaptables y temas existentes. Menos texto decorativo en altas/cabecera/pie de tarjetas; se conservan las aclaraciones de formularios. Encabezados jerárquicos: Tu billetera (h1), grupos (h2), nombres (h3).
+- Validación nueva: build y typecheck correctos; diff revisado y diff --check correcto. QA demo: sección única con los dos grupos antes de Categorías, cuadrícula de cuentas en escritorio, ArrowRight reordena Efectivo conservando crédito/saldos, formulario Nueva tarjeta desplegable y escritura en móvil. Claro a 320/390 px y escritorio; oscuro inspeccionado en escritorio. Medidas móviles sin desbordamiento horizontal, sin errores de consola capturados; viewport restaurado. No se repitieron pruebas unitarias ni integración porque esta entrega modifica composición y estilos. Pendientes QA privado, guardar formularios/espera/error tras esta reorganización, oscuro móvil, arrastre táctil, teclado completo, movimiento reducido y restantes paletas. Sin publicación ni datos reales.
+
+
+## Tarjetas de crédito integradas · 15/11/2026
+
+- Se amplía el alcance autorizado: tarjetas personales con línea de crédito en PEN, nombre, deuda inicial opcional y últimos cuatro dígitos opcionales. No se guardan PAN/CVV, no se vinculan bancos ni se ejecutan pagos reales. Intereses, cuotas, ciclos de facturación, devoluciones, adelantos, edición/eliminación de tarjetas y cambios de línea quedan fuera de esta entrega.
+- Modelo: accounts distingue asset/credit; migración nueva 009 añade tipo, límite, deuda inicial y last_four con restricciones. Cuentas existentes siguen como asset sin reinterpretar su historial. Migración aplicada exclusivamente a u519053982_finanzas_test tras comprobar nombre/TLS, mediante ejecutor de checksum/bloqueo y finales LF. No se editaron migraciones aplicadas.
+- Compra: movimiento expense con tarjeta de origen y categoría de gasto; aumenta gasto/deuda sin reducir dinero en cuentas. Pago: una sola transferencia desde cuenta propia a tarjeta propia; reduce dinero y deuda sin generar otro gasto ni ingreso. Se admiten pagos parciales. Ingresos a tarjeta y transferencias desde tarjeta se rechazan. Línea disponible = límite menos deuda. Deuda inicial no genera gasto del mes. No se admiten sobrepagos ni exceder la línea.
+- Resumen/Cuentas muestran Saldo en cuentas (solo activos); Resumen añade deuda y saldo menos deuda. Métricas/presupuestos incluyen compras con crédito; transferencias/pagos quedan fuera de gastos. Historial/CSV identifican Pago de tarjeta, y lecturas conservan category_id para editar. Conservar totals(movements) sigue siendo compatible; al proporcionar catálogo devuelve además debt/net y calcula balance de activos. Reglas privadas siguen con céntimos BigInt.
+- Guardar/editar/eliminar movimientos autentica propietario, usa parámetros, conserva request_id y valida referencias; bloqueo de fila del usuario serializa cambios, seguido de lecturas bloqueantes del libro y rollback si el resultado rompe línea/deuda. También se comprueban edición/eliminación de compras o pagos existentes. Metas/aportes y pagos programados de esta entrega admiten solo cuentas asset; consultas de servidor lo exigen. La ordenación de cuentas excluye tarjetas; las acciones antiguas de editar/eliminar cuenta tampoco aceptan tarjetas.
+- UI compartida de tarjetas en Configuración y Cuentas: crédito disponible protagonista, deuda/línea y barra, alta desplegable y formulario de pago. Selector de gasto permite cuenta o tarjeta; ingresos/origen de transferencias solo cuentas, destino puede ser tarjeta. Formularios conservan errores, bloquean campos durante guardado y normalizan coma decimal. Demo simula todo en memoria con Visa personal de S/ 5000 y deuda cero; recargar restaura ejemplos. Sin dependencias ni almacenamiento de navegador nuevos.
+- Validación nueva: build y typecheck correctos; suite local 24/25 (tres pruebas nuevas de crédito aprobadas; persiste fallo histórico fox: deep/accent). Integración completa con ocho archivos y 16 comprobaciones aprobadas, incluida prueba de crédito con dos usuarios ficticios y limpieza: precisión, compras/pagos, idempotencia, sobrepago/sobrelímite, referencias ajenas, edición/eliminación con rollback, exclusión de tarjetas en metas/pagos futuros, restricciones SQL y dos compras concurrentes sin exceder línea. La integración específica de crédito se repitió tras reforzar el rechazo de borrado de tarjetas sin movimientos por las acciones antiguas de cuentas y pasó con limpieza. Primera integración general detectó aserción antigua sin debt/net; actualizada y repetición completa aprobada.
+- QA nuevo en demo: compra S/ 120.50 conserva efectivo S/ 3963 y aumenta deuda; sobrepago S/ 130 rechazado conservando campo; pago S/ 50.25 deja efectivo S/ 3912.75, deuda S/ 70.25, gastos S/ 357.50 y saldo menos deuda S/ 3842.50. Alta de tarjeta con línea S/ 2000/deuda S/ 100/4321 muestra S/ 1900 disponibles; alta adicional y cierre del editor tras éxito comprobados. Conservación al navegar a Configuración/Resumen, claro/oscuro, móvil 320/390 px sin desbordamiento medido y sin errores de consola capturados. Viewport restaurado y recarga devuelve saldo/gastos/deuda iniciales. No se realizó QA privado de navegador: pendiente alta/compra/pago/error/espera con fixture, teclado exhaustivo, movimiento reducido, otras paletas y CSV en Excel. Sin publicación ni datos financieros reales.
+
+
+## Edición y eliminación de categorías · 15/11/2026
+
+- Editor desde cada tarjeta para nombre, tipo e icono; errores conservan datos, controles bloqueados al guardar y foco restaurado. Eliminar abre diálogo nativo con foco inicial en Conservar categoría, cierre por Escape/exterior y bloqueo durante envío. Tras borrar, foco a otra tarjeta o creación.
+- Acciones autenticadas y consultas parametrizadas por propietario. Categorías usadas admiten nombre/icono; cambiar tipo exige ausencia de movimientos, presupuestos y pagos. Borrado protegido atómicamente por claves foráneas existentes, sin cascada. Edición transaccional bloquea categoría; guardar presupuesto también bloquea su validación para evitar carreras con cambio de tipo. Sin migraciones nuevas.
+- Demo vincula movimientos y presupuestos ilustrativos por IDs estables: renombrar actualiza nombres sin alterar importes. Cambios solo en memoria; recargar restaura ejemplos.
+- Validación nueva: build/typecheck correctos; npm test 21/22, incluidas tres pruebas nuevas aprobadas, con fallo histórico `fox: deep/accent`. Integración específica y general ejecutadas juntas: 10/10 aprobadas en base exclusiva autorizada con TLS y usuarios ficticios limpiados; aislamiento, duplicados, referencias, concurrencia con presupuestos y regresión financiera. Un marcador SQL adicional introducido en esta adaptación se corrigió antes de repetir ambas integraciones con éxito. Otros archivos de integración no se reejecutaron.
+- QA demo: duplicado conserva entrada; cambio de tipo usado y eliminación usada rechazados; Alimentación→Comida actualiza historial conservando importes y saldo S/ 3,963.00. Vivienda→Alquiler cambia nombre/tipo/icono y se elimina tras confirmar, con foco a otra tarjeta. Conservar/Escape cierran diálogo y recarga restaura ejemplos. Editor claro en escritorio/320 px y oscuro en 390 px; confirmación clara en 320 px. Sin desbordamiento medido a ambos anchos ni errores de consola capturados; viewport restaurado. Pendientes QA privado de interfaz, espera/error reales, otras paletas y teclado exhaustivo. Sin publicación ni datos reales.
+
+## Configuración personal · 15/11/2026
+
+- Nueva sección compartida Configuración en privado y demo, accesible desde sidebar y menú de perfil. Cabecera con avatar aplicado, tarjetas de acceso/seguridad, formularios desplegables y bloque visual de futuros métodos de pago/tarjetas marcado como no disponible. Moneda, idioma y zona horaria son informativos. CSS Module con temas, modo oscuro, responsive, foco y movimiento reducido; sin dependencias ni recursos externos nuevos.
+- Cambio real de correo/contraseña en privado mediante Server Action autenticada. Requiere contraseña actual; valida correo normalizado, clave de 12–128 caracteres y confirmación. Limita a ocho intentos por usuario en ventana persistente de 15 minutos, comprueba sesión vigente dentro de transacción, bloquea usuario, conserva errores y revoca todas sus sesiones al guardar. Cookie eliminada y acceso posterior por login. El correo cambia inmediatamente, sin servicio de verificación por email; la interfaz lo explica antes de guardar. No implementa recuperación de acceso.
+- Demo permite desplegar formularios, con campos/guardado deshabilitados y aviso de vista previa; no recibe credenciales ni llama acciones privadas. Métodos de pago/tarjetas son exclusivamente un espacio futuro, sin altas, cobros ni almacenamiento de tarjetas. Se preservaron los cambios locales anteriores de cuentas/categorías/metas.
+- Validación nueva: build y typecheck correctos; dos pruebas locales de configuración aprobadas. Suite local 18/19: persiste el fallo histórico de contraste fox: deep/accent. Integración específica de configuración aprobada en u519053982_finanzas_test con TLS, dos usuarios ficticios y limpieza comprobada: contraseña incorrecta, sesión de otro usuario, correo duplicado con rollback, cambio de correo/clave, revocación de sesiones, rechazo de sesión revocada, aislamiento y límite persistente. Integración añadida al comando general; no se reejecutó toda la integración. El primer intento se detuvo antes de conectar por TEST_DB_NAME ausente; reejecución con destino explícito aprobada.
+- QA nuevo de demo: navegación al módulo, apertura/cierre del formulario de clave, enlace desde perfil y aplicación de tigre oscuro; inspección clara/oscura en escritorio y móvil 320/390 px, sin desbordamiento horizontal medido a ambos anchos ni errores de consola capturados. Corregido conflicto global del color del h1. Viewport restaurado. Pendientes QA privado de navegador para guardado/error/espera y vuelta al login, teclado completo, movimiento reducido y restantes paletas. Sin publicación, migraciones ni datos financieros reales.
+
+
+## Editar y eliminar cuentas · 15/11/2026
+
+- Cada tarjeta incorpora un botón discreto de lápiz con opciones «Editar nombre» y «Eliminar cuenta», independiente del arrastre. Diálogos nativos con foco inicial, Escape/cierre exterior, bloqueo durante envío, errores conservando datos y confirmación de eliminación enfocada primero en «Conservar cuenta». Tras eliminar, foco a otra tarjeta o creación; menú y diálogo adaptados a temas/móvil.
+- Editar cambia únicamente nombre (hasta 80 caracteres, sin duplicados por usuario). Eliminar solo admite cuentas sin vínculos: claves foráneas existentes bloquean atómicamente cuentas con movimientos de origen/destino, metas o pagos, incluso con saldo cero. No hay cascada, desvinculación ni eliminación de historial. `accounts.mjs` usa consultas parametrizadas y propietario de requireUser en nuevas Server Actions; sin migraciones ni cambios de reglas monetarias.
+- Demo usa identificadores estables para vincular movimientos a cuentas y resolver sus nombres; renombrar actualiza historial/selectores sin cambiar saldos. Eliminar una cuenta usada se rechaza; cuentas vacías se pueden eliminar tras confirmar. Cambios solo en memoria. Ordenación por teclado/arrastre permanece y no se activa al usar opciones.
+- Build final, typecheck y diff --check correctos; diff revisado. npm test 16/17: tres pruebas nuevas aprobadas; persiste fallo histórico `fox: deep/accent`. Integración específica aprobada con dos usuarios ficticios en base exclusiva y TLS: nombres/duplicados/no-op/propiedad, eliminación de vacía, rechazo por movimientos origen/destino a saldo cero/metas/pagos, historial/saldos intactos y limpieza comprobada. Añadida al script test:integration; no se reejecutó la integración conjunta.
+- QA nuevo de demo: duplicado conserva entrada, Efectivo→Billetera actualiza cuatro filas de historial, eliminación de cuenta usada bloqueada; cancelar conserva Ahorros y confirmar elimina la vacía sin alterar total S/ 3,963.00. Escape devuelve foco; eliminación devuelve foco a otra tarjeta y libera scroll. Crear Caja tras eliminar y reordenar por teclado funciona; renombrada a Caja chica en móvil y arrastre real posterior correcto. Menú/diálogos inspeccionados en escritorio claro y 320/390 px oscuro, sin desbordamiento medido ni errores de consola capturados. Viewport restaurado. Pendientes QA privado ficticio de interfaz, espera/error reales, resto de temas y táctil; sin publicación ni datos reales.
+
+## Arrastre desde toda la tarjeta de cuenta · 15/11/2026
+
+- Retirado el botón de puntos por petición del usuario. Toda la tarjeta es enfocable y ordenable: cursor grab/grabbing, pequeña elevación/balanceo al hover y seguimiento del puntero durante arrastre. Umbral de 6 px separa clic/arrastre; captura en cuadrícula estable evita interrupciones al reordenar. Posición visual limitada a la cuadrícula. Escape/pointercancel revierten; guardado, rollback y anuncios existentes conservados.
+- Flechas del teclado funcionan sobre la tarjeta; ayuda solo accesible y aria-disabled durante guardado sin eliminar foco. Animaciones decorativas respetan movimiento reducido; en táctil se permite pan-y para scroll nativo. Sin cambios de servidor/persistencia.
+- Build, typecheck y diff --check correctos; diff revisado. QA demo: teclado reordena, arrastre real desde el centro de Efectivo hacia Ahorros cambia orden y muestra guardado; comprobados cursor grab, animación aplicada y ausencia de botones interiores. Inspección a 320 px y medida sin desbordamiento horizontal; sin errores de consola capturados. Viewport restaurado. Pendientes táctil real, cancelación/espera/error, movimiento reducido y privado autenticado. Sin pruebas unitarias, integración o publicación nuevas.
+
+## Tarjetas de cuentas sin flechas ni ondas · 15/11/2026
+
+- Retirados por petición del usuario los botones de flechas de las tarjetas y las ondas decorativas junto al chip, con sus estilos exclusivos. Se conserva el control de puntos para arrastrar y se añade ordenación con flechas del teclado sobre ese mismo control, con ayuda solo para lectores de pantalla. Guardado de orden y saldos conservados.
+- Build, typecheck y diff --check correctos; diff revisado. Demo inspeccionada en escritorio: tarjetas sin flechas/ondas; ArrowRight mueve Efectivo después de Ahorros y ArrowLeft restaura el orden. Sin QA privado, integración, pruebas unitarias o publicación nuevos.
+
+## Categorías visuales e iconos persistentes · 15/11/2026
+
+- Cuentas sustituye las etiquetas por tarjetas ilustradas con nombre/icono y acceso directo a cambiarlo, separadas en gastos e ingresos. Catálogo propio de 16 SVG con paletas decorativas, temas de avatar, oscuro, responsive y movimiento reducido. Crear categoría incorpora tipo con control segmentado, nombre, selector nativo de iconos y vista previa. Se conserva el diseño de cuentas.
+- Catálogo/compatibilidad en `category-icons.mjs`: categorías antiguas sin icono usan una sugerencia por nombre; elegir otro prevalece. `categories.mjs` valida nombre/tipo/icono y guarda con propietario autenticado; editar solo cambia icono. La migración 008 añade columna nullable y CHECK de catálogo. Aplicada únicamente a `u519053982_finanzas_test`, con nombre/TLS confirmados y ejecutor con checksum/bloqueo. No cambia saldos, movimientos ni nombres/tipos existentes.
+- Las acciones usan requireUser, consultas parametrizadas y filtros user_id. Campos/selector y tarjetas se bloquean durante guardado del icono; errores conservan selección. El selector recibe foco y al cerrar/aplicar lo devuelve a la tarjeta. Demo conserva iconos y categorías entre secciones en memoria y los restablece al recargar; sin almacenamiento de navegador ni acciones privadas.
+- Validación nueva: build y typecheck finales correctos en Node 24.21.0 local; diff revisado y diff --check correcto. npm test 13/14: pasan las tres nuevas de iconos, persiste fallo previo `fox: deep/accent`. Integración específica nueva aprobada en la base de pruebas: crear/leer/editar, guardar sin cambios, impedir edición ajena, duplicados, iconos inválidos en app/base, legado null y ausencia de efectos financieros; dos usuarios ficticios limpiados. Se añadió al comando test:integration, pero no se reejecutó toda la integración.
+- QA nuevo de demo: creación de Mascotas con huella, duplicado conserva nombre/icono, edición a Viajes y conservación al navegar, alta de Ingreso extra, reinicio al recargar, flecha de teclado cambia radio y foco vuelve a tarjeta. Inspección clara de escritorio y 390 px, oscuro a 320 px (selector/creación); medidas a 320/390 px sin desbordamiento horizontal y sin errores de consola capturados. Viewport restaurado. Pendientes QA privado ficticio de interfaz, espera/error reales, estados vacíos y otras paletas. Sin publicación ni datos reales.
+
+## Formulario de metas con más aire · 15/11/2026
+
+- Se aligera el formulario aprobado: más padding y separación entre grupos, menos peso en etiquetas y sugerencias sin bordes/sombras prominentes. Se retiran numeración, título interior repetido y frase de cabecera; las ideas y cantidades rápidas siguen visibles y funcionales. El importe usa una superficie más neutra y la etiqueta de vista previa deja de ser una píldora. Se conserva avatar 3D, layout compacto responsive y acciones existentes.
+- Build, typecheck y diff --check correctos; diff revisado. QA nuevo en demo clara: escritorio y 320 px inspeccionados, medidas a 320/390 px sin desbordamiento; Viaje/S/ 1200 y entrada 875,50 → 875.50 conservan vista previa. Sin errores de consola capturados; viewport restaurado. Sin pruebas unitarias, QA privado, integración o publicación nuevos. Otros temas y accesibilidad completa pendientes.
+
+## Vista previa de metas sin indicadores ni frase · 15/11/2026
+
+- Retirados por petición del usuario los indicadores «Nombre · Objetivo · Cuenta» y la frase inferior de la vista previa, incluida su variante «¡Tu meta está lista para empezar!». Eliminados cálculos y estilos exclusivos; se conservan avatar 3D, nombre, importe y cuenta.
+- Build, typecheck y diff --check correctos; diff revisado. Demo inspeccionada en escritorio: ambos bloques ausentes. Sin QA privado, pruebas unitarias, integración o publicación nuevos; sin cambios de validación/persistencia.
+
+## Avatar 3D en tarjetas de metas · 15/11/2026
+
+- Las tarjetas compartidas `SavingsGoalCard` usan también VacationAvatar en su cabecera, sustituyendo la cumbre SVG. Siguen el avatar aplicado del perfil, conservando estado, porcentaje, importes, barra y aportes. El estado vacío conserva su ilustración anterior. Se reutilizan los seis PNG existentes, sin generación ni dependencias nuevas; sizes configurable permite optimizar el tamaño de tarjeta sin cambiar la vista previa del formulario.
+- Build y typecheck correctos, diff revisado y diff --check correcto. QA nuevo de demo: koala inicial, previsualización de zorro conserva koala y aplicar los otros cinco personajes carga la imagen correcta (138 px optimizados). Tigre oscuro inspeccionado a 320 px; mediciones a 320/390 px sin desbordamiento y sin errores de consola capturados. Viewport restaurado. Sin QA privado, pruebas unitarias o integración nuevos; pendientes meta alcanzada, múltiples tarjetas y accesibilidad completa. Sin publicación.
+
+## Vacaciones 3D según avatar aplicado · 15/11/2026
+
+- `VacationAvatar` conecta la ilustración de Nueva meta al AvatarContext existente del shell. Usa el avatar confirmado, tanto al cargar el privado como al aplicar perfil en demo; probar una opción sin confirmar no cambia la ilustración. Conserva borrador y acciones del formulario, sin modificar preferencias ni persistencia.
+- Generadas cinco variantes transparentes mediante imagegen integrado usando el koala como referencia: zorro/durazno, gato/lavanda, tigre blanco/ámbar, conejo/rosa y oso/arena. Recursos en `public/images/*-vacation-3d.png`, importación estática con `next/image`, texto alternativo por personaje y fallback al koala si el contexto no corresponde al catálogo. Prompts exactos y rutas en `docs/GOAL_VACATION_ASSET.md`.
+- Build y typecheck correctos; diff revisado y diff --check correcto. QA de demo: seis selecciones aplicadas cargan su recurso correcto, probar zorro sin aplicar conserva koala y nombre/importe 875.50 siguen presentes tras los cambios. Tigre oscuro inspeccionado a 320 px; gato medido a 390 px; sin desbordamiento horizontal medido en ambos ni errores de consola capturados. Viewport restaurado. Sin QA privado, pruebas unitarias, integración remota o publicación nuevos; persistencia privada y accesibilidad completa pendientes.
+
+## Koala de vacaciones en 3D · 15/11/2026
+
+- La vista previa de «Nueva meta» sustituye las ilustraciones SVG por un koala 3D vacacionando en tumbona y sombrilla, PNG transparente generado con la herramienta integrada imagegen. Archivo local `public/images/koala-vacation-3d.png`, importado estáticamente con `next/image` y tamaños responsive. Prompt/procedencia en `docs/GOAL_VACATION_ASSET.md`.
+- Es una ilustración fija del koala compartida por privado/demo y todos los temas; no cambia según el avatar del perfil. Las ideas siguen completando el nombre, y nombre/importe/cuenta conservan la vista previa interactiva. Se conserva el formulario compacto y se retiran SVG/animaciones exclusivos de la ilustración anterior. Sin nuevas reglas, dependencias, llamadas de IA del visitante o persistencia.
+- Build, typecheck y diff --check correctos; diff revisado. QA nuevo de demo: imagen cargada en escritorio a 205 px, ideas/importe rápido, móvil 320 px claro sin desbordamiento horizontal y transparencia inspeccionada en oscuro a 320 px. Sin errores de consola capturados; viewport restaurado. Pendiente QA privado ficticio y restantes escenarios de accesibilidad/temas. Sin pruebas unitarias, integración, publicación o datos reales nuevos.
+
+## Metas sin bloque hero · 15/11/2026
+
+- Retirado por petición del usuario el bloque superior `hero` de GoalsWorkspace, junto con sus totales, conteos y estilos exclusivos. Demo y privado comienzan en «Tus metas», conservando creación, tarjetas y aportes.
+- Build, typecheck y diff --check correctos; diff revisado. Inspección nueva de demo en escritorio confirma ausencia del bloque y presencia de formulario/tarjeta. Sin QA privado, integración o pruebas unitarias nuevas; sin cambios de reglas ni publicación.
+
+## Formulario de meta compacto · 15/11/2026
+
+- A petición del usuario se conserva la experiencia ilustrada, reduciendo espacios, cabecera, tamaño de ilustración y altura de campos. Cuenta/fecha comparten fila cuando hay espacio; en móvil, vista previa horizontal compacta con ilustración al lado del nombre e importe. Etiquetas abreviadas y un único contorno de foco alrededor del importe. Sin cambios de acciones, reglas ni datos.
+- Build y typecheck finales correctos; diff revisado y diff --check correcto. QA nuevo de demo clara en escritorio y 320/390 px: ideas/importes rápidos, coma decimal y tarjeta responsive; mediciones móviles sin desbordamiento horizontal. Contorno de foco final comprobado en navegador y sin errores de consola capturados. Sin nuevas pruebas unitarias, integración remota o sesión privada; pendientes QA privado, otras paletas y accesibilidad completa. Sin publicación.
+
+## Creación de metas interactiva · 15/11/2026
+
+- `GoalCreateForm` sustituye el formulario básico por editor y tarjeta de vista previa: ideas opcionales de viaje/tranquilidad/tecnología con ilustraciones SVG originales, nombre libre con cohete, importe protagonista y cantidades sugeridas. La tarjeta refleja nombre, objetivo y cuenta; las marcas de campos preparados describen el formulario, no avance de ahorro. Fecha sigue siendo opcional; las ideas no añaden campos persistentes.
+- En privado reutiliza `addGoal`, campos controlados, validación nativa/servidor y bloqueo durante envío; no cambia reglas ni base. En demo se permite explorar el mismo formulario con botón de creación deshabilitado y aviso de vista previa sin guardar. Las ilustraciones, controles y animaciones respetan temas, foco y movimiento reducido mediante CSS Module.
+- Build, typecheck y diff --check correctos. QA nuevo de demo: tres ideas, importes rápidos, coma decimal 875,50 → 875.50, cuenta Ahorros reflejada, borrador conservado al cerrar/reabrir y activación de importe con Enter. Inspección clara en escritorio inicial y 320/390 px; oscura a 320/1440 px. Mediciones sin desbordamiento a 320/390/1440 px; sin errores de consola capturados. Pendientes guardado/espera/error con fixture privado, ausencia de cuentas, otras paletas y revisión completa de teclado/movimiento reducido. Sin pruebas unitarias ni integración remota nuevas, publicación o datos reales.
+
+## Metas y ahorro visual · 15/11/2026
+
+- Vista compartida `GoalsWorkspace`/`SavingsGoalCard` para privado y demo: ahorro acumulado de aportes, conteos de metas en camino/alcanzadas, ilustración SVG original de una cumbre y tarjetas con porcentaje, importe, restante, cuenta y fecha. Menos texto y formularios privados desplegables «Nueva meta»/«Aportar». La demo sigue siendo ilustrativa, sin acciones privadas ni nuevas simulaciones financieras.
+- CSS Module con temas de avatar, modo oscuro, adaptación móvil, foco visible y movimiento reducido. Los formularios normalizan coma decimal, conservan campos controlados ante errores y bloquean controles/cierre del desplegable durante el envío. Se mantienen acciones autenticadas, transferencias, cálculo BigInt y request_id; este último se renueva tras éxito y se conserva ante error. Sin cambios de servidor, migraciones ni dependencias.
+- Validación nueva: build y typecheck correctos; diff revisado y diff --check correcto. QA visual de demo en navegador: koala a 320/390 px y escritorio inicial, tigre oscuro a 320 y 1440 px; mediciones sin desbordamiento horizontal a 320/390/1440 px y sin errores de consola capturados. No se ejecutaron pruebas unitarias ni integración remota. Pendientes: QA privado ficticio de creación/aporte, espera/error, estados vacíos/meta alcanzada, teclado completo, movimiento reducido y otras paletas. Sin publicación ni datos reales.
+
 ## Texto de ordenación retirado · 14/11/2026
 
 - Eliminada la indicación visible de arrastre y flechas en cuentas; se conservan los controles y la ordenación. Build y typecheck correctos; sin QA de navegador ni integración nueva.

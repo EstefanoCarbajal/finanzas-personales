@@ -8,8 +8,8 @@ import { avatarTheme, themeVariables } from '@/lib/avatar-themes.mjs';
 
 export type SaveAvatarAction = (id: string) => Promise<{ success: boolean; message: string }>;
 
-export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvatarAction, sessionAction, onAvatarChange }: {
-  avatarId?: string; demo?: boolean; saveAvatarAction?: SaveAvatarAction; sessionAction?: ReactNode; onAvatarChange?: (id: string) => void;
+export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvatarAction, sessionAction, onAvatarChange, onSettings }: {
+  onSettings?: () => void; avatarId?: string; demo?: boolean; saveAvatarAction?: SaveAvatarAction; sessionAction?: ReactNode; onAvatarChange?: (id: string) => void;
 }) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
@@ -71,6 +71,7 @@ export default function ProfileMenu({ avatarId = 'koala', demo = false, saveAvat
         <p className={`${s.feedback} ${error ? s.error : ''}`} role="status">{message}</p>
         {demo && <p className={s.demoNote}>Se reinicia al recargar</p>}
       </form>
+      <div className={s.settingsLink}>{onSettings ? <button type="button" onClick={() => { panel.current?.hidePopover(); onSettings(); }}>Configuración de mi cuenta <span aria-hidden="true">↗</span></button> : <a href="/privado?seccion=configuracion">Configuración de mi cuenta <span aria-hidden="true">↗</span></a>}</div>
       {sessionAction && <div className={s.sessionAction}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M10 4H5v16h5m4-12 4 4-4 4M9 12h12" /></svg>{sessionAction}</div>}
     </div>
   </>;

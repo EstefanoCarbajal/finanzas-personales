@@ -1,8 +1,15 @@
+import SummaryGoal from '@/components/summary-goal';
+import CreditCards from '@/components/credit-cards';
+import { creditCards } from '@/lib/credit.mjs';
+import { addCreditCard, updateCreditCard, removeCreditCard } from './credit-actions';
+import { addMovement } from './actions';
+import SettingsWorkspace from '@/components/settings-workspace';
+import { saveCredentials } from './settings-actions';
 import { randomUUID } from 'node:crypto';
 import { requireUser } from '@/server/auth';
 import { db } from '@/server/db';
 import { readDashboard, todayLima } from '@/lib/repository.mjs';
-import { soles } from '@/lib/money.mjs';
+import { soles, decimal, toCents } from '@/lib/money.mjs';
 import { readPlanning } from '@/lib/planning.mjs';
 import { readGoals } from '@/lib/goals.mjs';
 import { readHabitDashboard } from '@/lib/habits.mjs';
@@ -18,10 +25,10 @@ import PrivateDashboardShell from './private-dashboard-shell';
 import AccountsWorkspace from '@/components/accounts-workspace';
 import { readAvatar } from '@/lib/profile.mjs';
 import { updateAvatar } from './profile-actions';
-import { updateAccountOrder } from './actions';
+import { updateAccountOrder, editCategory, removeCategory, editAccount, removeAccount } from './actions';
 
 export const dynamic = 'force-dynamic';
-const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'metas', 'habitos'] as const;
+const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'metas', 'habitos', 'configuracion'] as const;
 type Section = typeof sections[number];
 
 export default async function PrivatePage({ searchParams }: { searchParams: Promise<{ seccion?: string | string[] }> }) {
@@ -33,6 +40,10 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const today = todayLima();
   const month = today.slice(0, 7);
   const data = await readDashboard(db(), user.id);
+  const cashAccounts = data.accounts.filter((account: { account_type: string }) => account.account_type !== 'credit');
+  const cards = creditCards(data.accounts, data.movements);
+  const availableByCurrency = Object.fromEntries(['PEN', 'USD'].map(currency => [currency, decimal(cards.filter((card: { currency?: string; available: string }) => (card.currency || 'PEN') === currency).reduce((sum: bigint, card: { available: string }) => sum + toCents(card.available), BigInt(0)))]));
+  const cardWorkspace = <CreditCards update={updateCreditCard} remove={removeCreditCard} cards={cards} accounts={cashAccounts} today={today} create={addCreditCard} pay={async (form: FormData) => { 'use server'; return addMovement({ message: '', success: false }, form); }} />;
   const planning = section === 'planificacion' ? await readPlanning(db(), user.id, month) : null;
   const goals = section === 'metas' || section === 'resumen' ? await readGoals(db(), user.id) : null;
   const habits = section === 'habitos' ? await readHabitDashboard(db(), user.id, today) : null;
@@ -42,19 +53,20 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         {section === 'resumen' && data && <>
           <section className="page-heading" id="resumen"><h1>Tu resumen</h1></section>
           <SummaryWithRegistration movements={data.movements} currentMonth={month} balance={data.totals.balance} />
-          {goals?.[0] && <section className="private-goal-feature"><div className="goal-top"><span className="eyebrow">TU META</span><span className="goal-symbol" aria-hidden="true">☀</span></div><h2>{goals[0].name}</h2><div className="goal-amount"><strong>{soles(goals[0].saved)}</strong><span>de {soles(goals[0].target_amount)}</span></div><progress aria-label={`Avance de ${goals[0].name}`} value={Math.min(100, Number(BigInt(goals[0].saved.replace('.', '')) * BigInt(100) / BigInt(goals[0].target_amount.replace('.', ''))))} max={100} /><div className="goal-bottom"><a href="/privado?seccion=metas">Ver meta →</a></div></section>}
+          <SummaryGoal goal={goals?.[0]} />
         </>}
         {section === 'movimientos' && data && <>
           <section className="page-heading"><div><h1>Movimientos</h1></div></section>
           <MovementsWorkspace><MovementsTable movements={data.movements} accounts={data.accounts} categories={data.categories} today={today} /></MovementsWorkspace>
         </>}
         {section === 'cuentas' && data && <>
-          <section className="page-heading"><h1>Cuentas</h1></section>
-          <AccountsWorkspace accounts={data.accounts} categories={data.categories} balances={data.totals.accounts} balance={data.totals.balance} saveOrder={updateAccountOrder} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
+
+          <AccountsWorkspace creditSection={cardWorkspace} currencyTotals={data.totals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} categories={data.categories} balances={data.totals.accounts} saveOrder={updateAccountOrder} editCategory={editCategory} removeCategory={removeCategory} renameAccount={editAccount} removeAccount={removeAccount} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
         </>}
-        {section === 'planificacion' && data && planning && <><section className="page-heading"><div><span className="eyebrow">PLANIFICA CON CALMA</span><h1>Planificación</h1><p>Presupuestos y pagos futuros en un solo lugar.</p></div></section><PlanningPanel accounts={data.accounts} categories={data.categories} budgets={planning.budgets} payments={planning.payments} month={month} today={today} /></>}
-        {section === 'metas' && data && goals && <><section className="page-heading"><div><span className="eyebrow">AHORRA A TU MANERA</span><h1>Metas y ahorro</h1><p>Define un objetivo y avanza con aportes entre tus cuentas.</p></div></section><GoalsPanel accounts={data.accounts} goals={goals} today={today} /></>}
+        {section === 'planificacion' && data && planning && <PlanningPanel accounts={cashAccounts} categories={data.categories} budgets={planning.budgets} payments={planning.payments} month={month} today={today} />}
+        {section === 'metas' && data && goals && <><section className="page-heading"><h1>Metas y ahorro</h1></section><GoalsPanel accounts={cashAccounts} goals={goals} today={today} /></>}
         {section === 'habitos' && habits && <><section className="page-heading"><div><span className="eyebrow">PEQUEÑOS PASOS, TODOS LOS DÍAS</span><h1>Hábitos y recompensas</h1><p>Reconoce tus avances cotidianos y elige premios personales.</p></div></section><HabitsRewards data={habits} today={today} /></>}
+        {section === 'configuracion' && <SettingsWorkspace email={user.email} saveAction={saveCredentials} creditCards={cardWorkspace} />}
         <footer>Hecho para avanzar a tu ritmo.<span>Tus datos están en tu espacio privado</span></footer>
       </div>
   </PrivateDashboardShell>;

@@ -49,7 +49,7 @@ test('MySQL: aislamiento, precisión, transferencias, sesiones y límites de acc
       await save(users[0], { kind: 'transfer', category_id: null, destination_id: accounts[1], amount: '25.00' });
       const data = await readDashboard(pool, users[0]);
       assert.equal(data.movements.length, 3);
-      assert.deepEqual(data.totals, { income: '100.00', expense: '10.25', balance: '89.75', accounts: { [accounts[0]]: '64.75', [accounts[1]]: '25.00' } });
+      assert.deepEqual(data.totals, { income: '100.00', expense: '10.25', balance: '89.75', debt: '0.00', net: '89.75', accounts: { [accounts[0]]: '64.75', [accounts[1]]: '25.00' } });
       assert.deepEqual((await readDashboard(pool, users[1])).movements, []);
       assert.equal((await readDashboard(pool, users[1])).accounts.length, 1);
     });

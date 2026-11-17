@@ -1,5 +1,37 @@
 # Verificación y pendientes de QA
 
+## Gestión de tarjetas · 16/11/2026
+
+- Edición de nombre/línea/últimos dígitos y eliminación protegida disponibles desde el lápiz, en billetera y Configuración. Deuda inicial inmutable; solo borrar sin apertura ni referencias. Integración específica ampliada aprobada con dos usuarios ficticios limpiados: aislamiento, límites/duplicados, historial, deuda cero y concurrencia edición/compra. Suite local 25/26 con fallo previo fox: deep/accent.
+- Demo: duplicado conserva datos; editar actualiza nombre/línea/dígitos y disponible; cancelar/eliminar vacía y devolución de foco correctos. Recarga restaura ejemplos. Inspección escritorio claro, confirmación a 320 px y editor oscuro a 390 px, medidas sin desbordamiento y consola sin errores capturados. Viewport restaurado.
+- Pendiente privado en navegador con fixture, espera/error reales, rechazo de eliminación usada en demo, cierre exterior y accesibilidad exhaustiva. No hubo integración general ni publicación nuevas.
+
+
+## Tarjetas de crédito · 15/11/2026
+
+- Migración 009 aplicada en base exclusiva con TLS. Integración completa de ocho archivos: 16 comprobaciones aprobadas, con usuarios ficticios limpiados. Crédito cubre compras, deuda inicial, pagos parciales, propietario, duplicados, sobrepago/sobrelímite, rollback en edición/eliminación, restricciones SQL y concurrencia. Suite local 24/25: tres nuevas de crédito pasan; fallo previo fox: deep/accent continúa.
+- Demo: compra S/ 120.50 sin disminuir efectivo; pago S/ 50.25 reduce efectivo y deja deuda S/ 70.25, sin segundo gasto. Sobrepago rechazado conservando entrada. Alta con deuda inicial, navegación entre módulos y reinicio al recargar comprobados. Inspección clara/oscura de tarjetas y formulario, medidas a 320/390 px sin desbordamiento y consola sin errores capturados; viewport restaurado.
+- Pendiente QA privado ficticio en navegador de alta, compra/pago, edición/eliminación, espera/error y recarga; teclado completo, movimiento reducido y resto de temas. Intereses, cuotas, cierres/vencimientos, devoluciones y gestión posterior de línea/tarjetas no están implementados. Los pagos registrados son apuntes manuales, sin ejecutar transacciones bancarias.
+
+
+## Actualización: editar/eliminar cuentas · 15/11/2026
+
+- Pruebas nuevas: `tests/accounts.test.mjs` (3) y `tests/accounts-integration.mjs` (1 con dos usuarios ficticios). Suite local nueva: 16/17; persiste `fox: deep/accent`. Integración específica aprobada en base de pruebas con TLS y limpieza comprobada: propietario, nombres/no-op/duplicados, eliminación de vacías y rechazo por movimientos origen/destino incluso a saldo cero, metas y pagos. Esta integración se añadió a `test:integration`; no se ejecutó toda la suite conjunta.
+- QA demo: opciones no reordenan tarjetas; editar conserva datos ante duplicado y actualiza nombres del historial sin cambiar saldos. Cuenta usada no se elimina; cancelar conserva cuenta vacía y confirmar la elimina. Escape devuelve foco; borrar libera scroll y enfoca otra tarjeta. Crear cuenta después de borrar, ordenar con teclado, editar en móvil y arrastrar desde tarjeta funcionan.
+- Menús y diálogos claros en escritorio y oscuros a 320/390 px inspeccionados; medidas sin desbordamiento horizontal ni errores de consola capturados. Build/typecheck finales correctos. Pendientes QA privado ficticio, espera/error reales, otras paletas y táctil. Sin migraciones ni publicación nuevas.
+
+## Actualización: gestión de categorías · 15/11/2026
+
+- Tres pruebas nuevas en category-management.test.mjs aprobadas; suite local 21/22 con fallo histórico `fox: deep/accent`. Integración category-management-integration.mjs y general ejecutadas juntas: 10/10 aprobadas con TLS en base exclusiva autorizada, usuarios ficticios y limpieza. Incluyen propiedad, duplicados, cambio de tipo/borrado usado, historial intacto y carrera con presupuesto. Primer fallo por marcador SQL introducido durante adaptación corregido antes de repetir ambas con éxito. Build/typecheck correctos.
+- Demo: editar nombre refleja historial sin cambiar importes; tipo/borrado usado bloqueados; categoría sin uso cambia nombre/tipo/icono y se elimina tras confirmar. Errores conservan entrada, foco inicial en Conservar, Escape cierra y eliminación devuelve foco a otra tarjeta. Recarga restaura ejemplos. Editor claro escritorio/320 px y oscuro 390 px, diálogo claro 320 px; sin desbordamiento medido a 320/390 px ni errores de consola capturados. Viewport restaurado. QA privado de interfaz, espera/error reales y accesibilidad exhaustiva pendientes.
+
+## Actualización: iconos de categorías · 15/11/2026
+
+- Nueva cobertura en `tests/category-icons.test.mjs` (3 pruebas) y `tests/category-icons-integration.mjs` (1 prueba con dos usuarios ficticios). La suite local suma 14 pruebas: resultado nuevo 13/14, con fallo histórico `fox: deep/accent`. `test:integration` incluye ahora general, perfil, orden de cuentas e iconos; en esta entrega solo se ejecutó la integración específica de iconos y pasó con limpieza comprobada.
+- Migración 008 aplicada a la base exclusiva de pruebas con nombre/TLS confirmados. Integración exige DB_NAME = TEST_DB_NAME = `u519053982_finanzas_test` y DB_SSL=true. Cobertura: crear/leer/editar icono, mismo valor, dueño ajeno, duplicado, valor inválido en aplicación y SQL, categorías antiguas null y sin efectos en movimientos/saldos.
+- QA de demo: crear Mascotas con huella, rechazar duplicado conservando campos, cambiar icono a Viajes y conservar al navegar; crear categoría de ingreso y reiniciar ejemplos al recargar. Selección nativa por flechas, foco inicial/restaurado, escritorio claro, 390 px claro y 320 px oscuro; sin desbordamiento medido a 320/390 px ni errores de consola capturados. Build/typecheck finales correctos en Node 24.21.0 local.
+- Pendiente repetir en interfaz privada con fixture aislado, incluidos espera/error y recarga; vacíos, resto de temas y accesibilidad completa. No hubo QA privado de navegador ni nueva integración conjunta de todas las suites. Node 24 en Hostinger y preparación de producción siguen pendientes.
+
 Documento reconciliado al **13/11/2026** con AGENTS.md, código, scripts y [STATUS.md](STATUS.md). Los resultados siguientes proceden de las entregas indicadas; esta actualización documental no repite las pruebas de navegador, integración remota ni compilación. La aplicación sigue sin publicar y sin autorización para datos financieros reales.
 
 ## Evidencia disponible

@@ -9,7 +9,7 @@ import compact from './movement-modal.module.css';
 export type DemoMovementDraft = { name: string; category: string; amount: number; date: string; kind: string; account: string; destination: string | null };
 export const demoAccounts = [{ id: 'cash', name: 'Efectivo' }, { id: 'savings', name: 'Ahorros' }];
 export const demoCategories = [...['Alimentación', 'Transporte', 'Vivienda', 'Ocio', 'Salud', 'Otros'].map((name, i) => ({ id: `expense-${i}`, name, kind: 'expense' })), { id: 'income', name: 'Ingresos', kind: 'income' }];
-export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = demoAccounts, categories = demoCategories, modal = false }: { onAdd: (movement: DemoMovementDraft) => void; autoFocus?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[]; modal?: boolean }) {
+export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = demoAccounts, categories = demoCategories, modal = false }: { onAdd: (movement: DemoMovementDraft) => string | void; autoFocus?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[]; modal?: boolean }) {
   const s = modal ? compact : standard;
   const [kind, setKind] = useState('expense');
   const [description, setDescription] = useState('');
@@ -30,7 +30,8 @@ export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = 
     if (!description.trim() || (kind !== 'transfer' && !category)) { setMessage('Revisa la descripción y la categoría.'); return; }
     const date = String(data.get('occurred_on'));
     if (date < '1900-01-01' || date > '2026-11-11' || new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date) { setMessage('Elige una fecha válida hasta el 11 de noviembre de 2026.'); return; }
-    onAdd({ name: description.trim(), category: category?.name || 'Transferencia', amount: Number(cents) * (kind === 'expense' ? -1 : 1), date, kind, account: account.name, destination: destination?.name || null });
+    const error = onAdd({ name: description.trim(), category: category?.name || 'Transferencia', amount: Number(cents) * (kind === 'expense' ? -1 : 1), date, kind, account: account.name, destination: destination?.name || null });
+    if (error) { setMessage(error); return; }
     setDescription(''); setAmount(''); setSuccess(true); setMessage('¡Listo! Movimiento añadido a la demo. Se reinicia al recargar.');
   }
   return <form className={s.form} data-kind={kind} onSubmit={submit} onReset={event => event.preventDefault()}><div className={s.formFields}>

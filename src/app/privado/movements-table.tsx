@@ -8,13 +8,15 @@ import MovementForm from './movement-form';
 import { removeMovement } from './actions';
 import type { MovementAccount, MovementCategory } from '@/components/movement-fields';
 
-export type PrivateMovement = { id: string; kind: string; description: string; occurred_on: string; amount: string; account_id: string; destination_id: string | null; category_id?: string | null; account_name: string; destination_name: string | null; category_name: string | null };
+export type PrivateMovement = { id: string; currency?: string; kind: string; description: string; occurred_on: string; amount: string; account_id: string; destination_id: string | null; category_id?: string | null; account_type?: string; destination_type?: string | null; account_name: string; destination_name: string | null; category_name: string | null };
 const kinds: Record<string, string> = { income: 'Ingreso', expense: 'Gasto', transfer: 'Transferencia' };
+const movementLabel = (m: PrivateMovement) => m.kind === 'transfer' && m.destination_type === 'credit' ? 'Pago de tarjeta' : kinds[m.kind] || m.kind;
 const icons: Record<string, string> = { income: '↙', expense: '↗', transfer: '↔' };
 const dateName = (date: string, options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('es-PE', { ...options, timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
-const safeCell = (value: string) => `"${(/^[=+@\-\t\r]/.test(value) ? `'${value}` : value).replaceAll('"', '""')}"`;
 
 export default function MovementsTable({ movements, demo = false, accounts = [], categories = [], today = '' }: { movements: PrivateMovement[]; demo?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[]; today?: string }) {
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState('all');
   const [month, setMonth] = useState('all');
@@ -25,7 +27,7 @@ export default function MovementsTable({ movements, demo = false, accounts = [],
   const [removeState, removeAction, removePending] = useActionState((_previous: { message: string; success: boolean }, form: FormData) => removeMovement(form), { message: '', success: false });
   useEffect(() => { if (editing) editDialog.current?.showModal(); }, [editing]);
   useEffect(() => { if (removing) removeDialog.current?.showModal(); }, [removing]);
-  useEffect(() => { if (removeState.success) setRemoving(null); }, [removeState.success]);
+  useEffect(() => { if (removeState.success) { removeDialog.current?.close(); setRemoving(null); } }, [removeState.success]);
   const months = useMemo(() => [...new Set(movements.map(m => m.occurred_on.slice(0, 7)))].sort().reverse(), [movements]);
   const filtered = useMemo(() => movements.filter(m => {
     const text = `${m.description} ${m.account_name} ${m.destination_name || ''} ${m.category_name || ''}`.toLocaleLowerCase('es-PE');
@@ -33,20 +35,27 @@ export default function MovementsTable({ movements, demo = false, accounts = [],
   }).sort((a, b) => b.occurred_on.localeCompare(a.occurred_on)), [movements, query, kind, month]);
   const hasFilters = !!query || kind !== 'all' || month !== 'all';
   function resetFilters() { setQuery(''); setKind('all'); setMonth('all'); }
-  function exportCsv() {
-    const rows = [['Fecha', 'Descripción', 'Cuenta', 'Categoría o destino', 'Tipo', 'Importe PEN'], ...filtered.map(m => [m.occurred_on, m.description, m.account_name, m.destination_name || m.category_name || '', kinds[m.kind] || m.kind, m.amount])];
-    const csv = rows.map(row => row.map(safeCell).join(';')).join('\r\n');
-    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a'); link.href = url; link.download = demo ? 'movimientos-demo.csv' : 'mis-movimientos.csv'; link.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  async function exportExcel() {
+    if (exporting) return;
+    setExporting(true); setExportError('');
+    try {
+      const { movementsExcel } = await import('@/lib/movements-excel.mjs');
+      const bytes = await movementsExcel(filtered.map(m => ({ ...m, currency: m.currency || accounts.find(a => a.id === m.account_id)?.currency || 'PEN' })));
+      const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const link = document.createElement('a'); link.href = url; link.download = demo ? 'movimientos-demo.xlsx' : 'mis-movimientos.xlsx';
+      document.body.appendChild(link); link.click(); link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch { setExportError('No pudimos exportar. Inténtalo de nuevo.'); }
+    finally { setExporting(false); }
   }
   return <div className={d.dashboard}>
     <section className={s.ledger} aria-labelledby="ledger-title">
-    <div className={s.ledgerHeading}><div><h2 id="ledger-title">Historial</h2></div><button className={s.export} onClick={exportCsv} disabled={!filtered.length} aria-label="Exportar CSV con los filtros actuales">↓ <span>Exportar CSV</span></button></div>
+    <div className={s.ledgerHeading}><div><h2 id="ledger-title">Historial</h2></div><button className={s.export} onClick={exportExcel} disabled={exporting || !filtered.length} aria-label="Exportar Excel con los filtros actuales">↓ <span>{exporting ? "Exportando…" : "Exportar Excel"}</span></button></div>
+    {exportError && <p role="alert">{exportError}</p>}
     <div className={s.filters}><label className={s.search}><span className={s.srOnly}>Buscar movimientos</span><div><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Descripción, cuenta o categoría" /></div></label><label><span className={s.srOnly}>Mes</span><select value={month} onChange={event => setMonth(event.target.value)}><option value="all">Todos los meses</option>{months.map(value => <option key={value} value={value}>{dateName(`${value}-01`, { month: 'long', year: 'numeric' })}</option>)}</select></label></div>
-    <div className={s.typeFilters} role="group" aria-label="Filtrar por tipo de movimiento">{[['all', 'Todos'], ['income', 'Ingresos'], ['expense', 'Gastos'], ['transfer', 'Transferencias']].map(([value, label]) => <button key={value} aria-pressed={kind === value} className={kind === value ? s.activeFilter : ''} onClick={() => setKind(value)}>{value !== 'all' && <span aria-hidden="true">{icons[value]}</span>}{label}</button>)}</div>
+    <div className={s.typeFilters} role="group" aria-label="Filtrar por tipo de movimiento">{[['all', 'Todos'], ['income', 'Ingresos'], ['expense', 'Gastos'], ['transfer', 'Transferencias y pagos']].map(([value, label]) => <button key={value} aria-pressed={kind === value} className={kind === value ? s.activeFilter : ''} onClick={() => setKind(value)}>{value !== 'all' && <span aria-hidden="true">{icons[value]}</span>}{label}</button>)}</div>
     <div className={s.results}><span aria-live="polite">{filtered.length} {filtered.length === 1 ? 'movimiento' : 'movimientos'}{hasFilters ? (filtered.length === 1 ? ' encontrado' : ' encontrados') : ''}</span>{hasFilters && <button onClick={resetFilters}>Limpiar filtros ×</button>}</div>
-    {!!filtered.length && <div className={d.tableScroll} tabIndex={0} aria-label="Tabla de movimientos; desplaza horizontalmente para ver todas las columnas"><table className={d.table}><thead><tr><th>Movimiento</th><th>Fecha</th><th>Cuenta</th><th>Tipo</th><th>Importe</th>{!demo && <th><span className={s.srOnly}>Acciones</span></th>}</tr></thead><tbody>{filtered.map(m => <tr key={m.id}><td><div className={d.transaction}><span className={[s.movementIcon, s[m.kind]].join(' ')} aria-hidden="true">{icons[m.kind]}</span><div><strong>{m.description}</strong><small>{m.kind === 'transfer' ? 'Destino: ' + (m.destination_name || 'Cuenta de destino') : m.category_name || kinds[m.kind]}</small></div></div></td><td>{dateName(m.occurred_on, { day: 'numeric', month: 'short', year: 'numeric' })}</td><td>{m.account_name}</td><td><span className={[s.typeBadge, s[m.kind]].join(' ')}>{kinds[m.kind]}</span></td><td className={[d.amount, m.kind === 'income' ? s.incomeAmount : m.kind === 'expense' ? s.expenseAmount : s.transferAmount].join(' ')}>{m.kind === 'income' ? '+' : m.kind === 'expense' ? '−' : ''}{soles(m.amount)}</td>{!demo && <td><div className={d.actions}><button type="button" onClick={() => setEditing(m)} aria-label={'Editar ' + m.description} title="Editar">✎</button><button type="button" onClick={() => setRemoving(m)} aria-label={'Eliminar ' + m.description} title="Eliminar">×</button></div></td>}</tr>)}</tbody></table></div>}
+    {!!filtered.length && <div className={d.tableScroll} tabIndex={0} aria-label="Tabla de movimientos; desplaza horizontalmente para ver todas las columnas"><table className={d.table}><thead><tr><th>Movimiento</th><th>Fecha</th><th>Cuenta o tarjeta</th><th>Tipo</th><th>Importe</th>{!demo && <th><span className={s.srOnly}>Acciones</span></th>}</tr></thead><tbody>{filtered.map(m => <tr key={m.id}><td><div className={d.transaction}><span className={[s.movementIcon, s[m.kind]].join(' ')} aria-hidden="true">{icons[m.kind]}</span><div><strong>{m.description}</strong><small>{m.kind === 'transfer' ? 'Destino: ' + (m.destination_name || 'Cuenta de destino') : m.category_name || kinds[m.kind]}</small></div></div></td><td>{dateName(m.occurred_on, { day: 'numeric', month: 'short', year: 'numeric' })}</td><td>{m.account_type === "credit" ? "Tarjeta · " : ""}{m.account_name}</td><td><span className={[s.typeBadge, s[m.kind]].join(' ')}>{movementLabel(m)}</span></td><td className={[d.amount, m.kind === 'income' ? s.incomeAmount : m.kind === 'expense' ? s.expenseAmount : s.transferAmount].join(' ')}>{m.kind === 'income' ? '+' : m.kind === 'expense' ? '−' : ''}{soles(m.amount)}</td>{!demo && <td><div className={d.actions}><button type="button" onClick={() => setEditing(m)} aria-label={'Editar ' + m.description} title="Editar">✎</button><button type="button" onClick={() => setRemoving(m)} aria-label={'Eliminar ' + m.description} title="Eliminar">×</button></div></td>}</tr>)}</tbody></table></div>}
     {!filtered.length && <div className={s.empty}><span aria-hidden="true">{movements.length ? '⌕' : '↔'}</span><h3>{movements.length ? 'Sin resultados' : 'Aún no hay movimientos'}</h3><p>{movements.length ? 'Prueba otra búsqueda o limpia los filtros.' : 'Tu primer registro aparecerá aquí.'}</p>{hasFilters ? <button className={s.export} onClick={resetFilters}>Ver todos los movimientos</button> : null}</div>}
     </section>
     <dialog ref={editDialog} className={s.editDialog} onClose={() => setEditing(null)} onCancel={() => setEditing(null)}>

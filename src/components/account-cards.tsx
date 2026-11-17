@@ -1,19 +1,27 @@
 'use client';
 
-import { useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react';
 import { soles } from '@/lib/money.mjs';
 import type { Account } from './accounts-workspace';
 import s from './accounts.module.css';
+import AccountActions, { type RenameAccount, type RemoveAccount } from './account-actions';
 
-export default function AccountCards({ accounts, balances, saveOrder, creationCard }: { accounts: Account[]; balances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; creationCard: ReactNode }) {
+export default function AccountCards({ accounts, balances, saveOrder, creationCard, renameAccount, removeAccount }: { accounts: Account[]; balances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; creationCard: ReactNode; renameAccount: RenameAccount; removeAccount: RemoveAccount }) {
   const [order, setOrder] = useState<string[]>(() => [...accounts].sort((a, b) => (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity)).map(account => account.id));
   const [dragging, setDragging] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
   const [saving, setSaving] = useState(false);
-  const drag = useRef<string | null>(null);
+  const grid = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ id: string; pointerId: number; x: number; y: number; lastX: number; lastY: number; left: number; top: number; active: boolean } | null>(null);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const latestOrder = useRef(order);
   const savedOrder = useRef(order);
   const savingRef = useRef(false);
+  const mutationRef = useRef(false);
+  const [mutating, setMutating] = useState(false);
+  const removedFocus = useRef<string | null>(null);
+  const [focusRevision, setFocusRevision] = useState(0);
+  const sortHelpId = useId();
   const ordered = [...order.map(id => accounts.find(account => account.id === id)).filter((account): account is Account => !!account), ...accounts.filter(account => !order.includes(account.id))];
 
   function move(id: string, target: string) {
@@ -46,39 +54,74 @@ export default function AccountCards({ accounts, balances, saveOrder, creationCa
     } finally { savingRef.current = false; setSaving(false); }
   }
 
-  function start(event: PointerEvent<HTMLButtonElement>, id: string) {
-    if (event.button !== 0 || savingRef.current) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = id;
-    setDragging(id);
+  function updateOffset() {
+    const current = drag.current;
+    const card = grid.current?.querySelector<HTMLElement>(`[data-account-card="${current?.id}"]`);
+    if (!current?.active || !card || !grid.current) return;
+    const left = Math.min(Math.max(0, current.left + current.lastX - current.x), grid.current.clientWidth - card.offsetWidth);
+    const top = Math.min(Math.max(0, current.top + current.lastY - current.y), grid.current.clientHeight - card.offsetHeight);
+    setOffset({ x: left - card.offsetLeft, y: top - card.offsetTop });
   }
 
-  function track(event: PointerEvent<HTMLButtonElement>) {
-    if (!drag.current) return;
-    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-account-card]');
-    if (target?.dataset.accountCard) move(drag.current, target.dataset.accountCard);
+  useLayoutEffect(() => { updateOffset(); }, [order, dragging]);
+  useLayoutEffect(() => {
+    if (removedFocus.current && !accounts.some(account => account.id === removedFocus.current)) {
+      grid.current?.querySelector<HTMLElement>('[data-account-card], summary')?.focus({ preventScroll: true });
+      removedFocus.current = null;
+    }
+  }, [accounts, focusRevision]);
+
+  function start(event: PointerEvent<HTMLElement>, id: string) {
+    if (event.button !== 0 || !event.isPrimary || savingRef.current || mutationRef.current || drag.current || (event.target instanceof Element && event.target.closest('[data-account-actions]'))) return;
+    event.currentTarget.focus({ preventScroll: true });
+    drag.current = { id, pointerId: event.pointerId, x: event.clientX, y: event.clientY, lastX: event.clientX, lastY: event.clientY, left: event.currentTarget.offsetLeft, top: event.currentTarget.offsetTop, active: false };
+    // Capture on the stable grid so DOM reordering never interrupts the gesture.
+    grid.current?.setPointerCapture(event.pointerId);
+  }
+
+  function track(event: PointerEvent<HTMLDivElement>) {
+    const current = drag.current;
+    if (!current || current.pointerId !== event.pointerId) return;
+    current.lastX = event.clientX; current.lastY = event.clientY;
+    if (!current.active && Math.hypot(current.lastX - current.x, current.lastY - current.y) < 6) return;
+    if (!current.active) { current.active = true; setDragging(current.id); }
+    const target = document.elementsFromPoint(event.clientX, event.clientY).map(element => element.closest<HTMLElement>('[data-account-card]')).find(card => card?.dataset.accountCard !== current.id && card?.dataset.accountCard);
+    if (target?.dataset.accountCard) move(current.id, target.dataset.accountCard);
+    updateOffset();
   }
 
   function finish(cancelled = false) {
-    if (!drag.current) return;
-    drag.current = null; setDragging(null);
+    const current = drag.current;
+    if (!current) return;
+    drag.current = null; setDragging(null); setOffset({ x: 0, y: 0 });
+    if (grid.current?.hasPointerCapture(current.pointerId)) grid.current.releasePointerCapture(current.pointerId);
     if (cancelled) { latestOrder.current = savedOrder.current; setOrder(savedOrder.current); }
-    else void persist();
+    else if (current.active) void persist();
   }
 
   return <>
-    <div className={s.accountGrid}>
+    <div ref={grid} data-account-grid className={s.accountGrid} onPointerMove={track} onPointerUp={() => finish()} onPointerCancel={() => finish(true)} onLostPointerCapture={() => finish(true)}>
       {ordered.map((account, index) => {
         const amount = balances[account.id] || '0.00';
         const tone = accounts.findIndex(item => item.id === account.id) % 3;
-        return <article data-account-card={account.id} key={account.id} className={`${s.accountCard} ${s[`tone${tone}`]} ${dragging === account.id ? s.dragging : ''}`}>
-          <div className={s.cardTop}><span className={s.cardBrand}><span className={s.brandMark}>✦</span> MI CUENTA</span><button type="button" className={s.dragHandle} disabled={saving} aria-label={`Arrastrar ${account.name} para ordenar`} onPointerDown={event => start(event, account.id)} onPointerMove={track} onPointerUp={() => finish()} onPointerCancel={() => finish(true)} onLostPointerCapture={() => finish(true)}><span aria-hidden="true">⠿</span></button></div>
-          <div className={s.cardMiddle}><span className={s.cardChip} aria-hidden="true"><i /></span><span className={s.contactless} aria-hidden="true">)))</span></div>
-          <div className={s.cardBottom}><div className={s.accountCopy}><h3>{account.name}</h3><span className={s.balanceLabel}>SALDO DISPONIBLE</span><strong className={`${s.accountBalance} ${amount.startsWith('-') ? s.negative : ''}`}>{soles(amount)}</strong></div><div className={s.orderControls}><button type="button" aria-label={`Mover ${account.name} antes`} disabled={saving || index === 0} onClick={() => { move(account.id, ordered[index - 1].id); void persist(); }}>←</button><button type="button" aria-label={`Mover ${account.name} después`} disabled={saving || index === ordered.length - 1} onClick={() => { move(account.id, ordered[index + 1].id); void persist(); }}>→</button></div></div>
+        return <article data-account-card={account.id} key={account.id} role="group" tabIndex={0} aria-label={`Ordenar ${account.name}`} aria-roledescription="Cuenta ordenable" aria-disabled={saving || mutating || undefined} aria-describedby={sortHelpId} onPointerDown={event => start(event, account.id)} style={dragging === account.id ? { '--drag-x': `${offset.x}px`, '--drag-y': `${offset.y}px` } as CSSProperties : undefined} className={`${s.accountCard} ${s[`tone${tone}`]} ${dragging === account.id ? s.dragging : ''}`} onKeyDown={event => {
+            if (event.target !== event.currentTarget) return;
+            if (event.key === 'Escape' && drag.current) { event.preventDefault(); finish(true); return; }
+            if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); setAnnouncement('Usa las flechas del teclado para mover la cuenta.'); return; }
+            const direction = ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : 0;
+            if (!direction) return;
+            event.preventDefault();
+            const target = ordered[index + direction];
+            if (!savingRef.current && !mutationRef.current && !drag.current && target) { move(account.id, target.id); void persist(); }
+          }}>
+          <div className={s.cardTop}><span className={s.cardBrand}><span className={s.brandMark}>✦</span> MI CUENTA</span><AccountActions account={account} balance={amount} disabled={saving || mutating || !!dragging} rename={renameAccount} remove={removeAccount} onBusy={busy => { mutationRef.current = busy; setMutating(busy); }} onResult={(message, removedId) => { setAnnouncement(message); if (removedId) { removedFocus.current = removedId; setFocusRevision(value => value + 1); } }} /></div>
+          <div className={s.cardMiddle}><span className={s.cardChip} aria-hidden="true"><i /></span></div>
+          <div className={s.cardBottom}><div className={s.accountCopy}><h3>{account.name} <small aria-label={`Moneda ${account.currency || 'PEN'}`}>{account.currency || 'PEN'}</small></h3><strong className={`${s.accountBalance} ${amount.startsWith('-') ? s.negative : ''}`}>{account.currency === 'USD' ? `$ ${amount}` : soles(amount)}</strong></div></div>
         </article>;
       })}
       {creationCard}
     </div>
+    <span id={sortHelpId} className={s.srOnly}>Arrastra la tarjeta o usa las flechas del teclado para ordenar. Escape cancela el arrastre.</span>
     <p className={s.orderNote} role="status" aria-live="polite">{saving ? 'Guardando orden…' : announcement}</p>
   </>;
 }

@@ -24,7 +24,7 @@ export default function MovementForm({ accounts, categories, today, requestId, m
       <input type="hidden" name="request_id" value={id} />
       {editingMovement && <input type="hidden" name="movement_id" value={editingMovement.id} />}
       <MovementFields modal={modal} accounts={accounts} categories={categories} today={today} kind={kind} onKindChange={setKind} description={description} onDescriptionChange={setDescription} amount={amount} onAmountChange={setAmount} accountId={editingMovement?.account_id} destinationId={editingMovement?.destination_id} categoryId={editingMovement?.category_id} occurredOn={editingMovement?.occurred_on} />
-      {!accounts.length && <p className={s.message}>Crea una cuenta en Cuentas para empezar a registrar.</p>}
+      {!accounts.some(a => kind === 'expense' || a.account_type !== 'credit') && <p className={s.message}>Crea una cuenta en Cuentas para empezar a registrar.</p>}
       <p className={`${s.message} ${state.success ? s.success : s.error}`} role="status">{modal && state.success ? '' : state.message}</p>
       <button disabled={pending || !accounts.length} className={s.save}>{pending ? 'Guardando…' : editingMovement ? 'Guardar cambios' : modal ? `Guardar ${kind === 'income' ? 'ingreso' : kind === 'transfer' ? 'transferencia' : 'gasto'}` : 'Guardar movimiento'} <span aria-hidden="true">{pending ? '· · ·' : '✓'}</span></button>
       {editingMovement && <button type="button" className={s.cancel} onClick={onCancel} disabled={pending}>Cancelar</button>}

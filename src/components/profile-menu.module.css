@@ -74,3 +74,5 @@
 .panel[data-color-scheme="dark"] .feedback { color:var(--theme-income); }
 .panel[data-color-scheme="dark"] .feedback.error { color:var(--theme-error); }
 .panel .picker legend { color:var(--theme-ink); }
+
+.settingsLink{padding:0 21px 18px}.settingsLink a,.settingsLink button{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:44px;padding:10px 14px;background:var(--theme-soft);color:var(--theme-ink);border:1px solid var(--theme-line);border-radius:12px;text-decoration:none;font:inherit;font-size:12px;font-weight:750;cursor:pointer}.settingsLink :focus-visible{outline:3px solid var(--theme-strong);outline-offset:3px}

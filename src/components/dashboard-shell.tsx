@@ -13,6 +13,7 @@ export const navigation = [
   { id: "planificacion", label: "Planificación" },
   { id: "metas", label: "Metas y ahorro" },
   { id: "habitos", label: "Hábitos y recompensas" },
+  { id: "configuracion", label: "Configuración" },
 ] as const;
 export type NavigationId = typeof navigation[number]["id"];
 
@@ -24,6 +25,7 @@ function Icon({ name }: { name: string }) {
     planificacion: <><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4m10-4v4M3 11h18m-14 5h3m4 0h3" /></>,
     metas: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="m12 12 8-8m-1-2v3h3" /></>,
     habitos: <><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 3Z" /></>,
+    configuracion: <><path d="M4 7h16M4 17h16" /><circle cx="9" cy="7" r="3" /><circle cx="15" cy="17" r="3" /></>,
     arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,
     plus: <path d="M12 5v14M5 12h14" />,
     menu: <path d="M4 6h16M4 12h16M4 18h16" />,
@@ -64,7 +66,7 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
       <div className={styles.workspace}><span className={styles.workspaceSymbol}><Icon name="shield" /></span><div><strong>Mi espacio personal</strong></div><span className={styles.liveDot} /></div>
       <nav className={styles.navigation} aria-label="Navegación principal">
         <p className={styles.groupLabel}>TU DÍA A DÍA</p>
-        {navigation.map((item, index) => <div key={item.id}>{index === 3 && <p className={styles.groupLabel}>CONSTRUYE TU FUTURO</p>}{destination(item.id, <><span className={styles.navIcon}><Icon name={item.id} /></span><span className={styles.navCopy}><strong>{item.label}</strong></span><span className={styles.activeDot} /></>, `${styles.navItem} ${active === item.id ? styles.active : ""}`)}</div>)}
+        {navigation.map((item, index) => <div key={item.id}>{index === 6 && <p className={styles.groupLabel}>MI CUENTA</p>}{index === 3 && <p className={styles.groupLabel}>CONSTRUYE TU FUTURO</p>}{destination(item.id, <><span className={styles.navIcon}><Icon name={item.id} /></span><span className={styles.navCopy}><strong>{item.label}</strong></span><span className={styles.activeDot} /></>, `${styles.navItem} ${active === item.id ? styles.active : ""}`)}</div>)}
       </nav>
       <div className={styles.encouragement}><span className={styles.sparkle} aria-hidden="true">✦</span><span className={styles.cardEyebrow}>A TU PROPIO RITMO</span><h2>Pequeños pasos.<br />Grandes posibilidades.</h2><p>Tu próxima meta empieza con una decisión de hoy.</p></div>
     </>;
@@ -82,7 +84,7 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
         <div className={styles.topActions}>
           
           <button type="button" className={styles.register} aria-haspopup="dialog" onClick={onNewMovement}><Icon name="plus" /><span>Nuevo movimiento</span></button>
-          <ProfileMenu avatarId={avatar} demo={demo} onAvatarChange={setTheme} saveAvatarAction={saveAvatarAction} sessionAction={sessionAction} />
+          <ProfileMenu onSettings={onNavigate ? () => onNavigate("configuracion") : undefined} avatarId={avatar} demo={demo} onAvatarChange={setTheme} saveAvatarAction={saveAvatarAction} sessionAction={sessionAction} />
         </div>
       </header>
       <div id="dashboard-content" tabIndex={-1} className={styles.contentAnchor}>{children}</div>

@@ -1,11 +1,16 @@
-import SelectedAvatar from '@/components/selected-avatar';
-import type { ReactNode } from 'react';
+'use client';
+
+import { cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
 import { soles } from '@/lib/money.mjs';
 import AccountCards from './account-cards';
 import s from './accounts.module.css';
+import w from './wallet.module.css';
+import CategoriesSection, { type EditCategory, type RemoveCategory } from './categories-section';
+import type { RenameAccount, RemoveAccount } from './account-actions';
 
-export type Account = { id: string; name: string; sort_order?: number | null };
-export type Category = Account & { kind: string };
+export type Account = { id: string; name: string; bank_code?: string | null; currency?: string; opening_balance?: string; sort_order?: number | null };
+export type Category = Account & { kind: string; icon?: string | null };
+const walletMoney = (value: string, currency: string) => currency === 'USD' ? `$ ${value}` : soles(value);
 
 export function AccountIcon({ name = 'wallet' }: { name?: string }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -13,36 +18,34 @@ export function AccountIcon({ name = 'wallet' }: { name?: string }) {
   </svg>;
 }
 
-function WalletArt() {
-  return <div className={s.walletArt} aria-hidden="true"><span className={s.orbit} /><span className={s.artSpark}>✦</span><div className={s.backCard}><i /></div><div className={s.frontCard}><SelectedAvatar width={36} height={36} /><span className={s.cardLines}><i /><i /></span></div><span className={s.artDot} /></div>;
-}
-
-export default function AccountsWorkspace({ accounts, categories, balances, balance, accountForm, categoryForm, saveOrder }: {
-  accounts: Account[]; categories: Category[]; balances: Record<string, string>; balance: string;
-  accountForm: ReactNode; categoryForm: ReactNode;
+export default function AccountsWorkspace({ accounts, categories, balances, accountForm, categoryForm, saveOrder, editCategory, removeCategory, renameAccount, removeAccount, creditSection, currencyTotals, availableByCurrency }: {
+  creditSection: ReactNode; currencyTotals: Record<string, { cash: string; debt: string }>; availableByCurrency: Record<string, string>;
+  accounts: Account[]; categories: Category[]; balances: Record<string, string>;
+  accountForm: ReactNode; categoryForm: ReactNode; editCategory: EditCategory; removeCategory: RemoveCategory;
+  renameAccount: RenameAccount; removeAccount: RemoveAccount;
   saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>;
 }) {
+  const [currency, setCurrency] = useState('PEN');
+  const visibleAccounts = accounts.filter(account => (account.currency || 'PEN') === currency);
+  const bankGroups = [...new Set(visibleAccounts.map(account => account.bank_code || 'Otro banco'))];
+  const selectedTotals = currencyTotals[currency] || { cash: '0.00', debt: '0.00' };
+  const selectedAvailable = availableByCurrency[currency] || '0.00';
+  const filteredCreditSection = isValidElement(creditSection) ? cloneElement(creditSection as ReactElement<{ currency?: string }>, { currency }) : creditSection;
+  const creationCard = <details className={s.newAccountCard}><summary><span className={s.newCardArt} aria-hidden="true"><span><AccountIcon name="plus" /></span></span><strong>Nueva cuenta</strong><span className={s.newCardToggle} aria-hidden="true">⌄</span></summary><div className={s.newAccountForm}>{accountForm}</div></details>;
   return <div className={s.workspace}>
-    <section className={s.hero} aria-labelledby="accounts-balance-title">
-      <div className={s.heroCopy}><h2 id="accounts-balance-title">Saldo total</h2><strong className={s.total}>{soles(balance)}</strong></div>
-      <WalletArt />
+    <section className={w.wallet} aria-labelledby="wallet-title">
+      <div className={w.heading}><div className={w.title}><span className={w.walletIcon}><AccountIcon /></span><h1 id="wallet-title">Tu billetera</h1></div><div className={w.currency} role="group" aria-label="Filtrar por moneda"><button type="button" className={currency === 'PEN' ? w.activeCurrency : ''} aria-pressed={currency === 'PEN'} onClick={() => setCurrency('PEN')}>PEN</button><span aria-hidden="true">·</span><button type="button" className={currency === 'USD' ? w.activeCurrency : ''} aria-pressed={currency === 'USD'} onClick={() => setCurrency('USD')}>USD</button></div></div>
+      <dl className={w.overview}><div className={w.cashTotal}><dt>En tus cuentas</dt><dd>{walletMoney(selectedTotals.cash, currency)}</dd></div><div><dt>Deuda en tarjetas</dt><dd>{walletMoney(selectedTotals.debt, currency)}</dd></div><div><dt>Crédito</dt><dd>{walletMoney(selectedAvailable, currency)}</dd></div></dl>
+      <div className={w.groups}>
+      <section className={w.cashGroup} aria-labelledby="accounts-list-title">
+      <div className={w.groupHeading}><div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div><span className={w.groupTag}>Tu dinero</span></div>
+      {bankGroups.map(bank => <div key={bank} className={w.bankGroup}><h3 className={w.bankTitle}>{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Otro banco') === bank)} balances={balances} saveOrder={saveOrder} renameAccount={renameAccount} removeAccount={removeAccount} creationCard={bank === bankGroups[bankGroups.length - 1] ? creationCard : null} /></div>)}
+      {!bankGroups.length && creationCard}
+      </section>
+      <div className={w.creditGroup}>{filteredCreditSection}</div>
+      </div>
     </section>
 
-    <section aria-labelledby="accounts-list-title">
-      <div className={s.sectionHeading}><h2 id="accounts-list-title">Tus cuentas <span className={s.count}>{accounts.length}</span></h2></div>
-      <AccountCards accounts={accounts} balances={balances} saveOrder={saveOrder} creationCard={<details className={s.newAccountCard}>
-        <summary><span className={s.newCardArt} aria-hidden="true"><span><AccountIcon name="plus" /></span></span><strong>Nueva cuenta</strong><span className={s.newCardCaption}>Añade una tarjeta a tu espacio</span><span className={s.newCardToggle} aria-hidden="true">⌄</span></summary>
-        <div className={s.newAccountForm}>{accountForm}</div>
-      </details>} />
-    </section>
-
-    <section className={s.categories} aria-labelledby="categories-title">
-      <div className={s.sectionHeading}><h2 id="categories-title">Categorías <span className={s.count}>{categories.length}</span></h2></div>
-      <div className={s.categoryGroups}>{[{ kind: 'expense', label: 'Gastos', icon: 'arrow' }, { kind: 'income', label: 'Ingresos', icon: 'income' }].map(group => {
-        const items = categories.filter(category => category.kind === group.kind);
-        return <div className={`${s.categoryGroup} ${group.kind === 'income' ? s.incomeGroup : ''}`} key={group.kind}><h3><AccountIcon name={group.icon} />{group.label}<span>{items.length}</span></h3>{items.length ? <ul className={s.chips}>{items.map(category => <li key={category.id}>{category.name}</li>)}</ul> : <p className={s.emptyCategory}>Sin categorías</p>}</div>;
-      })}</div>
-      <details className={s.composer}><summary><span className={s.addIcon}><AccountIcon name="plus" /></span><strong>Nueva categoría</strong><span className={s.chevron} aria-hidden="true">⌄</span></summary><div className={s.composerBody}>{categoryForm}</div></details>
-    </section>
+    <CategoriesSection categories={categories} creation={categoryForm} editCategory={editCategory} removeCategory={removeCategory} />
   </div>;
 }

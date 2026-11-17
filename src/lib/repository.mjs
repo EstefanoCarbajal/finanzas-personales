@@ -1,3 +1,4 @@
+import { checkCreditLedger } from './credit.mjs';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { toCents, decimal, totals } from './money.mjs';
 import { tokenHash, verifyPassword, dummyHash } from './password.mjs';
@@ -27,17 +28,14 @@ export async function saveMovement(pool, userId, input) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [accounts] = await connection.execute('SELECT id FROM accounts WHERE user_id = ? AND id IN (?, ?) FOR UPDATE', [userId, value.account_id, value.destination_id]);
-    if (accounts.length !== (value.kind === 'transfer' ? 2 : 1)) throw new InputError('La cuenta seleccionada no está disponible.');
-    if (value.category_id) {
-      const [[category]] = await connection.execute('SELECT id FROM categories WHERE user_id = ? AND id = ? AND kind = ? FOR UPDATE', [userId, value.category_id, value.kind]);
-      if (!category) throw new InputError('La categoría no corresponde a este movimiento.');
-    }
+    await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
+    const currency = await validateMovementReferences(connection, userId, value);
     // One immutable row represents both legs of a transfer; no partial transfer is possible.
     await connection.execute(`INSERT INTO movements
-      (id, user_id, request_id, kind, account_id, destination_id, category_id, amount, description, occurred_on)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [randomUUID(), userId, value.request_id, value.kind, value.account_id, value.destination_id, value.category_id, value.amount, value.description, value.occurred_on]);
+      (id, user_id, request_id, kind, account_id, destination_id, category_id, amount, description, occurred_on, currency)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [randomUUID(), userId, value.request_id, value.kind, value.account_id, value.destination_id, value.category_id, value.amount, value.description, value.occurred_on, currency]);
+    await checkCreditLedger(connection, userId);
     await connection.commit();
   } catch (error) {
     await connection.rollback();
@@ -47,12 +45,17 @@ export async function saveMovement(pool, userId, input) {
 }
 
 async function validateMovementReferences(connection, userId, value) {
-  const [accounts] = await connection.execute('SELECT id FROM accounts WHERE user_id = ? AND id IN (?, ?) FOR UPDATE', [userId, value.account_id, value.destination_id]);
+  const [accounts] = await connection.execute('SELECT id, account_type, currency FROM accounts WHERE user_id = ? AND id IN (?, ?) FOR UPDATE', [userId, value.account_id, value.destination_id]);
   if (accounts.length !== (value.kind === 'transfer' ? 2 : 1)) throw new InputError('La cuenta seleccionada no está disponible.');
+  const source = accounts.find(a => a.id === value.account_id);
+  const destination = accounts.find(a => a.id === value.destination_id);
+  if (destination && destination.currency !== source.currency) throw new InputError('No puedes mezclar PEN y USD en un mismo movimiento.');
+  if (source?.account_type === 'credit' && value.kind !== 'expense') throw new InputError('Una tarjeta admite compras como gasto; págala desde una cuenta mediante transferencia.');
   if (value.category_id) {
     const [[category]] = await connection.execute('SELECT id FROM categories WHERE user_id = ? AND id = ? AND kind = ? FOR UPDATE', [userId, value.category_id, value.kind]);
     if (!category) throw new InputError('La categoría no corresponde a este movimiento.');
   }
+  return source.currency;
 }
 
 export async function updateMovement(pool, userId, movementId, input) {
@@ -61,13 +64,15 @@ export async function updateMovement(pool, userId, movementId, input) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
+    await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
     const [[movement]] = await connection.execute('SELECT id FROM movements WHERE user_id = ? AND id = ? FOR UPDATE', [userId, movementId]);
     if (!movement) throw new InputError('No encontramos ese movimiento. Actualiza la página e inténtalo de nuevo.');
     const [[linked]] = await connection.execute('SELECT movement_id FROM goal_contributions WHERE user_id = ? AND movement_id = ? FOR UPDATE', [userId, movementId]);
     if (linked) throw new InputError('Este movimiento pertenece a un aporte de meta y no se puede editar.');
-    await validateMovementReferences(connection, userId, value);
-    await connection.execute(`UPDATE movements SET kind = ?, account_id = ?, destination_id = ?, category_id = ?, amount = ?, description = ?, occurred_on = ? WHERE user_id = ? AND id = ?`,
-      [value.kind, value.account_id, value.destination_id, value.category_id, value.amount, value.description, value.occurred_on, userId, movementId]);
+    const currency = await validateMovementReferences(connection, userId, value);
+    await connection.execute(`UPDATE movements SET kind = ?, account_id = ?, destination_id = ?, category_id = ?, amount = ?, description = ?, occurred_on = ?, currency = ? WHERE user_id = ? AND id = ?`,
+      [value.kind, value.account_id, value.destination_id, value.category_id, value.amount, value.description, value.occurred_on, currency, userId, movementId]);
+    await checkCreditLedger(connection, userId);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }
@@ -78,26 +83,28 @@ export async function deleteMovement(pool, userId, movementId) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
+    await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
     const [[movement]] = await connection.execute('SELECT id FROM movements WHERE user_id = ? AND id = ? FOR UPDATE', [userId, movementId]);
     if (!movement) throw new InputError('No encontramos ese movimiento. Actualiza la página e inténtalo de nuevo.');
     const [[linked]] = await connection.execute('SELECT movement_id FROM goal_contributions WHERE user_id = ? AND movement_id = ? FOR UPDATE', [userId, movementId]);
     if (linked) throw new InputError('Este movimiento pertenece a un aporte de meta y no se puede eliminar.');
     await connection.execute('DELETE FROM movements WHERE user_id = ? AND id = ?', [userId, movementId]);
+    await checkCreditLedger(connection, userId);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }
 }
 
 export async function readDashboard(pool, userId) {
-  const [accounts] = await pool.execute('SELECT id, name, sort_order FROM accounts WHERE user_id = ? ORDER BY name', [userId]);
-  const [categories] = await pool.execute('SELECT id, name, kind FROM categories WHERE user_id = ? ORDER BY name', [userId]);
-  const [movements] = await pool.execute(`SELECT m.id, m.kind, m.account_id, m.destination_id, m.amount, m.description, m.occurred_on,
-    a.name AS account_name, d.name AS destination_name, c.name AS category_name
+  const [accounts] = await pool.execute('SELECT id, name, sort_order, account_type, currency, bank_code, credit_limit, opening_debt, opening_balance, last_four FROM accounts WHERE user_id = ? ORDER BY name', [userId]);
+  const [categories] = await pool.execute('SELECT id, name, kind, icon FROM categories WHERE user_id = ? ORDER BY name', [userId]);
+  const [movements] = await pool.execute(`SELECT m.id, m.kind, m.account_id, m.destination_id, m.amount, m.description, m.occurred_on, m.category_id, m.currency,
+    a.name AS account_name, a.account_type, d.account_type AS destination_type, d.name AS destination_name, c.name AS category_name
     FROM movements m JOIN accounts a ON a.id = m.account_id AND a.user_id = m.user_id
     LEFT JOIN accounts d ON d.id = m.destination_id AND d.user_id = m.user_id
     LEFT JOIN categories c ON c.id = m.category_id AND c.user_id = m.user_id
     WHERE m.user_id = ? ORDER BY m.occurred_on DESC, m.created_at DESC, m.id`, [userId]);
-  return { accounts, categories, movements, totals: totals(movements) };
+  return { accounts, categories, movements, totals: totals(movements, accounts) };
 }
 
 export async function login(pool, email, password) {

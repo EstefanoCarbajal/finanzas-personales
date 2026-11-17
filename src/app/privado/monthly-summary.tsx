@@ -39,7 +39,7 @@ export default function MonthlySummary({ movements, currentMonth, balance, demo 
       expenseShare: scale ? Number(expense * BigInt(10000) / scale) / 100 : 0,
       positive: income >= expense,
       categories: grouped.map(([name, amount]) => ({ name, amount: decimal(amount), share: expense ? Number(amount * BigInt(10000) / expense) / 100 : 0 })),
-      recent: [...activity].sort((a, b) => b.occurred_on.localeCompare(a.occurred_on)).slice(0, 4), count: activity.length,
+      recent: [...activity].sort((a, b) => b.occurred_on.localeCompare(a.occurred_on)).slice(0, 4),
     };
   }, [movements, month]);
   let offset = 0;
@@ -50,9 +50,9 @@ export default function MonthlySummary({ movements, currentMonth, balance, demo 
   return <div className={s.summary}>
     <section className={s.hero} aria-labelledby="balance-title">
       <div className={s.heroCopy}>
-        <h2 id="balance-title">Saldo total</h2>
+        <h2 id="balance-title">Saldo en cuentas</h2>
         <strong className={s.heroAmount}>{soles(balance)}</strong>
-        <p>Acumulado en todas tus cuentas</p>
+        <p>Dinero acumulado · Sin incluir la línea de crédito</p>
         <button className={s.cta} onClick={onRegister} aria-haspopup="dialog"><span aria-hidden="true">＋</span> Registrar movimiento</button>
       </div>
       <div className={s.orbit} aria-hidden="true"><div className={s.orbitInner} /><span className={s.spark}>✦</span><div className={s.koala}><SelectedAvatar /></div><span className={s.orbitPlus}>＋</span></div>
@@ -71,7 +71,6 @@ export default function MonthlySummary({ movements, currentMonth, balance, demo 
       </section>
       <section className={s.card} aria-labelledby="recent-title"><div className={s.cardHeading}><h2 id="recent-title">Últimos movimientos</h2>{demo ? <button className={s.textLink} aria-label="Ver todos los movimientos" onClick={onViewMovements}>Ver todos ↗</button> : <a className={s.textLink} aria-label="Ver todos los movimientos" href="/privado?seccion=movimientos">Ver todos ↗</a>}</div>
         {totals.recent.length ? <ul className={s.activity}>{totals.recent.map(item => <li key={item.id}><span className={`${s.activityIcon} ${item.kind === 'income' ? s.inIcon : item.kind === 'transfer' ? s.transferIcon : s.outIcon}`} aria-hidden="true">{item.kind === 'income' ? '↙' : item.kind === 'transfer' ? '↔' : '↗'}</span><div><strong>{item.description}</strong><small>{item.kind === 'transfer' ? 'Transferencia' : item.category_name || (item.kind === 'income' ? 'Ingreso' : 'Gasto')} · {new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${item.occurred_on}T00:00:00Z`))}</small></div><b className={item.kind === 'income' ? s.incomeAmount : item.kind === 'expense' ? s.expenseAmount : ''}>{item.kind === 'income' ? '+' : item.kind === 'expense' ? '−' : ''}{soles(item.amount)}</b></li>)}</ul> : <div className={s.empty}><span aria-hidden="true">↔</span><h3>Sin movimientos este mes</h3><button className={s.textLink} onClick={onRegister} aria-haspopup="dialog">Registrar movimiento ＋</button></div>}
-        {totals.count > 0 && <div className={s.insight}><span aria-hidden="true">↔</span><strong>{totals.count} {totals.count === 1 ? 'movimiento en el mes' : 'movimientos en el mes'}</strong></div>}
       </section>
     </div>
   </div>;

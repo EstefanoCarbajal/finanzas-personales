@@ -1,4 +1,5 @@
 'use server';
+import { CreditError } from '@/lib/credit.mjs';
 
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/server/auth';
@@ -9,6 +10,26 @@ import { cancelPayment, PlanningInputError, saveBudget, schedulePayment, settleP
 import { contributeToGoal, createGoal, GoalInputError } from '@/lib/goals.mjs';
 import { createHabit, createPersonalReward, HabitInputError, markHabitComplete, redeemPersonalReward } from '@/lib/habits.mjs';
 import { saveAccountOrder } from '@/lib/account-order.mjs';
+import { createCategory, saveCategoryIcon, updateCategory, deleteCategory, CategoryInputError } from '@/lib/categories.mjs';
+import { renameAccount, deleteAccount, AccountInputError } from '@/lib/accounts.mjs';
+import { BANK_CODES } from '@/lib/banks.mjs';
+import { decimal, toCents } from '@/lib/money.mjs';
+
+export async function editAccount(accountId: string, name: string, bankCode: string) {
+  const user = await requireUser();
+  try { await renameAccount(db(), user.id, accountId, name, bankCode); }
+  catch (error) { return { success: false, message: error instanceof AccountInputError ? error.message : 'No pudimos editar la cuenta.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: 'Nombre de cuenta actualizado.' };
+}
+
+export async function removeAccount(accountId: string) {
+  const user = await requireUser();
+  try { await deleteAccount(db(), user.id, accountId); }
+  catch (error) { return { success: false, message: error instanceof AccountInputError ? error.message : 'No pudimos eliminar la cuenta.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: 'Cuenta eliminada.' };
+}
 
 export async function updateAccountOrder(ids: string[]) {
   const user = await requireUser();
@@ -22,7 +43,7 @@ export async function addMovement(_previous: { message: string; success: boolean
   try {
     await saveMovement(db(), user.id, Object.fromEntries(form));
   } catch (error) {
-    return { message: error instanceof InputError ? error.message : 'No pudimos guardar el movimiento. Inténtalo de nuevo.', success: false };
+    return { message: error instanceof InputError || error instanceof CreditError ? error.message : 'No pudimos guardar el movimiento. Inténtalo de nuevo.', success: false };
   }
   revalidatePath('/privado');
   return { message: 'Movimiento guardado.', success: true };
@@ -33,7 +54,7 @@ export async function editMovement(_previous: { message: string; success: boolea
   try {
     await updateMovement(db(), user.id, form.get('movement_id'), Object.fromEntries(form));
   } catch (error) {
-    return { message: error instanceof InputError ? error.message : 'No pudimos actualizar el movimiento. Inténtalo de nuevo.', success: false };
+    return { message: error instanceof InputError || error instanceof CreditError ? error.message : 'No pudimos actualizar el movimiento. Inténtalo de nuevo.', success: false };
   }
   revalidatePath('/privado');
   return { message: 'Movimiento actualizado.', success: true };
@@ -44,18 +65,21 @@ export async function removeMovement(form: FormData) {
   try {
     await deleteMovement(db(), user.id, form.get('movement_id'));
   } catch (error) {
-    return { message: error instanceof InputError ? error.message : 'No pudimos eliminar el movimiento. Inténtalo de nuevo.', success: false };
+    return { message: error instanceof InputError || error instanceof CreditError ? error.message : 'No pudimos eliminar el movimiento. Inténtalo de nuevo.', success: false };
   }
   revalidatePath('/privado');
   return { message: 'Movimiento eliminado.', success: true };
 }
 
-async function createOwnedName(table: 'accounts' | 'categories', userId: string, name: unknown, kind?: unknown) {
+async function createOwnedAccount(userId: string, name: unknown, currency: unknown, bank: unknown, openingBalance: unknown) {
   if (typeof name !== 'string' || !name.trim() || name.trim().length > 80) throw new InputError('Escribe un nombre de hasta 80 caracteres.');
-  if (table === 'categories' && kind !== 'income' && kind !== 'expense') throw new InputError('Elige si la categoría es de ingreso o gasto.');
+  if (currency !== 'PEN' && currency !== 'USD') throw new InputError('Selecciona una moneda válida.');
+  if (typeof bank !== 'string' || !BANK_CODES.has(bank)) throw new InputError('Selecciona un banco.');
+  let opening = '0.00';
+  try { opening = decimal(toCents(typeof openingBalance === 'string' && openingBalance ? openingBalance : '0')); }
+  catch { throw new InputError('Escribe un saldo inicial válido con hasta dos decimales.'); }
   try {
-    if (table === 'accounts') await db().execute('INSERT INTO accounts (id, user_id, name) VALUES (?, ?, ?)', [randomUUID(), userId, name.trim()]);
-    else await db().execute('INSERT INTO categories (id, user_id, name, kind) VALUES (?, ?, ?, ?)', [randomUUID(), userId, name.trim(), kind as string]);
+    await db().execute('INSERT INTO accounts (id, user_id, name, currency, bank_code, opening_balance) VALUES (?, ?, ?, ?, ?, ?)', [randomUUID(), userId, name.trim(), currency, bank, opening]);
   } catch (error) {
     if (typeof error === 'object' && error && 'code' in error && error.code === 'ER_DUP_ENTRY') throw new InputError('Ya existe un elemento con ese nombre.');
     throw error;
@@ -64,18 +88,42 @@ async function createOwnedName(table: 'accounts' | 'categories', userId: string,
 
 export async function addAccount(_previous: { message: string; success: boolean }, form: FormData) {
   const user = await requireUser();
-  try { await createOwnedName('accounts', user.id, form.get('name')); }
-  catch (error) { return { message: error instanceof InputError ? error.message : 'No pudimos guardar la cuenta.', success: false }; }
+  try { await createOwnedAccount(user.id, form.get('name'), form.get('currency') || 'PEN', form.get('bank_code'), form.get('opening_balance')); }
+  catch (error) { return { message: error instanceof InputError || error instanceof CreditError ? error.message : 'No pudimos guardar la cuenta.', success: false }; }
   revalidatePath('/privado');
   return { message: 'Cuenta añadida.', success: true };
 }
 
 export async function addCategory(_previous: { message: string; success: boolean }, form: FormData) {
   const user = await requireUser();
-  try { await createOwnedName('categories', user.id, form.get('name'), form.get('kind')); }
-  catch (error) { return { message: error instanceof InputError ? error.message : 'No pudimos guardar la categoría.', success: false }; }
+  try { await createCategory(db(), user.id, Object.fromEntries(form)); }
+  catch (error) { return { message: error instanceof CategoryInputError ? error.message : 'No pudimos guardar la categoría.', success: false }; }
   revalidatePath('/privado');
   return { message: 'Categoría añadida.', success: true };
+}
+
+export async function updateCategoryIcon(categoryId: string, icon: string) {
+  const user = await requireUser();
+  try { await saveCategoryIcon(db(), user.id, categoryId, icon); }
+  catch (error) { return { message: error instanceof CategoryInputError ? error.message : 'No pudimos guardar el icono.', success: false }; }
+  revalidatePath('/privado');
+  return { message: 'Icono actualizado.', success: true };
+}
+
+export async function editCategory(categoryId: string, input: { name: string; kind: string; icon: string }) {
+  const user = await requireUser();
+  try { await updateCategory(db(), user.id, categoryId, input); }
+  catch (error) { return { success: false, message: error instanceof CategoryInputError ? error.message : 'No pudimos editar la categoría.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: 'Categoría actualizada.' };
+}
+
+export async function removeCategory(categoryId: string) {
+  const user = await requireUser();
+  try { await deleteCategory(db(), user.id, categoryId); }
+  catch (error) { return { success: false, message: error instanceof CategoryInputError ? error.message : 'No pudimos eliminar la categoría.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: 'Categoría eliminada.' };
 }
 
 export async function addBudget(_previous: { message: string; success: boolean }, form: FormData) {
@@ -96,14 +144,18 @@ export async function addScheduledPayment(_previous: { message: string; success:
 
 export async function markPaymentPaid(form: FormData) {
   const user = await requireUser();
-  await settlePayment(db(), user.id, form.get('id'));
+  try { await settlePayment(db(), user.id, form.get('id')); }
+  catch (error) { return { success: false, message: error instanceof PlanningInputError ? error.message : 'No pudimos confirmar el pago. Revisa su estado antes de reintentar.' }; }
   revalidatePath('/privado');
+  return { success: true, message: 'Pago confirmado. El gasto ya está registrado.' };
 }
 
 export async function cancelScheduledPayment(form: FormData) {
   const user = await requireUser();
-  await cancelPayment(db(), user.id, form.get('id'));
+  try { await cancelPayment(db(), user.id, form.get('id')); }
+  catch (error) { return { success: false, message: error instanceof PlanningInputError ? error.message : 'No pudimos cancelar el pago. Inténtalo de nuevo.' }; }
   revalidatePath('/privado');
+  return { success: true, message: 'Pago cancelado. No se creó ningún gasto.' };
 }
 
 export async function addGoal(_previous: { message: string; success: boolean }, form: FormData) {
