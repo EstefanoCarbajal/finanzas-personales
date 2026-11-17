@@ -1,0 +1,1 @@
+ALTER TABLE accounts ADD COLUMN summary_selected BOOLEAN NOT NULL DEFAULT FALSE;

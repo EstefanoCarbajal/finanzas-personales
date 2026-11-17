@@ -113,7 +113,7 @@ export default function Dashboard() {
         </>}
 
         {section === "Movimientos" && <MovementsWorkspace><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
-        {section === "Cuentas" && <AccountsDemo creditSection={cardWorkspace} currencyTotals={accountTotals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} categories={categories} balances={accountTotals.accounts} saveOrder={async ids => { setAccounts(current => [...ids.map(id => current.find(account => account.id === id)!).filter(Boolean), ...current.filter(a => a.account_type === 'credit')]); return { success: true, message: 'Orden actualizado en la demo.' }; }} renameAccount={async (id, name, bank) => {
+        {section === "Cuentas" && <AccountsDemo creditSection={cardWorkspace} currencyTotals={accountTotals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} categories={categories} balances={accountTotals.accounts} saveOrder={async ids => { setAccounts(current => [...ids.map(id => current.find(account => account.id === id)!).filter(Boolean), ...current.filter(a => a.account_type === 'credit')]); return { success: true, message: 'Orden actualizado en la demo.' }; }} toggleSummaryAccount={async (id, selected) => { if (!accounts.some(account => account.id === id && account.account_type !== 'credit')) return { success: false, message: 'La cuenta ya no está disponible.' }; setAccounts(current => current.map(account => account.id === id ? { ...account, summary_selected: selected } : account)); return { success: true, message: selected ? 'Cuenta incluida en el total de la demo.' : 'Cuenta excluida del total de la demo.' }; }} renameAccount={async (id, name, bank) => {
           const trimmed = name.trim();
           if (!trimmed || trimmed.length > 80) return { success: false, message: 'Escribe un nombre de hasta 80 caracteres.' };
           if (!accounts.some(account => account.id === id)) return { success: false, message: 'La cuenta ya no está disponible.' };
@@ -124,7 +124,7 @@ export default function Dashboard() {
           if (sharedMovements.some(movement => movement.account_id === id || movement.destination_id === id)) return { success: false, message: 'Esta cuenta tiene movimientos asociados y no se puede eliminar.' };
           setAccounts(current => current.filter(account => account.id !== id));
           return { success: true, message: 'Cuenta eliminada en la demo.' };
-        }} onAddAccount={(name, currency = 'PEN', bank = 'BCP', openingBalance = '0.00') => setAccounts(current => [...current, { id: crypto.randomUUID(), name, currency, bank_code: bank, opening_balance: openingBalance || '0.00' }])} editCategory={async (id, input) => {
+        }} onAddAccount={(name, currency = 'PEN', bank = 'BCP', openingBalance = '0.00') => setAccounts(current => [...current, { id: crypto.randomUUID(), name, currency, bank_code: bank, opening_balance: openingBalance || '0.00', summary_selected: true }])} editCategory={async (id, input) => {
           const category = categories.find(item => item.id === id), name = input.name.trim();
           if (!category) return { success: false, message: 'La categoría ya no está disponible.' };
           if (!name || name.length > 80 || !['income', 'expense'].includes(input.kind) || !validCategoryIcon(input.icon)) return { success: false, message: 'Revisa el nombre, tipo e icono.' };

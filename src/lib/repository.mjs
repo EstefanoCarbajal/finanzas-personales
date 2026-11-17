@@ -96,7 +96,7 @@ export async function deleteMovement(pool, userId, movementId) {
 }
 
 export async function readDashboard(pool, userId) {
-  const [accounts] = await pool.execute('SELECT id, name, sort_order, account_type, currency, bank_code, credit_limit, opening_debt, opening_balance, last_four FROM accounts WHERE user_id = ? ORDER BY name', [userId]);
+  const [accounts] = await pool.execute('SELECT id, name, sort_order, account_type, currency, bank_code, credit_limit, opening_debt, opening_balance, last_four, summary_selected FROM accounts WHERE user_id = ? ORDER BY name', [userId]);
   const [categories] = await pool.execute('SELECT id, name, kind, icon FROM categories WHERE user_id = ? ORDER BY name', [userId]);
   const [movements] = await pool.execute(`SELECT m.id, m.kind, m.account_id, m.destination_id, m.amount, m.description, m.occurred_on, m.category_id, m.currency,
     a.name AS account_name, a.account_type, d.account_type AS destination_type, d.name AS destination_name, c.name AS category_name

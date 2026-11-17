@@ -600,3 +600,10 @@ main debe mantenerse como la última versión comprobada e integrada.
 1. Revisar respaldo/restauración, recuperación de acceso y configuración HTTPS/cookies seguras antes de producción.
 2. Probar en Node.js 24 y revisar la descarga CSV en Excel.
 3. La aplicación sigue sin publicar; completar respaldos/restauración, recuperación de acceso y HTTPS/cookies seguras antes de producción o datos reales.
+
+## Check de selección y total de cuentas · 17/11/2026
+
+- Quitada la franja de resumen. Los checks empiezan activos y solo alteran el total de «En tus cuentas» de la moneda visible; deuda y crédito no cambian. Nuevas cuentas también empiezan marcadas.
+- Migración nueva 014: DEFAULT TRUE y selección inicial de todas las cuentas ya existentes; 013 intacta para conservar el checksum aplicado. La preferencia privada sigue por usuario y demo en memoria.
+- Build aprobado. npm test previo 25/28 con fallos históricos en contraste fox y aserciones antiguas de crédito. Build final aprobado. Se corrigió el check con actualización optimista del total y reversión ante error. Las migraciones 013/014 están aplicadas en la base de pruebas. QA visual no completado: CUA detuvo la inspección al no poder determinar con seguridad la URL del navegador.
+- git diff --check ejecutado.

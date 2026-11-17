@@ -1,5 +1,11 @@
 # Contexto y decisiones
 
+## Check de selección y total de cuentas · 17/11/2026
+
+- Las tarjetas de cuentas empiezan incluidas. La migración 013 conserva su checksum ya aplicado y la nueva 014 establece el valor por defecto y marca las cuentas existentes. Las futuras nacen seleccionadas; privado persiste la preferencia y demo la conserva solo en memoria. El check actualiza el total superior de forma optimista y revierte si falla la acción.
+- Retirada la franja duplicada de selección. El check ajusta únicamente «En tus cuentas» para la moneda activa; deuda y crédito permanecen igual. El total usa céntimos BigInt.
+- Build y typecheck aprobados; npm test conserva 25/28 con tres fallos históricos ajenos. Las migraciones 013/014 quedaron aplicadas en la base exclusiva de pruebas.
+
 ## Exportación nativa a Excel · 16/11/2026
 
 - Movimientos sustituye CSV por un archivo .xlsx real en privado/demo, con los filtros actuales, cabecera fija, autofiltro, ancho de columnas e importes numéricos con dos decimales. Textos almacenados como cadenas, sin fórmulas; fecha civil conservada como texto y columna Moneda separada. ExcelJS 4.4.0 añadido al lockfile y cargado al exportar; generación local en memoria, sin envío de datos a terceros. Botón bloqueado durante generación y error recuperable.

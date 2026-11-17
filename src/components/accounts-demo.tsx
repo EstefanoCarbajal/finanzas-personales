@@ -29,15 +29,16 @@ function DemoSetupForm({ category = false, existing, onCreate }: { category?: bo
   return <form onSubmit={submit}><AccountSetupFields category={category} name={name} onNameChange={setName} currency={currency} onCurrencyChange={setCurrency} bank={bank} onBankChange={setBank} openingBalance={openingBalance} onOpeningBalanceChange={setOpeningBalance} kind={kind} onKindChange={setKind} icon={icon} onIconChange={setIcon} message={feedback.message} success={feedback.success} /></form>;
 }
 
-export default function AccountsDemo({ accounts, categories, balances, onAddAccount, onAddCategory, saveOrder, editCategory, removeCategory, renameAccount, removeAccount, creditSection, currencyTotals, availableByCurrency }: {
+export default function AccountsDemo({ accounts, categories, balances, onAddAccount, onAddCategory, saveOrder, toggleSummaryAccount, editCategory, removeCategory, renameAccount, removeAccount, creditSection, currencyTotals, availableByCurrency }: {
   creditSection: ReactNode; currencyTotals: Record<string, { cash: string; debt: string }>; availableByCurrency: Record<string, string>;
   accounts: Account[]; categories: Category[]; balances: Record<string, string>;
   onAddAccount: (name: string, currency?: string, bank?: string, openingBalance?: string) => void; onAddCategory: (name: string, kind: string, icon: string) => void;
   editCategory: EditCategory; removeCategory: RemoveCategory;
+  toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>;
   renameAccount: RenameAccount; removeAccount: RemoveAccount;
   saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>;
 }) {
-  return <AccountsWorkspace creditSection={creditSection} currencyTotals={currencyTotals} availableByCurrency={availableByCurrency} accounts={accounts} categories={categories} balances={balances} saveOrder={saveOrder} editCategory={editCategory} removeCategory={removeCategory} renameAccount={renameAccount} removeAccount={removeAccount}
+  return <AccountsWorkspace creditSection={creditSection} currencyTotals={currencyTotals} availableByCurrency={availableByCurrency} accounts={accounts} categories={categories} balances={balances} saveOrder={saveOrder} toggleSummaryAccount={toggleSummaryAccount} editCategory={editCategory} removeCategory={removeCategory} renameAccount={renameAccount} removeAccount={removeAccount}
     accountForm={<DemoSetupForm existing={accounts} onCreate={(name, _kind, _icon, currency, bank, openingBalance) => onAddAccount(name, currency, bank, openingBalance)} />}
     categoryForm={<DemoSetupForm category existing={categories} onCreate={onAddCategory} />} />;
 }

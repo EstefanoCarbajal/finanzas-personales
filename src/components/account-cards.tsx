@@ -6,7 +6,7 @@ import type { Account } from './accounts-workspace';
 import s from './accounts.module.css';
 import AccountActions, { type RenameAccount, type RemoveAccount } from './account-actions';
 
-export default function AccountCards({ accounts, balances, saveOrder, creationCard, renameAccount, removeAccount }: { accounts: Account[]; balances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; creationCard: ReactNode; renameAccount: RenameAccount; removeAccount: RemoveAccount }) {
+export default function AccountCards({ accounts, balances, saveOrder, toggleSummaryAccount, creationCard, renameAccount, removeAccount }: { accounts: Account[]; balances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>; creationCard: ReactNode; renameAccount: RenameAccount; removeAccount: RemoveAccount }) {
   const [order, setOrder] = useState<string[]>(() => [...accounts].sort((a, b) => (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity)).map(account => account.id));
   const [dragging, setDragging] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -19,6 +19,7 @@ export default function AccountCards({ accounts, balances, saveOrder, creationCa
   const savingRef = useRef(false);
   const mutationRef = useRef(false);
   const [mutating, setMutating] = useState(false);
+  const [toggling, setToggling] = useState<string | null>(null);
   const removedFocus = useRef<string | null>(null);
   const [focusRevision, setFocusRevision] = useState(0);
   const sortHelpId = useId();
@@ -52,6 +53,19 @@ export default function AccountCards({ accounts, balances, saveOrder, creationCa
       setOrder(savedOrder.current);
       setAnnouncement(error instanceof Error ? error.message : 'No pudimos guardar el orden.');
     } finally { savingRef.current = false; setSaving(false); }
+  }
+
+  async function toggleSummary(id: string, selected: boolean) {
+    if (savingRef.current || mutationRef.current || toggling) return;
+    mutationRef.current = true;
+    setMutating(true);
+    setToggling(id);
+    try {
+      const result = await toggleSummaryAccount(id, selected);
+      if (!result.success) throw new Error(result.message);
+      setAnnouncement(result.message);
+    } catch (error) { setAnnouncement(error instanceof Error ? error.message : 'No pudimos actualizar el resumen.'); }
+    finally { mutationRef.current = false; setMutating(false); setToggling(null); }
   }
 
   function updateOffset() {
@@ -104,6 +118,7 @@ export default function AccountCards({ accounts, balances, saveOrder, creationCa
       {ordered.map((account, index) => {
         const amount = balances[account.id] || '0.00';
         const tone = accounts.findIndex(item => item.id === account.id) % 3;
+        const selected = account.summary_selected !== false;
         return <article data-account-card={account.id} key={account.id} role="group" tabIndex={0} aria-label={`Ordenar ${account.name}`} aria-roledescription="Cuenta ordenable" aria-disabled={saving || mutating || undefined} aria-describedby={sortHelpId} onPointerDown={event => start(event, account.id)} style={dragging === account.id ? { '--drag-x': `${offset.x}px`, '--drag-y': `${offset.y}px` } as CSSProperties : undefined} className={`${s.accountCard} ${s[`tone${tone}`]} ${dragging === account.id ? s.dragging : ''}`} onKeyDown={event => {
             if (event.target !== event.currentTarget) return;
             if (event.key === 'Escape' && drag.current) { event.preventDefault(); finish(true); return; }
@@ -114,8 +129,7 @@ export default function AccountCards({ accounts, balances, saveOrder, creationCa
             const target = ordered[index + direction];
             if (!savingRef.current && !mutationRef.current && !drag.current && target) { move(account.id, target.id); void persist(); }
           }}>
-          <div className={s.cardTop}><span className={s.cardBrand}><span className={s.brandMark}>✦</span> MI CUENTA</span><AccountActions account={account} balance={amount} disabled={saving || mutating || !!dragging} rename={renameAccount} remove={removeAccount} onBusy={busy => { mutationRef.current = busy; setMutating(busy); }} onResult={(message, removedId) => { setAnnouncement(message); if (removedId) { removedFocus.current = removedId; setFocusRevision(value => value + 1); } }} /></div>
-          <div className={s.cardMiddle}><span className={s.cardChip} aria-hidden="true"><i /></span></div>
+          <div className={s.cardTop}><span className={s.cardBrand}><button type="button" className={`${s.brandMark} ${selected ? s.brandMarkSelected : ''}`} aria-label={`${selected ? 'Quitar' : 'Añadir'} ${account.name} ${selected ? 'del' : 'al'} total de cuentas`} aria-pressed={selected} disabled={saving || mutating || !!dragging} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); void toggleSummary(account.id, !selected); }}>{toggling === account.id ? '·' : selected ? <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-9" /></svg> : <span aria-hidden="true">+</span>}</button><span>{selected ? 'INCLUIDA EN TOTAL' : 'EXCLUIDA DEL TOTAL'}</span></span><AccountActions account={account} balance={amount} disabled={saving || mutating || !!dragging} rename={renameAccount} remove={removeAccount} onBusy={busy => { mutationRef.current = busy; setMutating(busy); }} onResult={(message, removedId) => { setAnnouncement(message); if (removedId) { removedFocus.current = removedId; setFocusRevision(value => value + 1); } }} /></div>
           <div className={s.cardBottom}><div className={s.accountCopy}><h3>{account.name} <small aria-label={`Moneda ${account.currency || 'PEN'}`}>{account.currency || 'PEN'}</small></h3><strong className={`${s.accountBalance} ${amount.startsWith('-') ? s.negative : ''}`}>{account.currency === 'USD' ? `$ ${amount}` : soles(amount)}</strong></div></div>
         </article>;
       })}

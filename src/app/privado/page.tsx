@@ -25,7 +25,7 @@ import PrivateDashboardShell from './private-dashboard-shell';
 import AccountsWorkspace from '@/components/accounts-workspace';
 import { readAvatar } from '@/lib/profile.mjs';
 import { updateAvatar } from './profile-actions';
-import { updateAccountOrder, editCategory, removeCategory, editAccount, removeAccount } from './actions';
+import { updateAccountOrder, editCategory, removeCategory, editAccount, removeAccount, toggleAccountSummary } from './actions';
 
 export const dynamic = 'force-dynamic';
 const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'metas', 'habitos', 'configuracion'] as const;
@@ -61,7 +61,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         </>}
         {section === 'cuentas' && data && <>
 
-          <AccountsWorkspace creditSection={cardWorkspace} currencyTotals={data.totals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} categories={data.categories} balances={data.totals.accounts} saveOrder={updateAccountOrder} editCategory={editCategory} removeCategory={removeCategory} renameAccount={editAccount} removeAccount={removeAccount} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
+          <AccountsWorkspace creditSection={cardWorkspace} currencyTotals={data.totals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} categories={data.categories} balances={data.totals.accounts} saveOrder={updateAccountOrder} toggleSummaryAccount={toggleAccountSummary} editCategory={editCategory} removeCategory={removeCategory} renameAccount={editAccount} removeAccount={removeAccount} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
         </>}
         {section === 'planificacion' && data && planning && <PlanningPanel accounts={cashAccounts} categories={data.categories} budgets={planning.budgets} payments={planning.payments} month={month} today={today} />}
         {section === 'metas' && data && goals && <><section className="page-heading"><h1>Metas y ahorro</h1></section><GoalsPanel accounts={cashAccounts} goals={goals} today={today} /></>}

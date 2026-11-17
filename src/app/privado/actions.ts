@@ -14,6 +14,7 @@ import { createCategory, saveCategoryIcon, updateCategory, deleteCategory, Categ
 import { renameAccount, deleteAccount, AccountInputError } from '@/lib/accounts.mjs';
 import { BANK_CODES } from '@/lib/banks.mjs';
 import { decimal, toCents } from '@/lib/money.mjs';
+import type { ResultSetHeader } from 'mysql2';
 
 export async function editAccount(accountId: string, name: string, bankCode: string) {
   const user = await requireUser();
@@ -21,6 +22,15 @@ export async function editAccount(accountId: string, name: string, bankCode: str
   catch (error) { return { success: false, message: error instanceof AccountInputError ? error.message : 'No pudimos editar la cuenta.' }; }
   revalidatePath('/privado');
   return { success: true, message: 'Nombre de cuenta actualizado.' };
+}
+
+export async function toggleAccountSummary(accountId: string, selected: boolean) {
+  const user = await requireUser();
+  if (typeof accountId !== 'string' || accountId.length !== 36 || typeof selected !== 'boolean') return { success: false, message: 'La selección de cuenta no es válida.' };
+  const [result] = await db().execute<ResultSetHeader>("UPDATE accounts SET summary_selected = ? WHERE user_id = ? AND id = ? AND account_type = 'asset'", [selected, user.id, accountId]);
+  if (!result.affectedRows) return { success: false, message: 'La cuenta ya no está disponible.' };
+  revalidatePath('/privado');
+  return { success: true, message: selected ? 'Cuenta añadida al resumen.' : 'Cuenta quitada del resumen.' };
 }
 
 export async function removeAccount(accountId: string) {
