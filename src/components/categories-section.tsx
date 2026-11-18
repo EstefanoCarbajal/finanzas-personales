@@ -57,13 +57,13 @@ export default function CategoriesSection({ categories, creation, editCategory, 
   }, [editing, saving, removing, categories]);
   function closeEditor(id: string) { returnFocus.current = id; setEditing(null); }
   return <section className={s.section} aria-labelledby="categories-title">
-    <div className={s.heading}><h2 id="categories-title">Categorías <span>{categories.length}</span></h2><button ref={creator} type="button" className={s.newCategoryButton} aria-expanded={creationOpen} aria-controls="category-creation" onClick={() => setCreationOpen(open => !open)}><span aria-hidden="true">+</span>Nueva categoría<span className={s.chevron} aria-hidden="true">⌄</span></button></div>
+    <div className={s.heading}><h2 id="categories-title">Categorías</h2><button ref={creator} type="button" className={s.newCategoryButton} aria-expanded={creationOpen} aria-controls="category-creation" onClick={() => setCreationOpen(open => !open)}><span aria-hidden="true">+</span>Nueva categoría<span className={s.chevron} aria-hidden="true">⌄</span></button></div>
     <details ref={composer} id="category-creation" className={`${s.composer} ${s.creationPanel}`} open={creationOpen} onToggle={event => setCreationOpen(event.currentTarget.open)}><summary className={s.srOnly}>Nueva categoría</summary>{creation}</details>
     <div className={s.groups}>{[{ kind: 'expense', label: 'Gastos', arrow: '↗' }, { kind: 'income', label: 'Ingresos', arrow: '↙' }].map(group => {
       const items = categories.filter(category => category.kind === group.kind);
       const selected = items.find(category => category.id === editing);
       return <div className={s.group} key={group.kind}>
-        <h3 className={s.groupTitle} data-kind={group.kind}><span aria-hidden="true">{group.arrow}</span>{group.label}<small>{items.length}</small></h3>
+        <h3 className={s.groupTitle} data-kind={group.kind}><span aria-hidden="true">{group.arrow}</span>{group.label}</h3>
         <ul className={s.tiles}>{items.map(category => {
           const id = categoryIconFor(category), icon = categoryIcons.find(item => item.id === id)!;
           return <li key={category.id}><button ref={node => { if (node) tiles.current.set(category.id, node); else tiles.current.delete(category.id); }} type="button" className={s.tile} disabled={saving} aria-label={`Editar categoría ${category.name}`} aria-expanded={editing === category.id} onClick={() => { setEditing(editing === category.id ? null : category.id); setStatus(''); }}><span className={s.largeIcon} data-tone={icon.tone}><CategoryIcon id={id} /><span className={s.editMark} aria-hidden="true">✎</span></span><strong>{category.name}</strong></button></li>;

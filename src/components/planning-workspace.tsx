@@ -35,10 +35,6 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
   const sorted = [...payments].sort((a, b) => a.due_on.localeCompare(b.due_on));
   const overdue = sorted.filter(payment => payment.due_on < today);
   const visible = view === 'calendar' && selectedDate ? sorted.filter(p => p.due_on === selectedDate) : sorted;
-  const totalLimit = budgets.reduce((sum, budget) => sum + toCents(budget.amount), BigInt(0));
-  const totalSpent = budgets.reduce((sum, budget) => sum + toCents(budget.spent), BigInt(0));
-  const remaining = totalLimit - totalSpent;
-  const percent = totalLimit > BigInt(0) ? Number(totalSpent * BigInt(100) / totalLimit) : 0;
   const next = sorted[0];
 
   async function process(id: string, mode: 'paid' | 'cancel') {
@@ -59,7 +55,6 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
     {section === 'pagos' && <section className={s.overview} aria-label="Panorama de pagos futuros">
       <div className={s.hero}>
         <div className={s.heroCopy}><span className={s.eyebrow}>PLANIFICA CON CALMA</span><h2>Tu mes,<br />a tu ritmo.</h2>
-          <a className={s.heroLink} href="#agenda-pagos">Ver mis pagos <span aria-hidden="true">↗</span></a>
         </div>
         <div className={s.scene} aria-hidden="true"><span className={s.spark}>✦</span><div className={s.calendar}><div>{dateLabel(today, { month: 'short' })}<span>● ●</span></div><strong>{today.slice(8)}</strong><span className={s.calendarCheck}>✓</span></div><div className={s.avatar}><SelectedAvatar width={116} height={116} /></div><span className={s.orbit}>✧</span></div>
       </div>
@@ -69,15 +64,14 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
     </section>}
 
     {section === 'planificacion' && <section className={s.budgets} aria-labelledby="budget-heading">
-      <header className={s.sectionHeading}><div><span className={s.sectionIcon} aria-hidden="true">◎</span><h2 id="budget-heading">Tus presupuestos</h2><span className={s.count}>{budgets.length}</span></div>{budgetForm}</header>
+      <header className={s.sectionHeading}><div><span className={s.sectionIcon} aria-hidden="true">◎</span><h2 id="budget-heading">Tus presupuestos</h2></div>{budgetForm}</header>
       <div className={s.budgetLayout}>
-        <div className={s.budgetSummary}><div className={`${s.ring} ${remaining < BigInt(0) ? s.ringOver : ''}`} style={{ '--progress': `${Math.min(100, Math.max(0, percent))}%` } as CSSProperties}><div><strong>{percent > 999 ? "999+" : percent}<small>%</small></strong><span>utilizado</span></div></div><div><span className={s.statLabel}>{remaining < BigInt(0) ? 'Sobre tus límites' : 'Por utilizar'}</span><strong className={s.remaining}>{soles(decimal(remaining < BigInt(0) ? -remaining : remaining))}</strong><span className={s.caption}>de {soles(decimal(totalLimit))} presupuestados</span></div></div>
         <div className={s.budgetGrid}>{budgets.map((budget, index) => {
           const limit = toCents(budget.amount), spent = toCents(budget.spent), available = limit - spent;
           const usage = limit > BigInt(0) ? Number(spent * BigInt(100) / limit) : 0;
           const category = categories.find(item => item.id === budget.category_id) || { name: budget.category_name };
           return <article className={`${s.budgetCard} ${spent > limit ? s.overBudget : ''}`} key={budget.id} style={{ '--order': index } as CSSProperties}>
-            <div className={s.budgetTop}><span className={s.categoryIcon}><CategoryIcon id={categoryIconFor(category)} /></span><span className={s.budgetStatus}>{spent > limit ? 'Límite superado' : usage >= 80 ? 'Cerca del límite' : 'Dentro del límite'}</span></div>
+            <div className={s.budgetTop}><span className={s.categoryIcon}><CategoryIcon id={categoryIconFor(category)} /></span>{(spent > limit || usage >= 80) && <span className={s.budgetStatus}>{spent > limit ? 'Límite superado' : 'Cerca del límite'}</span>}</div>
             <h3>{budget.category_name}</h3><div className={s.budgetAmount}><strong>{soles(budget.spent)}</strong><span>de {soles(budget.amount)}</span></div>
             <div className={s.track} role="progressbar" aria-label={`Presupuesto de ${budget.category_name}`} aria-valuenow={Math.min(100, usage)} aria-valuemin={0} aria-valuemax={100} aria-valuetext={`${usage}% utilizado`}><span style={{ width: `${Math.min(100, Math.max(0, usage))}%` }} /></div>
             <div className={s.budgetFoot}><span>{available < BigInt(0) ? 'Exceso' : 'Disponible'} <b>{soles(decimal(available < BigInt(0) ? -available : available))}</b></span><b>{usage}%</b></div>

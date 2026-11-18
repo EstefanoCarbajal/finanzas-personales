@@ -56,7 +56,7 @@ export default function AccountsWorkspace({ accounts, categories, balances, acco
       <dl className={w.overview}><div className={w.cashTotal}><dt>En tus cuentas</dt><dd key={`${currency}-${favoriteAmount}`}>{walletMoney(favoriteAmount, currency)}</dd></div><div><dt>Deuda en tarjetas</dt><dd>{walletMoney(selectedTotals.debt, currency)}</dd></div><div><dt>Crédito</dt><dd>{walletMoney(selectedAvailable, currency)}</dd></div></dl>
       <div className={w.groups}>
       <section className={w.cashGroup} aria-labelledby="accounts-list-title">
-      <div className={w.groupHeading}><div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div><span className={w.groupTag}>Tu dinero</span></div>
+      <div className={w.groupHeading}><div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div></div>
       {bankGroups.map(bank => <div key={bank} className={w.bankGroup}><h3 className={w.bankTitle}>{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Otro banco') === bank)} balances={balances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} creationCard={bank === bankGroups[bankGroups.length - 1] ? creationCard : null} /></div>)}
       {!bankGroups.length && creationCard}
       </section>

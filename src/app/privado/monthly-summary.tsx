@@ -17,6 +17,7 @@ type Props = { movements: PrivateMovement[]; currentMonth: string; balance: stri
 
 export default function MonthlySummary({ movements, currentMonth, balance, demo = false, onRegister, onViewMovements }: Props) {
   const [month, setMonth] = useState(currentMonth);
+  const [balanceHidden, setBalanceHidden] = useState(false);
   const totals = useMemo(() => {
     let income = BigInt(0), expense = BigInt(0);
     const categories = new Map<string, bigint>();
@@ -50,12 +51,18 @@ export default function MonthlySummary({ movements, currentMonth, balance, demo 
   return <div className={s.summary}>
     <section className={s.hero} aria-labelledby="balance-title">
       <div className={s.heroCopy}>
-        <h2 id="balance-title">Saldo en cuentas</h2>
-        <strong className={s.heroAmount}>{soles(balance)}</strong>
+        <div className={s.balanceHeading}>
+          <h2 id="balance-title">Saldo en cuentas</h2>
+          <button type="button" className={s.visibilityToggle} onClick={() => setBalanceHidden(value => !value)} aria-pressed={balanceHidden} aria-label={balanceHidden ? 'Mostrar saldo en cuentas' : 'Ocultar saldo en cuentas'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>{balanceHidden && <path d="M3 3l18 18"/>}</svg>
+            {balanceHidden ? 'Mostrar' : 'Ocultar'}
+          </button>
+        </div>
+        <strong className={s.heroAmount} aria-live="polite">{balanceHidden ? '••••••' : soles(balance)}</strong>
         <p>Dinero acumulado · Sin incluir la línea de crédito</p>
         <button className={s.cta} onClick={onRegister} aria-haspopup="dialog"><span aria-hidden="true">＋</span> Registrar movimiento</button>
       </div>
-      <div className={s.orbit} aria-hidden="true"><div className={s.orbitInner} /><span className={s.spark}>✦</span><div className={s.koala}><SelectedAvatar /></div><span className={s.orbitPlus}>＋</span></div>
+      <div className={s.orbit} aria-hidden="true"><div className={s.orbitInner} /><span className={s.spark}>✦</span><div className={s.koala}><SelectedAvatar />{balanceHidden && <svg className={s.sunglasses} viewBox="0 0 100 100" fill="none"><path d="M24 49h52l-2 9c-.6 4-3.8 6-8 6h-7c-4 0-6.6-2-7-6h-4c-.4 4-3 6-7 6h-7c-4.2 0-7.4-2-8-6Z" fill="#172d2b" stroke="#e7f7cb" strokeWidth="1.5" strokeLinejoin="round"/><path d="m31 52 5 5m23-5 5 5" stroke="#a9d5c5" strokeWidth="1.5" strokeLinecap="round" opacity=".8"/><path d="M23 50h-4m62 0h-4" stroke="#172d2b" strokeWidth="3" strokeLinecap="round"/></svg>}</div><span className={s.orbitPlus}>＋</span></div>
     </section>
     <section aria-labelledby="month-title">
       <div className={s.sectionHeading}><h2 id="month-title">Resumen mensual</h2><div className={s.monthControl}><button aria-label="Ver mes anterior" onClick={() => setMonth(value => shiftMonth(value, -1))}>‹</button><span aria-live="polite">{monthName(month)}</span><button aria-label="Ver mes siguiente" disabled={month >= currentMonth} onClick={() => setMonth(value => shiftMonth(value, 1))}>›</button></div></div>

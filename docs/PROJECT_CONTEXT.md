@@ -1,5 +1,46 @@
 # Contexto y decisiones
 
+## Visibilidad del saldo en Resumen · 18/11/2026
+
+- El saldo en cuentas de Resumen puede ocultarse y mostrarse en privado y demo; el avatar seleccionado lleva lentes animados mientras está oculto. El estado vive en memoria y afecta únicamente a ese importe, no a otras cifras del panel.
+- Build y typecheck aprobados; cambio sin persistencia ni reglas monetarias. Pendiente revisión visual y de teclado en navegador, incluidos móvil, movimiento reducido y temas.
+
+## Presupuestos sin etiqueta Dentro del límite · 18/11/2026
+
+- Retirada «Dentro del límite» de las tarjetas de presupuesto en privado/demo, sin dejar una etiqueta vacía. Se conservan los avisos de cercanía/exceso del límite.
+- npm run build y npm run typecheck aprobados; cambio revisado por inspección y git diff --check correcto. Sin QA nuevo de navegador ni integración; pendiente revisión visual. Sin cambios de reglas monetarias ni persistencia.
+
+
+## Títulos de presupuestos y metas sin contadores · 18/11/2026
+
+- Retirados los totales junto a «Tus presupuestos» y «Tus metas» de Planificación en privado/demo, además del estilo exclusivo del contador de metas.
+- npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA nuevo de navegador ni integración; pendiente revisión visual. Sin cambios de reglas ni persistencia.
+
+
+## Presupuestos sin resumen agregado · 18/11/2026
+
+- Retirado el bloque de porcentaje utilizado, importe por utilizar y total presupuestado de Planificación en privado/demo. Las tarjetas de presupuesto ocupan todo el ancho disponible y conservan sus importes/progreso individuales.
+- Eliminados cálculos y estilos exclusivos del resumen. npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA nuevo de navegador ni integración; pendiente revisión visual responsive. Sin cambios de reglas ni persistencia.
+
+
+## Pagos sin botón Ver mis pagos · 18/11/2026
+
+- Retirado «Ver mis pagos» del panorama superior de Pagos futuros en privado/demo y sus estilos exclusivos.
+- npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA nuevo de navegador ni integración; pendiente revisión visual. Sin cambios de reglas ni persistencia.
+
+
+## Billetera sin etiqueta Tu dinero · 18/11/2026
+
+- Retirada la frase «Tu dinero» de la cabecera de cuentas dentro de Tu billetera, compartida por privado y demo.
+- npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA nuevo de navegador; pendiente revisión visual. Sin cambios de reglas ni persistencia.
+
+
+## Categorías sin contadores · 18/11/2026
+
+- Retirados los tres totales junto a Categorías, Gastos e Ingresos en el componente compartido de privado/demo y sus estilos exclusivos.
+- npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA de navegador ni pruebas de integración nuevas; pendiente revisión visual. Next regeneró next-env.d.ts con referencias de tipos del build, sin edición manual.
+
+
 ## Campana de notificaciones · 17/11/2026
 
 - Se incorpora a la cabecera compartida de demo y privado una campana con panel visual adaptable al tema, cierre por botón, Escape o exterior y animación respetuosa con movimiento reducido. La aplicación aún no genera notificaciones: el panel lo indica como «Próximamente», sin avisos ni contadores ficticios.

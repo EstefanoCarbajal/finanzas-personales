@@ -40,7 +40,7 @@ export function SavingsGoalCard({ goal, children }: { goal: SavingsGoal; childre
 
 export default function GoalsWorkspace({ goals, creation, children, demo = false }: { goals: SavingsGoal[]; creation?: ReactNode; children: ReactNode; demo?: boolean }) {
   return <section className={s.workspace} aria-label="Metas de ahorro">
-    <div className={s.sectionHeading}><h2>Tus metas <span>{goals.length}</span></h2>{demo && <span className={s.demoLabel}>Vista ilustrativa</span>}</div>
+    <div className={s.sectionHeading}><h2>Tus metas</h2>{demo && <span className={s.demoLabel}>Vista ilustrativa</span>}</div>
     {creation}
     <div className={s.grid}>{children}{!goals.length && <div className={s.empty}><Summit /><h3>¿Qué quieres hacer realidad?</h3><p>Crea tu primera meta y empieza a acercarte.</p></div>}</div>
     {demo && <p className={s.demoFoot}>Crea metas y registra aportes en tu espacio privado.</p>}
