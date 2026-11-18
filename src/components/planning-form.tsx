@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import type { PlanningCategory, PlanningResult } from './planning-workspace';
 import s from './planning-workspace.module.css';
+import MovementModal from './movement-modal';
 
 export default function PlanningForm({ kind, categories, accounts = [], month, today, save }: {
   kind: 'budget' | 'payment'; categories: PlanningCategory[]; accounts?: { id: string; name: string; currency?: string }[];
@@ -12,8 +13,8 @@ export default function PlanningForm({ kind, categories, accounts = [], month, t
   const expenseCategories = categories.filter(category => category.kind === 'expense');
   const [draft, setDraft] = useState({ payment_mode: 'manual', automatic_time: '09:00', amount: '', description: '', due_on: today, category_id: expenseCategories[0]?.id || '', account_id: accounts[0]?.id || '' });
   const [pending, setPending] = useState(false);
+  const [open, setOpen] = useState(false);
   const [result, setResult] = useState<PlanningResult | null>(null);
-  const details = useRef<HTMLDetailsElement>(null);
   const busy = useRef(false);
   const categoryId = expenseCategories.some(c => c.id === draft.category_id) ? draft.category_id : expenseCategories[0]?.id || '';
   const accountId = accounts.some(a => a.id === draft.account_id) ? draft.account_id : accounts[0]?.id || '';
@@ -31,15 +32,12 @@ export default function PlanningForm({ kind, categories, accounts = [], month, t
       setResult(response);
       if (response.success) {
         setDraft(current => ({ ...current, amount: '', description: '' }));
-        if (details.current) { details.current.open = false; details.current.querySelector('summary')?.focus(); }
+        setOpen(false);
       }
     } catch { setResult({ success: false, message: 'No pudimos guardar. Tus datos siguen aquí; revisa la conexión e inténtalo de nuevo.' }); }
     finally { busy.current = false; setPending(false); }
   }
-  return <div>
-    <details ref={details} className={s.creator}>
-      <summary aria-disabled={pending} onClick={event => { if (pending) event.preventDefault(); }}>{payment ? 'Añadir pago futuro' : 'Añadir o ajustar presupuesto'}</summary>
-      <form onSubmit={submit} className={s.form} aria-busy={pending} data-demo={!save || undefined}>
+  const form = <form onSubmit={submit} className={`${s.modalForm} ${s.form}`} aria-busy={pending} data-demo={!save || undefined}>
         <input type="hidden" name="month" value={month} />
         <fieldset disabled={pending}>
           {payment && <><div className={s.modeChoices}><label><input type="radio" name="payment_mode" value="manual" checked={draft.payment_mode==='manual'} onChange={()=>change('payment_mode','manual')} /><span>✓ Manual<small>Yo confirmo el gasto</small></span></label><label><input type="radio" name="payment_mode" value="automatic" checked={draft.payment_mode==='automatic'} onChange={()=>change('payment_mode','automatic')} /><span>ϟ Automático<small>Se registra por mí</small></span></label></div>{draft.payment_mode==='automatic' && <div className={s.autoNotice}><label>Hora de Lima<input name="automatic_time" type="time" required value={draft.automatic_time} onChange={e=>change('automatic_time',e.target.value)} /></label><p>Se descontará del saldo de esta cuenta en la aplicación. No realiza un cobro bancario. Si el servicio está detenido, se registrará al reanudarse.</p></div>}</>}
@@ -49,8 +47,13 @@ export default function PlanningForm({ kind, categories, accounts = [], month, t
           <button className={s.button} disabled={unavailable || !save}>{pending ? 'Guardando…' : payment ? 'Guardar pago futuro' : 'Guardar presupuesto'}</button>
         </fieldset>
         <p className={s.formNote}>{!save ? 'Vista previa. Disponible para guardar en tu espacio privado.' : unavailable ? 'Necesitas una categoría de gasto y, para pagos, una cuenta.' : payment ? (draft.payment_mode==='automatic' ? 'Registro único en la fecha y hora elegidas. Puedes cancelarlo antes.' : 'Se registra un gasto solo cuando confirmas que ya lo pagaste.') : 'Si la categoría ya tiene presupuesto, se actualizará su límite.'}</p>
-      </form>
-    </details>
-    <p role="status" className={`${s.message} ${result?.success ? s.success : ''}`}>{result?.message}</p>
+      </form>;
+  return <div className={s.creatorAction}>
+    <button type="button" className={s.button} aria-haspopup="dialog" onClick={() => { setResult(null); setOpen(true); }}><span aria-hidden="true">＋</span> {payment ? 'Añadir pago futuro' : 'Añadir presupuesto'}</button>
+    <MovementModal heading={payment ? 'Añadir pago futuro' : 'Añadir o ajustar presupuesto'} open={open} onClose={() => { if (!busy.current) setOpen(false); }} pending={pending} demo={!save}>
+      {form}
+      <p role="status" className={s.message}>{!result?.success ? result?.message : ''}</p>
+    </MovementModal>
+    <p role="status" className={s.success}>{result?.success ? result.message : ''}</p>
   </div>;
 }
