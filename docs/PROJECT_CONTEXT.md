@@ -1,5 +1,10 @@
 # Contexto y decisiones
 
+## Campana de notificaciones · 17/11/2026
+
+- Se incorpora a la cabecera compartida de demo y privado una campana con panel visual adaptable al tema, cierre por botón, Escape o exterior y animación respetuosa con movimiento reducido. La aplicación aún no genera notificaciones: el panel lo indica como «Próximamente», sin avisos ni contadores ficticios.
+- Build y typecheck aprobados. Sin cambios de persistencia ni QA visual de navegador; quedan pendientes comprobaciones de móvil, teclado y temas.
+
 ## Check de selección y total de cuentas · 17/11/2026
 
 - Las tarjetas de cuentas empiezan incluidas. La migración 013 conserva su checksum ya aplicado y la nueva 014 establece el valor por defecto y marca las cuentas existentes. Las futuras nacen seleccionadas; privado persiste la preferencia y demo la conserva solo en memoria. El check actualiza el total superior de forma optimista y revierte si falla la acción.

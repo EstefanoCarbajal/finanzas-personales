@@ -5,6 +5,7 @@ import styles from "./dashboard-shell.module.css";
 import ProfileMenu, { type SaveAvatarAction } from './profile-menu';
 import { themeVariables } from '@/lib/avatar-themes.mjs';
 import SelectedAvatar, { AvatarContext } from './selected-avatar';
+import NotificationCenter from './notification-center';
 
 export const navigation = [
   { id: "resumen", label: "Resumen" },
@@ -84,6 +85,7 @@ export default function DashboardShell({ active, demo = false, avatar = "koala",
         <div className={styles.topActions}>
           
           <button type="button" className={styles.register} aria-haspopup="dialog" onClick={onNewMovement}><Icon name="plus" /><span>Nuevo movimiento</span></button>
+          <NotificationCenter />
           <ProfileMenu onSettings={onNavigate ? () => onNavigate("configuracion") : undefined} avatarId={avatar} demo={demo} onAvatarChange={setTheme} saveAvatarAction={saveAvatarAction} sessionAction={sessionAction} />
         </div>
       </header>

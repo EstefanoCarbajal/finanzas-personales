@@ -1,5 +1,10 @@
 # Estado al 13 de noviembre de 2026
 
+## Campana de notificaciones · 17/11/2026
+
+- Nueva entrada compartida en cabecera con panel de estado futuro, diseño adaptable a temas y movimiento reducido. No existe todavía una fuente de notificaciones ni se presentan avisos inventados.
+- `npm run build` y `npm run typecheck` aprobados. No se ejecutaron pruebas de navegador, integración ni suite local para este cambio visual; pendientes revisión responsive, teclado y paletas.
+
 ## Exportación nativa a Excel · 16/11/2026
 
 - Movimientos sustituye CSV por un archivo .xlsx real en privado/demo, con los filtros actuales, cabecera fija, autofiltro, ancho de columnas e importes numéricos con dos decimales. Textos almacenados como cadenas, sin fórmulas; fecha civil conservada como texto y columna Moneda separada. ExcelJS 4.4.0 añadido al lockfile y cargado al exportar; generación local en memoria, sin envío de datos a terceros. Botón bloqueado durante generación y error recuperable.
