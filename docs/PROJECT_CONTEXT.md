@@ -1,5 +1,33 @@
 # Contexto y decisiones
 
+## Cabecera de pagos sin mes · 17/11/2026
+
+- Retirado el indicador mensual junto al título Pagos futuros en privado/demo; Planificación conserva el suyo. Se mantienen las fechas de vencimiento y la navegación mensual propia del calendario.
+- Build y typecheck aprobados; cambio revisado por inspección y git diff --check correcto. Sin nuevas pruebas de navegador, unitarias ni integración; pendiente revisión visual de esta cabecera.
+
+## Retirada de filtros de pagos · 17/11/2026
+
+- Eliminada la fila Todos / Próximos 7 días / Vencidos y su estado de filtrado en Pagos futuros, compartido por privado y demo. La agenda y el calendario reciben todos los pagos ordenados por vencimiento; se conservan selector Calendario/Lista, selección de día y contadores del panorama superior. Estados vacíos sin referencias a filtros retirados.
+- Build y typecheck aprobados; diff revisado y git diff --check correcto. Cambio de presentación sin reglas ni persistencia nuevas; no se repitieron pruebas unitarias, integración ni QA de navegador. Pendiente revisión visual de la agenda tras esta retirada.
+
+## Pagos futuros desde un modal · 17/11/2026
+
+- «Añadir pago futuro» reemplaza «Sin descontar del saldo» en la cabecera de la agenda, en privado y demo. Se retira su desplegable y se reutiliza el mismo flujo modal que presupuestos: borrador conservado al cerrar/error, bloqueo durante envío, cierre tras éxito y mensajes de resultado.
+- Se mantienen campos y opciones manual/automático, cuenta, moneda, fecha y hora de Lima; sin cambios de reglas, acciones, persistencia ni migraciones. Estilos compartidos de la acción/modal renombrados de forma neutral para ambos formularios.
+- Verificación nueva: npm run build y npm run typecheck aprobados; inspección del diff y git diff --check correctos. No se repitieron pruebas unitarias, integración ni QA de navegador. Pendientes revisión responsive del modal de pago y flujos privados de guardado/error/espera con fixture. El QA de navegador de la entrada anterior corresponde al modal de presupuesto. Sin publicación ni datos reales.
+
+## Presupuestos desde un modal · 17/11/2026
+
+- «Añadir presupuesto» reemplaza «Este mes · PEN» en la cabecera de Tus presupuestos, tanto en privado como en demo. Abre el formulario «Añadir o ajustar presupuesto» en un diálogo nativo; se retira el desplegable inferior del presupuesto. Los pagos conservan su formulario desplegable.
+- Reutilizado el modal existente con título configurable y valor predeterminado intacto para movimientos: Escape/exterior/cierre, foco restaurado, bloqueo de scroll y cierre bloqueado al guardar. El borrador se conserva al cerrar y ante error; éxito limpia el importe y cierra. Mensaje de error dentro del modal y confirmación de éxito junto al botón. Sin cambios de reglas ni persistencia.
+- Verificación nueva: build y typecheck aprobados, diff revisado y git diff --check correcto. QA de demo en navegador local: apertura desde cabecera, fondo aislado, cierre Escape con foco devuelto al botón, reapertura con importe 125.50 conservado tras escribir 125,50 e inspección visual del modal. Demo mantiene guardado deshabilitado. No se ejecutaron pruebas unitarias ni integración; pendientes guardado/espera/error privados con fixture y revisión a 320/390 px, escritorio amplio, oscuro y otras paletas. Sin publicación ni datos reales.
+
+## Metas dentro de Planificación y pagos independientes · 17/11/2026
+
+- Planificación reúne presupuestos y metas de ahorro, con sus formularios y aportes existentes. Pagos futuros ocupa el antiguo lugar de Metas y ahorro en el menú compartido, con calendario/lista, filtros, alta y confirmación/cancelación propios. El panorama de próximos pagos acompaña a esta sección independiente.
+- Privado y demo comparten la nueva composición; el acceso del Resumen a metas abre Planificación (con ancla a metas en privado). La URL privada antigua seccion=metas sigue abriendo Planificación. No se modifican reglas monetarias, acciones, persistencia ni migraciones.
+- Validación nueva: npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. El primer build encontró spawn EPERM y se repitió con permisos de ejecución; una condición redundante de demo detectada por TypeScript se corrigió antes del build final. No se ejecutaron pruebas unitarias, integración remota ni QA de navegador; quedan pendientes la revisión visual responsive y los flujos privados con fixture tras esta reorganización. Sin publicación ni datos reales.
+
 ## Check de selección y total de cuentas · 17/11/2026
 
 - Las tarjetas de cuentas empiezan incluidas. La migración 013 conserva su checksum ya aplicado y la nueva 014 establece el valor por defecto y marca las cuentas existentes. Las futuras nacen seleccionadas; privado persiste la preferencia y demo la conserva solo en memoria. El check actualiza el total superior de forma optimista y revierte si falla la acción.

@@ -11,7 +11,7 @@ export const navigation = [
   { id: "movimientos", label: "Movimientos" },
   { id: "cuentas", label: "Cuentas" },
   { id: "planificacion", label: "Planificación" },
-  { id: "metas", label: "Metas y ahorro" },
+  { id: "pagos", label: "Pagos futuros" },
   { id: "habitos", label: "Hábitos y recompensas" },
   { id: "configuracion", label: "Configuración" },
 ] as const;
@@ -23,7 +23,7 @@ function Icon({ name }: { name: string }) {
     movimientos: <><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4 4 4" /></>,
     cuentas: <><rect x="3" y="5" width="18" height="15" rx="3" /><path d="M3 9h18m-6 5h3M7 5V3h10" /></>,
     planificacion: <><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4m10-4v4M3 11h18m-14 5h3m4 0h3" /></>,
-    metas: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="m12 12 8-8m-1-2v3h3" /></>,
+    pagos: <><rect x="3" y="4" width="18" height="17" rx="3" /><path d="M7 2v4m10-4v4M3 10h18m-13 5 3 3 5-5" /></>,
     habitos: <><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 3Z" /></>,
     configuracion: <><path d="M4 7h16M4 17h16" /><circle cx="9" cy="7" r="3" /><circle cx="15" cy="17" r="3" /></>,
     arrow: <path d="M5 12h14m-5-5 5 5-5 5" />,

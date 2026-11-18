@@ -13,19 +13,18 @@ export type PlanningPayment = { automatic_at?: string | null; automatic_time?: s
 export type PlanningCategory = { id: string; name: string; kind: string; icon?: string | null };
 export type PlanningResult = { success: boolean; message: string };
 const paymentMoney = (p: PlanningPayment) => p.currency === 'USD' ? soles(p.amount).replace('S/', '$') : soles(p.amount);
-type Filter = 'all' | 'soon' | 'overdue';
 const dateLabel = (value: string, options: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('es-PE', { ...options, timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
 const daysUntil = (date: string, today: string) => Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000);
 const dueLabel = (days: number) => days < 0 ? `Vencido · ${Math.abs(days)} d` : days === 0 ? 'Vence hoy' : days === 1 ? 'Mañana' : `En ${days} días`;
 
-export default function PlanningWorkspace({ budgets, payments, categories, month, today, budgetForm, paymentForm, processPayment, demo = false }: {
+export default function PlanningWorkspace({ budgets, payments, categories, month, today, budgetForm, paymentForm, processPayment, demo = false, section = 'planificacion', goals }: {
   budgets: PlanningBudget[]; payments: PlanningPayment[]; categories: PlanningCategory[]; month: string; today: string;
   budgetForm: ReactNode; paymentForm: ReactNode; demo?: boolean;
+  section?: 'planificacion' | 'pagos'; goals?: ReactNode;
   processPayment?: (id: string, mode: 'paid' | 'cancel') => Promise<PlanningResult>;
 }) {
   const [view, setView] = useState<'list' | 'calendar'>('calendar');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [filter, setFilter] = useState<Filter>('all');
   const [confirmation, setConfirmation] = useState<{ id: string; mode: 'paid' | 'cancel' } | null>(null);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<PlanningResult | null>(null);
@@ -34,10 +33,8 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
   const confirmationBack = useRef<HTMLButtonElement>(null);
   useEffect(() => { if (confirmation) confirmationBack.current?.focus(); }, [confirmation]);
   const sorted = [...payments].sort((a, b) => a.due_on.localeCompare(b.due_on));
-  const soon = sorted.filter(payment => { const days = daysUntil(payment.due_on, today); return days >= 0 && days <= 7; });
   const overdue = sorted.filter(payment => payment.due_on < today);
-  const filtered = filter === 'soon' ? soon : filter === 'overdue' ? overdue : sorted;
-  const visible = view === 'calendar' && selectedDate ? filtered.filter(p => p.due_on === selectedDate) : filtered;
+  const visible = view === 'calendar' && selectedDate ? sorted.filter(p => p.due_on === selectedDate) : sorted;
   const totalLimit = budgets.reduce((sum, budget) => sum + toCents(budget.amount), BigInt(0));
   const totalSpent = budgets.reduce((sum, budget) => sum + toCents(budget.spent), BigInt(0));
   const remaining = totalLimit - totalSpent;
@@ -56,10 +53,10 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
     finally { busy.current = false; setPending(false); }
   }
 
-  return <div className={s.workspace} id="planificacion">
-    <header className={s.titleRow}><h1>Planificación</h1><span className={s.month}><CalendarIcon />{dateLabel(`${month}-01`, { month: 'long', year: 'numeric' })}</span></header>
+  return <div className={s.workspace} id={section}>
+    <header className={s.titleRow}><h1>{section === 'pagos' ? 'Pagos futuros' : 'Planificación'}</h1>{section === 'planificacion' && <span className={s.month}><CalendarIcon />{dateLabel(`${month}-01`, { month: 'long', year: 'numeric' })}</span>}</header>
     {demo && <p className={s.demoNote}>Vista de ejemplo · Noviembre de 2026 · Guardado y confirmación en el espacio privado.</p>}
-    <section className={s.overview} aria-label="Panorama de planificación">
+    {section === 'pagos' && <section className={s.overview} aria-label="Panorama de pagos futuros">
       <div className={s.hero}>
         <div className={s.heroCopy}><span className={s.eyebrow}>PLANIFICA CON CALMA</span><h2>Tu mes,<br />a tu ritmo.</h2>
           <a className={s.heroLink} href="#agenda-pagos">Ver mis pagos <span aria-hidden="true">↗</span></a>
@@ -69,10 +66,10 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
       <div className={s.overviewSide}><div className={s.nextPayment}><span className={s.statLabel}>Próximo compromiso</span>{next ? <><strong>{soles(next.amount)}</strong><span className={s.nextName}>{next.description}</span><span className={next.due_on < today ? s.dangerText : s.nextDate}>{dateLabel(next.due_on, { day: 'numeric', month: 'short' })} · {dueLabel(daysUntil(next.due_on, today))}</span></> : <><strong className={s.allClear}>Todo al día <span aria-hidden="true">✓</span></strong><span className={s.nextName}>Sin pagos pendientes</span></>}</div>
         <div className={s.miniStats}><div><strong>{payments.length}</strong><span>Pendientes</span></div><div><strong className={overdue.length ? s.dangerText : ''}>{overdue.length}</strong><span>Vencidos</span></div></div>
       </div>
-    </section>
+    </section>}
 
-    <section className={s.budgets} aria-labelledby="budget-heading">
-      <header className={s.sectionHeading}><div><span className={s.sectionIcon} aria-hidden="true">◎</span><h2 id="budget-heading">Tus presupuestos</h2><span className={s.count}>{budgets.length}</span></div><span className={s.caption}>Este mes · PEN</span></header>
+    {section === 'planificacion' && <section className={s.budgets} aria-labelledby="budget-heading">
+      <header className={s.sectionHeading}><div><span className={s.sectionIcon} aria-hidden="true">◎</span><h2 id="budget-heading">Tus presupuestos</h2><span className={s.count}>{budgets.length}</span></div>{budgetForm}</header>
       <div className={s.budgetLayout}>
         <div className={s.budgetSummary}><div className={`${s.ring} ${remaining < BigInt(0) ? s.ringOver : ''}`} style={{ '--progress': `${Math.min(100, Math.max(0, percent))}%` } as CSSProperties}><div><strong>{percent > 999 ? "999+" : percent}<small>%</small></strong><span>utilizado</span></div></div><div><span className={s.statLabel}>{remaining < BigInt(0) ? 'Sobre tus límites' : 'Por utilizar'}</span><strong className={s.remaining}>{soles(decimal(remaining < BigInt(0) ? -remaining : remaining))}</strong><span className={s.caption}>de {soles(decimal(totalLimit))} presupuestados</span></div></div>
         <div className={s.budgetGrid}>{budgets.map((budget, index) => {
@@ -87,16 +84,14 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
           </article>;
         })}{!budgets.length && <div className={s.empty}><span aria-hidden="true">◎</span><h3>Tu primer límite, a tu medida</h3><p>Elige una categoría y cuánto quieres destinarle.</p></div>}</div>
       </div>
-      {budgetForm}
-    </section>
+    </section>}
+    {section === 'planificacion' && goals}
 
-    <section className={s.agenda} id="agenda-pagos" aria-labelledby="agenda-heading" aria-busy={pending}>
-      <header className={s.sectionHeading}><div><span className={s.sectionIcon}><CalendarIcon /></span><h2 id="agenda-heading" tabIndex={-1} ref={agendaHeading}>Pagos futuros</h2><span className={s.count}>{payments.length}</span></div><span className={s.caption}>Sin descontar del saldo</span></header>
+    {section === 'pagos' && <section className={s.agenda} id="agenda-pagos" aria-labelledby="agenda-heading" aria-busy={pending}>
+      <header className={s.sectionHeading}><div><span className={s.sectionIcon}><CalendarIcon /></span><h2 id="agenda-heading" tabIndex={-1} ref={agendaHeading}>Pagos futuros</h2><span className={s.count}>{payments.length}</span></div>{paymentForm}</header>
       <div className={s.filters} aria-label="Vista de pagos"><button aria-pressed={view==='calendar'} className={view==='calendar'?s.selectedFilter:''} disabled={pending} onClick={()=>{setView('calendar');setConfirmation(null);}}>▦ Calendario</button><button aria-pressed={view==='list'} className={view==='list'?s.selectedFilter:''} disabled={pending} onClick={()=>{setView('list');setConfirmation(null);}}>☷ Lista</button></div>
-      {paymentForm}
-      <div className={s.filters} aria-label="Filtrar pagos">{([{ id: 'all', label: 'Todos', count: payments.length }, { id: 'soon', label: 'Próximos 7 días', count: soon.length }, { id: 'overdue', label: 'Vencidos', count: overdue.length }] as const).map(item => <button key={item.id} type="button" disabled={pending} aria-pressed={filter === item.id} onClick={() => { setFilter(item.id); setConfirmation(null); }} className={filter === item.id ? s.selectedFilter : ''}>{item.label}<span>{item.count}</span></button>)}</div>
       <p role="status" className={`${s.message} ${message?.success ? s.success : ''}`}>{message?.message}</p>
-      {view==='calendar' && <PaymentCalendar payments={filtered} today={today} selected={selectedDate} disabled={pending} onSelect={date=>{setSelectedDate(date);setConfirmation(null);}} />}
+      {view==='calendar' && <PaymentCalendar payments={sorted} today={today} selected={selectedDate} disabled={pending} onSelect={date=>{setSelectedDate(date);setConfirmation(null);}} />}
       {view==='calendar' && selectedDate && <h3>{dateLabel(selectedDate,{day:'numeric',month:'long'})}</h3>}
       <div className={s.paymentList}>{visible.map(payment => {
         const days = daysUntil(payment.due_on, today), confirming = confirmation?.id === payment.id;
@@ -104,8 +99,8 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
           <div className={s.paymentMain}><time className={s.dateTile} dateTime={payment.due_on}><span>{dateLabel(payment.due_on, { month: 'short' }).replace('.', '')}</span><strong>{payment.due_on.slice(8)}</strong></time><div className={s.paymentCopy}><h3>{payment.description}</h3>{payment.automatic_at && <span className={s.autoBadge}>ϟ Automático · {payment.automatic_time} Lima</span>}<span>{payment.category_name} <i aria-hidden="true">·</i> {payment.account_name}</span></div><div className={s.paymentValue}><strong>{paymentMoney(payment)}</strong><span className={days < 0 ? s.dangerText : ''}>{dueLabel(days)}</span></div></div>
           {processPayment && <div className={s.paymentBottom}>{confirming ? <div className={s.confirmation}><p>{confirmation.mode === 'paid' ? `Se registrará un gasto de ${paymentMoney(payment)} hoy en ${payment.account_name}.` : 'Se retirará este pago pendiente, sin crear un gasto.'}</p><div><button ref={confirmationBack} type="button" className={s.quietButton} disabled={pending} onClick={() => { setConfirmation(null); document.getElementById(`pay-${payment.id}`)?.focus(); }}>Volver</button><button type="button" className={s.button} disabled={pending} onClick={() => process(payment.id, confirmation.mode)}>{pending ? 'Procesando…' : confirmation.mode === 'paid' ? 'Confirmar gasto' : 'Cancelar pago'}</button></div></div> : <><span className={s.paymentHint}>¿Ya lo pagaste?</span><div><button className={s.quietButton} type="button" disabled={pending} onClick={() => { setConfirmation({ id: payment.id, mode: 'cancel' }); setMessage(null); }}>Cancelar pago</button><button id={`pay-${payment.id}`} className={s.payButton} type="button" disabled={pending} onClick={() => { setConfirmation({ id: payment.id, mode: 'paid' }); setMessage(null); }}><span aria-hidden="true">✓</span> Marcar pagado</button></div></>}</div>}
         </article>;
-      })}{!visible.length && <div className={s.empty}><span aria-hidden="true">✓</span><h3>{selectedDate && view==='calendar' ? 'Sin pagos para este día' : filter === 'overdue' ? 'Ningún pago vencido' : filter === 'soon' ? 'Una semana sin pendientes' : 'Tu agenda está libre'}</h3><p>{filter === 'all' ? 'Añade tu próximo pago para tenerlo presente.' : 'Puedes consultar el resto en Todos.'}</p></div>}</div>
-    </section>
+      })}{!visible.length && <div className={s.empty}><span aria-hidden="true">✓</span><h3>{selectedDate && view==='calendar' ? 'Sin pagos para este día' : 'Tu agenda está libre'}</h3><p>Añade tu próximo pago para tenerlo presente.</p></div>}</div>
+    </section>}
   </div>;
 }
 

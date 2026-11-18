@@ -22,7 +22,7 @@ import PlanningDemo from "./planning-demo";
 
 const exampleGoals: SavingsGoal[] = [{ id: 'example-travel', name: 'Un viaje para recordar', target_amount: '1200.00', saved: '480.00', target_on: null, account_id: 'example', account_name: 'Ahorro ilustrativo' }];
 
-type Section = "Resumen" | "Movimientos" | "Cuentas" | "Planificación" | "Metas y ahorro" | "Hábitos y recompensas" | "Configuración";
+type Section = "Resumen" | "Movimientos" | "Cuentas" | "Planificación" | "Pagos futuros" | "Hábitos y recompensas" | "Configuración";
 type Movement = { id: number; name: string; category: string; amount: number; date: string; kind?: string; categoryId?: string; accountId?: string; destinationId?: string | null; account?: string; destination?: string | null };
 
 const initial: Movement[] = [
@@ -102,14 +102,14 @@ export default function Dashboard() {
   }} />;
   return <DashboardShell demo active={navigation.find(item => item.label === section)!.id} onNewMovement={() => setFormOpen(true)} onNavigate={id => { setSection(navigation.find(item => item.id === id)!.label); setNotice(""); }}>
       <div className="content">
-        {section !== "Configuración" && section !== "Planificación" && <>{section !== "Cuentas" && <div className="page-heading"><div>{(section !== "Resumen" && section !== "Movimientos" && section !== "Metas y ahorro") && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Tu resumen" : section}</h1>{(section !== "Resumen" && section !== "Movimientos" && section !== "Metas y ahorro") && <p>Reconoce tus avances cotidianos y suma puntos virtuales.</p>}</div></div>}
-        <div className="demo-note">{(section === "Cuentas" || section === "Resumen" || section === "Movimientos" || section === "Metas y ahorro") ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
+        {section !== "Configuración" && section !== "Planificación" && section !== "Pagos futuros" && <>{section !== "Cuentas" && <div className="page-heading"><div>{(section !== "Resumen" && section !== "Movimientos") && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Tu resumen" : section}</h1>{(section !== "Resumen" && section !== "Movimientos") && <p>Reconoce tus avances cotidianos y suma puntos virtuales.</p>}</div></div>}
+        <div className="demo-note">{(section === "Cuentas" || section === "Resumen" || section === "Movimientos") ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
         <p className="notice" role="status">{notice}</p>
         </>}
         {section === "Configuración" && <SettingsWorkspace demo creditCards={cardWorkspace} />}
         {section === "Resumen" && <>
           <MonthlySummary currentMonth="2026-11" balance={accountTotals.balance} demo onRegister={() => setFormOpen(true)} onViewMovements={() => setSection("Movimientos")} movements={sharedMovements} />
-          <SummaryGoal demo goal={exampleGoals[0]} onOpen={() => setSection("Metas y ahorro")} />
+          <SummaryGoal demo goal={exampleGoals[0]} onOpen={() => setSection("Planificación")} />
         </>}
 
         {section === "Movimientos" && <MovementsWorkspace><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
@@ -139,9 +139,7 @@ export default function Dashboard() {
           return { success: true, message: 'Categoría eliminada en la demo.' };
         }} onAddCategory={(name, kind, icon) => setCategories(current => [...current, { id: crypto.randomUUID(), name, kind, icon }])} />}
 
-        {section === "Planificación" && <PlanningDemo categories={categories} accounts={cashAccounts} movements={sharedMovements} />}
-
-        {section === "Metas y ahorro" && <GoalsWorkspace goals={exampleGoals} demo creation={<GoalCreateForm accounts={cashAccounts} today="2026-11-11" />}>{exampleGoals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} />)}</GoalsWorkspace>}
+        {(section === "Planificación" || section === "Pagos futuros") && <PlanningDemo section={section === "Pagos futuros" ? 'pagos' : 'planificacion'} categories={categories} accounts={cashAccounts} movements={sharedMovements} goals={<div id="metas"><GoalsWorkspace goals={exampleGoals} demo creation={<GoalCreateForm accounts={cashAccounts} today="2026-11-11" />}>{exampleGoals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} />)}</GoalsWorkspace></div>} />}
 
         {section === "Hábitos y recompensas" && <HabitsDemo />}
 

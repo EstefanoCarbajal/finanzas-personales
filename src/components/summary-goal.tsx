@@ -17,7 +17,7 @@ export default function SummaryGoal({ goal, onOpen, demo = false }: {
     <div className={s.copy}><span className={s.eyebrow}>{complete ? '¡META ALCANZADA!' : 'TU PRÓXIMA VICTORIA'}{demo && <span> · Ejemplo</span>}</span>
       <h2>{goal?.name || 'Todo empieza con una meta'}</h2>
       {goal ? <><div className={s.amount}><strong>{soles(goal.saved)}</strong><span>de {soles(goal.target_amount)}</span></div><p>{complete ? '¡Llegaste! Cada aporte cuenta.' : `A ${soles(decimal(target - saved))} de lograrlo.`}</p></> : <p>Elige tu destino y empieza a avanzar.</p>}
-      {onOpen ? <button className={s.link} onClick={onOpen}>{label}<span aria-hidden="true">↗</span></button> : <a className={s.link} href="/privado?seccion=metas">{label}<span aria-hidden="true">↗</span></a>}
+      {onOpen ? <button className={s.link} onClick={onOpen}>{label}<span aria-hidden="true">↗</span></button> : <a className={s.link} href="/privado?seccion=planificacion#metas">{label}<span aria-hidden="true">↗</span></a>}
     </div>
     <div className={s.race}>
       <div className={s.raceTop}><span>{complete ? '¡Lo conseguiste!' : 'Cada paso te acerca'}</span><strong>{progress}%</strong></div>
