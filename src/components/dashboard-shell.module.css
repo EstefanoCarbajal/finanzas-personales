@@ -4,13 +4,10 @@
 .brand{display:flex;align-items:center;gap:12px;color:#fff;text-decoration:none;font-family:var(--font-body);font-size:26px;font-weight:900;letter-spacing:-1px;line-height:1.1}
 .brand svg{border-radius:17px;box-shadow:0 3px 0 #0b2924;transform:rotate(-5deg)}
 .brandSub{display:block;margin-top:7px;color:#c2d5c5;font-size:9px;font-weight:700;letter-spacing:3.2px}
-.workspace{display:flex;align-items:center;gap:10px;margin:30px 2px 23px;padding:13px 12px;border:1px solid #ffffff1c;border-radius:15px;background:#ffffff08}
-.workspaceSymbol{display:grid;place-items:center;color:#dcf899}.workspaceSymbol svg{width:19px}
-.workspace strong,.workspace span:not(.workspaceSymbol):not(.liveDot){display:block}.workspace strong{font-size:12px;font-weight:800}.workspace div>span{margin-top:2px;color:#b2caba;font-size:11px}
-.liveDot{width:6px;height:6px;margin-left:auto;border-radius:50%;background:#dcf899;box-shadow:0 0 0 4px #dcf89912}
-.navigation{display:block;margin:0;overflow:visible;flex-shrink:0}
+
+.navigation{display:block;margin:28px 0 0;overflow:visible;flex-shrink:0}
 .groupLabel{margin:0 13px 11px;color:#a9c3b4;font-size:9px;font-weight:800;letter-spacing:1.7px}
-.navigation>div:nth-of-type(4) .groupLabel{margin-top:24px}
+.navigation>div[data-section="planificacion"] .groupLabel{margin-top:24px}
 .navItem{display:flex;align-items:center;gap:12px;width:100%;min-height:61px;margin:5px 0;padding:10px 12px;border:1px solid transparent;border-radius:15px;background:transparent;color:#c9ddcf;text-align:left;text-decoration:none;transition:background .18s,color .18s,transform .18s}
 .navItem:hover{background:#ffffff0b;color:#fff;filter:none;transform:translateX(3px)}
 .navIcon{display:grid;place-items:center;flex:0 0 33px;height:33px;border-radius:10px;background:#ffffff08}
@@ -42,19 +39,19 @@
 .shell a:focus-visible,.shell button:focus-visible{outline:3px solid #8cba54;outline-offset:4px}.sidebar a:focus-visible,.sidebar button:focus-visible,.drawer a:focus-visible,.drawer button:focus-visible{outline-color:#fff}
 @media(min-width:901px) and (max-width:1200px){.sidebar{flex-basis:250px;width:250px;padding-inline:14px}.topbar{padding-inline:24px;gap:16px}.topActions{gap:12px}.sectionTitle{font-size:17px}.register{padding-inline:14px}.navCopy strong{font-size:12px}}
 @media(max-width:900px){.shell{display:block}.sidebar{display:none}.topbar{min-height:76px;padding:14px 20px}.menuButton{display:flex}.sectionTitle{font-size:18px}.topActions{gap:14px}.skipLink{left:15px}}
-@media(max-width:600px){.topbar{min-height:72px;padding:12px 16px;gap:12px}.topContext{gap:6px;flex:1}.sectionTitle{font-size:16px;letter-spacing:-.4px}.topActions{gap:10px}.register{width:44px;min-height:44px;padding:0}.register svg{width:21px;height:21px}.register>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.modeBadge{font-size:11px}.modeBadge:not(.demoBadge){display:none}.workspace{margin-top:28px}.drawer .navItem{min-height:58px}}
-@media(max-height:850px) and (min-width:901px){.sidebar{padding-top:22px}.workspace{margin-top:23px;margin-bottom:18px}.navItem{min-height:54px}.encouragement{margin-top:22px;padding-top:15px}.encouragement h2{font-size:18px}.encouragement p{font-size:10px}.profile{min-height:72px;padding-top:18px}}
+@media(max-width:600px){.topbar{min-height:72px;padding:12px 16px;gap:12px}.topContext{gap:6px;flex:1}.sectionTitle{font-size:16px;letter-spacing:-.4px}.topActions{gap:10px}.register{width:44px;min-height:44px;padding:0}.register svg{width:21px;height:21px}.register>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}.modeBadge{font-size:11px}.modeBadge:not(.demoBadge){display:none}.drawer .navItem{min-height:58px}}
+@media(max-height:850px) and (min-width:901px){.sidebar{padding-top:22px}.navItem{min-height:54px}.encouragement{margin-top:22px;padding-top:15px}.encouragement h2{font-size:18px}.encouragement p{font-size:10px}.profile{min-height:72px;padding-top:18px}}
 @media(prefers-reduced-motion:reduce){.shell *{transition:none!important;scroll-behavior:auto!important}}
 @media(max-width:600px){.topActions{gap:8px}.register svg{box-sizing:border-box;width:28px;height:28px;padding:4px}.sectionTitle{overflow-wrap:anywhere}.topActions .demoBadge{padding:5px 6px;font-size:10px}}
 @media(prefers-reduced-motion:no-preference){.drawer[open] .drawerInner{animation:drawerEnter .32s cubic-bezier(.2,.8,.2,1) both}@keyframes drawerEnter{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}}
 
 /* Keep every sidebar block readable on short screens; scroll the rail instead. */
-.brandRow,.workspace,.encouragement,.profile{flex-shrink:0}
+.brandRow,.encouragement,.profile{flex-shrink:0}
 .shell{--shell-forest:var(--theme-deep);--shell-lime:var(--theme-accent)}
 .sidebar{background:radial-gradient(ellipse at 0 0,var(--theme-glow),transparent 58%),var(--theme-deep)}
 .topbar{background:color-mix(in srgb,var(--theme-surface) 95%,transparent);border-color:var(--theme-line)}
 .sectionTitle,.menuButton{color:var(--theme-ink)}
-.navItem,.brandSub,.workspace span,.groupLabel{color:var(--theme-ondark)}
+.navItem,.brandSub,.groupLabel{color:var(--theme-ondark)}
 .navItem.active,.navItem.active:hover{background:var(--theme-accent);border-color:var(--theme-accent);color:var(--theme-deep)}
 .encouragement{background:linear-gradient(135deg,var(--theme-glow),var(--theme-deep))}
 .encouragement p,.cardEyebrow{color:var(--theme-ondark)}
@@ -67,8 +64,7 @@
 .sidebar a:focus-visible,.sidebar button:focus-visible,.drawer a:focus-visible,.drawer button:focus-visible{outline-color:var(--theme-accent)}
 @media(max-width:900px){.shell.shell{display:block}}
 
-@media(min-width:901px) and (max-height:1000px){.workspace{margin-top:22px;margin-bottom:18px}.navItem{min-height:54px}.encouragement{margin-top:22px;padding:16px}.encouragement h2{font-size:18px;margin-block:10px}.encouragement p{display:none}.goalLink{margin-top:12px}.profile{min-height:72px;padding-top:18px}}
+@media(min-width:901px) and (max-height:1000px){.navItem{min-height:54px}.encouragement{margin-top:22px;padding:16px}.encouragement h2{font-size:18px;margin-block:10px}.encouragement p{display:none}.goalLink{margin-top:12px}.profile{min-height:72px;padding-top:18px}}
 
 :global([data-avatar-theme="tiger"]) .sidebar { scrollbar-color:var(--theme-line) transparent; }
-:global([data-avatar-theme="tiger"]) .liveDot { background:var(--theme-accent); box-shadow:0 0 0 4px #efc58c12; }
 :global([data-avatar-theme="tiger"]) .drawer::backdrop { background:#08090bc9; }

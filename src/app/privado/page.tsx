@@ -3,6 +3,8 @@ import CreditCards from '@/components/credit-cards';
 import { creditCards } from '@/lib/credit.mjs';
 import { addCreditCard, updateCreditCard, removeCreditCard } from './credit-actions';
 import { addMovement } from './actions';
+import { readPiggybanks } from '@/lib/piggybanks.mjs';
+import { addPiggybank, freePiggybank } from './piggybank-actions';
 import SettingsWorkspace from '@/components/settings-workspace';
 import { saveCredentials } from './settings-actions';
 import { randomUUID } from 'node:crypto';
@@ -23,12 +25,13 @@ import GoalsPanel from './goals-panel';
 import HabitsRewards from './habits-rewards';
 import PrivateDashboardShell from './private-dashboard-shell';
 import AccountsWorkspace from '@/components/accounts-workspace';
+import CategoriesSection from '@/components/categories-section';
 import { readAvatar } from '@/lib/profile.mjs';
 import { updateAvatar } from './profile-actions';
 import { updateAccountOrder, editCategory, removeCategory, editAccount, removeAccount, toggleAccountSummary } from './actions';
 
 export const dynamic = 'force-dynamic';
-const sections = ['resumen', 'movimientos', 'cuentas', 'planificacion', 'pagos', 'habitos', 'configuracion'] as const;
+const sections = ['resumen', 'movimientos', 'cuentas', 'categorias', 'planificacion', 'pagos', 'habitos', 'configuracion'] as const;
 type Section = typeof sections[number];
 
 export default async function PrivatePage({ searchParams }: { searchParams: Promise<{ seccion?: string | string[] }> }) {
@@ -42,6 +45,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const month = today.slice(0, 7);
   const data = await readDashboard(db(), user.id);
   const cashAccounts = data.accounts.filter((account: { account_type: string }) => account.account_type !== 'credit');
+  const piggybanks = section === 'cuentas' ? await readPiggybanks(db(), user.id) : [];
   const cards = creditCards(data.accounts, data.movements);
   const availableByCurrency = Object.fromEntries(['PEN', 'USD'].map(currency => [currency, decimal(cards.filter((card: { currency?: string; available: string }) => (card.currency || 'PEN') === currency).reduce((sum: bigint, card: { available: string }) => sum + toCents(card.available), BigInt(0)))]));
   const cardWorkspace = <CreditCards update={updateCreditCard} remove={removeCreditCard} cards={cards} accounts={cashAccounts} today={today} create={addCreditCard} pay={async (form: FormData) => { 'use server'; return addMovement({ message: '', success: false }, form); }} />;
@@ -62,12 +66,12 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         </>}
         {section === 'cuentas' && data && <>
 
-          <AccountsWorkspace creditSection={cardWorkspace} currencyTotals={data.totals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} categories={data.categories} balances={data.totals.accounts} saveOrder={updateAccountOrder} toggleSummaryAccount={toggleAccountSummary} editCategory={editCategory} removeCategory={removeCategory} renameAccount={editAccount} removeAccount={removeAccount} accountForm={<SetupForms />} categoryForm={<SetupForms category />} />
+          <AccountsWorkspace movements={data.movements} piggybanks={piggybanks} piggybankActions={{ create: addPiggybank, release: freePiggybank }} today={today} creditSection={cardWorkspace} currencyTotals={data.totals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} balances={data.totals.accounts} saveOrder={updateAccountOrder} toggleSummaryAccount={toggleAccountSummary} renameAccount={editAccount} removeAccount={removeAccount} accountForm={<SetupForms />} />
         </>}
+        {section === 'categorias' && <CategoriesSection categories={data.categories} creation={<SetupForms category />} editCategory={editCategory} removeCategory={removeCategory} />}
         {(section === 'planificacion' || section === 'pagos') && data && planning && <PlanningPanel section={section} accounts={cashAccounts} categories={data.categories} budgets={planning.budgets} payments={planning.payments} month={month} today={today} goals={section === 'planificacion' && goals ? <div id="metas"><GoalsPanel accounts={cashAccounts} goals={goals} today={today} /></div> : undefined} />}
         {section === 'habitos' && habits && <><section className="page-heading"><div><span className="eyebrow">PEQUEÑOS PASOS, TODOS LOS DÍAS</span><h1>Hábitos y recompensas</h1><p>Reconoce tus avances cotidianos y elige premios personales.</p></div></section><HabitsRewards data={habits} today={today} /></>}
         {section === 'configuracion' && <SettingsWorkspace email={user.email} saveAction={saveCredentials} creditCards={cardWorkspace} />}
-        <footer>Hecho para avanzar a tu ritmo.<span>Tus datos están en tu espacio privado</span></footer>
       </div>
   </PrivateDashboardShell>;
 }

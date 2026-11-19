@@ -1,5 +1,44 @@
 # Estado al 13 de noviembre de 2026
 
+## Detalle de cuentas y alcancías · 19/11/2026
+
+- Cuentas abre detalle al pulsar tarjeta o usar Enter: saldo de cuenta, reservado/libre, cuatro espacios visuales y movimientos solo de esa cuenta (origen y destino). Reutiliza filtros y exportación Excel; transferencias con signo relativo y moneda correcta. Consulta en el detalle y edición/borrado existentes en Movimientos. Se conserva orden al regresar, con revalidación de su acción privada.
+- Hasta cuatro alcancías de importe positivo por cuenta de activo, con nombre/fecha opcional. Reserva dinero existente, sin cambiar saldo total ni crear movimientos o gastos. Liberación completa con confirmación, espacio reutilizable y recordatorio «Llegó el día»; la fecha no libera ni gasta automáticamente. PEN/USD por cuenta, sin alcancías en tarjetas. Demo solo en memoria.
+- Persistencia y protección de saldo libre: migración 015 aplicada solo a la base exclusiva u519053982_finanzas_test, con TLS y LF comprobados. FK compuesta por propietario/cuenta, posiciones únicas 1–4 y registro de idempotencia conservado tras liberar. Gastos/transferencias, edición/borrado de movimientos, aportes y pagos verifican reservas antes del commit; rollback al faltar saldo libre. Aportes ahora serializa por propietario. Los pagos automáticos sin saldo libre quedan pendientes de reintento. Cuentas sin reservas conservan comportamiento anterior.
+- Diseño compartido con frascos SVG, moneda/llenado/entrada breves, reparto visual de saldo y soporte de temas/movimiento reducido. Formularios conservan borrador y errores, normalizan coma decimal y bloquean controles/cierre mientras guardan; gestión de foco al abrir, cancelar y tras éxito, incluso al completar el cuarto espacio.
+- Build final y typecheck posterior aprobados (Node 26.13.0); tres pruebas locales nuevas correctas. Suite local 28/31: permanecen tres fallos históricos (fox: deep/accent y aserciones de crédito anteriores a byCurrency/bank_code).
+- Integración completa: diez archivos, 21/23 resultados correctos contando contenedores. Un escenario de integration.mjs falla por expectativa antigua sin byCurrency y causa el fallo de su contenedor; los demás pasan. Alcancías: cinco escenarios más contenedor aprobados, incluidos aislamiento, monedas, tarjetas, límite de cuatro concurrente, restricción SQL, idempotencia después de liberar, protección de movimientos/edición/borrado/pagos/aportes y carrera gasto/reserva. Primer intento de la nueva integración falló por faltar línea en la tarjeta ficticia; corregido fixture y repetido con éxito. Usuarios de integración limpiados.
+- QA demo: acceso desde tarjeta, cuatro espacios/límite, alta con coma/fecha, error con borrador conservado, Escape/foco, liberación, cuenta vacía, aislamiento entre cuentas y reinicio al recargar. QA privado con identidad ficticia: alta S/ 45.50 en Ahorros, saldo total S/ 100 y libre S/ 54.50, fecha Lima/recordatorio, espera y bloqueo, recarga persistente, error al separar S/ 55, cancelación/liberación con saldo total intacto, historial de transferencia recibida aislado, orden con teclado/Enter/vuelta y logout. Fixture eliminado con su historial y claves de idempotencia.
+- Inspección responsive a 320/390/1440 px y medidas sin desbordamiento en escenarios revisados; tema tigre de escritorio inspeccionado y consola capturada sin errores. QA detectó fecha no recogida al enviar y título con color global incorrecto; corregidos y comprobados. Viewport restaurado; demo de revisión disponible. Diff revisado y git diff --check correcto.
+- Pendientes de esta entrega: otras paletas, movimiento reducido y accesibilidad exhaustivos, táctil/arrastre y abrir exportación de cuenta en Excel; actualizar expectativas antiguas de pruebas. Pendientes de producción anteriores conservados. Sin publicación, datos reales ni dependencias nuevas; cambios locales ajenos conservados.
+
+## Categorías como sección propia · 19/11/2026
+
+- Categorías sale de Cuentas y aparece debajo de ella en el sidebar compartido, incluido el menú móvil. Privado usa /privado?seccion=categorias; demo navega con estado React. Se reutiliza CategoriesSection sin cambiar sus tarjetas, formulario de alta, editor ni confirmación de eliminación; se mantienen las acciones autenticadas y la revalidación de /privado.
+- Separadas las propiedades de categorías de AccountsWorkspace/AccountsDemo. La demo reutiliza el formulario existente extraído a DemoSetupForm y mantiene categorías en el estado superior para compartirlas con movimientos/planificación. Agrupadores del sidebar ligados al identificador de sección, no a índices desplazados.
+- Ajuste mínimo de responsive: a 370 px o menos, el encabezado de Categorías permite que el botón pase a la siguiente línea. La revisión a 320 px detectó desbordamiento del encabezado; se corrigió y se volvió a comprobar sin desbordamiento. El resto del diseño se conserva.
+- Validación nueva: npm run build y npm run typecheck finales aprobados; seis pruebas locales de category-management/category-icons aprobadas. Demo en navegador: Cuentas sin categorías, nueva sección y alta ficticia en memoria, conservación al volver desde Cuentas, reinicio al recargar, menú móvil que abre Categorías/cierra el diálogo, inspección a 1440/390/320 px y medidas sin desbordamiento tras el ajuste. Consola capturada sin errores; viewport restaurado. Diff revisado y git diff --check correcto.
+- No se ejecutaron integración remota ni QA con sesión privada ficticia para esta navegación; siguen pendientes guardado/error/espera privados, edición/borrado en la nueva ubicación, teclado exhaustivo y otras paletas. Sin migraciones, publicación ni datos reales.
+
+
+## Retirada de frases del pie · 19/11/2026
+
+- Retiradas «Hecho para avanzar a tu ritmo.» y «Tus datos están en tu espacio privado» del panel privado, eliminando su pie vacío. La demo también retira la primera frase y conserva «Vista previa · Datos ficticios».
+- npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA nuevo de navegador ni integración; pendiente revisión visual. Sin cambios de reglas ni persistencia.
+
+
+## Sidebar sin Mi espacio personal · 19/11/2026
+
+- Retirado el bloque decorativo «Mi espacio personal» del sidebar compartido de privado/demo, incluido el menú móvil. Eliminados su icono y estilos exclusivos; conservada separación entre marca y navegación.
+- npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA nuevo de navegador ni integración; pendiente revisión visual responsive. Sin cambios de reglas ni persistencia.
+
+
+## Meta del Resumen sin frase de importe restante · 19/11/2026
+
+- Retirada la frase dinámica «A S/ … de lograrlo» de la meta del Resumen compartido por privado/demo; ajustado el espacio antes del acceso a la meta y eliminado el import sin uso.
+- npm run build y npm run typecheck aprobados; diff revisado y git diff --check correcto. Sin QA nuevo de navegador ni integración; pendiente revisión visual. Sin cambios de reglas monetarias ni persistencia.
+
+
 ## Visibilidad del saldo en Resumen · 18/11/2026
 
 - Añadido control para ocultar y mostrar el saldo en cuentas en privado y demo. El avatar elegido muestra lentes de sol con animación, respetando movimiento reducido. El estado es temporal y no oculta otras cifras del panel.
@@ -680,3 +719,11 @@ main debe mantenerse como la última versión comprobada e integrada.
 - Migración nueva 014: DEFAULT TRUE y selección inicial de todas las cuentas ya existentes; 013 intacta para conservar el checksum aplicado. La preferencia privada sigue por usuario y demo en memoria.
 - Build aprobado. npm test previo 25/28 con fallos históricos en contraste fox y aserciones antiguas de crédito. Build final aprobado. Se corrigió el check con actualización optimista del total y reversión ante error. Las migraciones 013/014 están aplicadas en la base de pruebas. QA visual no completado: CUA detuvo la inspección al no poder determinar con seguridad la URL del navegador.
 - git diff --check ejecutado.
+# Dinero libre en tarjetas de Cuentas · 19/11/2026
+
+- Cambio de presentación: las tarjetas de Cuentas muestran «Dinero libre» y calculan saldo menos alcancías mediante `accountAllocation`; el saldo total continúa disponible en el detalle y en las acciones de cuenta.
+- Alcance compartido por privado/demo, sin cambios de base de datos ni reglas de persistencia. `npm run build`, `npm run typecheck` y `git diff --check` aprobados en esta entrega; no se ejecutaron pruebas de integración ni QA de navegador.
+
+## Tarjetas de Cuentas sin etiqueta de importe · 19/11/2026
+
+- Retirada la etiqueta visible «Dinero libre» de las tarjetas de Cuentas en «Tu billetera»; se conserva el número calculado como saldo menos alcancías. Sin cambios de datos ni reglas.

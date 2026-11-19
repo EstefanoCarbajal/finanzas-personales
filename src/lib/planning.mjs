@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { checkAccountReservations } from './piggybanks.mjs';
 import { decimal, toCents } from './money.mjs';
 import { todayLima } from './repository.mjs';
 
@@ -69,6 +70,7 @@ export async function settlePayment(pool, userId, paymentId, automatic = false) 
     await connection.execute(`INSERT INTO movements (id, user_id, request_id, kind, account_id, category_id, amount, description, occurred_on, currency)
       VALUES (?, ?, ?, 'expense', ?, ?, ?, ?, ?, ?)`, [randomUUID(), userId, payment.id, payment.account_id, payment.category_id, payment.amount, payment.description, paidOn, refs.currency]);
     await connection.execute("UPDATE scheduled_payments SET status = 'paid', paid_on = ? WHERE id = ? AND user_id = ?", [paidOn, paymentId, userId]);
+    await checkAccountReservations(connection, userId);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }

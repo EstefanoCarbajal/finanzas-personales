@@ -1,4 +1,5 @@
 import { checkCreditLedger } from './credit.mjs';
+import { checkAccountReservations } from './piggybanks.mjs';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { toCents, decimal, totals } from './money.mjs';
 import { tokenHash, verifyPassword, dummyHash } from './password.mjs';
@@ -36,6 +37,7 @@ export async function saveMovement(pool, userId, input) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [randomUUID(), userId, value.request_id, value.kind, value.account_id, value.destination_id, value.category_id, value.amount, value.description, value.occurred_on, currency]);
     await checkCreditLedger(connection, userId);
+    await checkAccountReservations(connection, userId);
     await connection.commit();
   } catch (error) {
     await connection.rollback();
@@ -73,6 +75,7 @@ export async function updateMovement(pool, userId, movementId, input) {
     await connection.execute(`UPDATE movements SET kind = ?, account_id = ?, destination_id = ?, category_id = ?, amount = ?, description = ?, occurred_on = ?, currency = ? WHERE user_id = ? AND id = ?`,
       [value.kind, value.account_id, value.destination_id, value.category_id, value.amount, value.description, value.occurred_on, currency, userId, movementId]);
     await checkCreditLedger(connection, userId);
+    await checkAccountReservations(connection, userId);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }
@@ -90,6 +93,7 @@ export async function deleteMovement(pool, userId, movementId) {
     if (linked) throw new InputError('Este movimiento pertenece a un aporte de meta y no se puede eliminar.');
     await connection.execute('DELETE FROM movements WHERE user_id = ? AND id = ?', [userId, movementId]);
     await checkCreditLedger(connection, userId);
+    await checkAccountReservations(connection, userId);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }

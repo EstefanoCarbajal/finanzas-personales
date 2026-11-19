@@ -6,7 +6,7 @@ import type { Account } from './accounts-workspace';
 import s from './accounts.module.css';
 import AccountActions, { type RenameAccount, type RemoveAccount } from './account-actions';
 
-export default function AccountCards({ accounts, balances, saveOrder, toggleSummaryAccount, creationCard, renameAccount, removeAccount }: { accounts: Account[]; balances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>; creationCard: ReactNode; renameAccount: RenameAccount; removeAccount: RemoveAccount }) {
+export default function AccountCards({ accounts, balances, freeBalances, saveOrder, toggleSummaryAccount, creationCard, renameAccount, removeAccount, onOpenAccount }: { accounts: Account[]; balances: Record<string, string>; freeBalances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>; creationCard: ReactNode; renameAccount: RenameAccount; removeAccount: RemoveAccount; onOpenAccount: (id: string) => void }) {
   const [order, setOrder] = useState<string[]>(() => [...accounts].sort((a, b) => (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity)).map(account => account.id));
   const [dragging, setDragging] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -111,18 +111,20 @@ export default function AccountCards({ accounts, balances, saveOrder, toggleSumm
     if (grid.current?.hasPointerCapture(current.pointerId)) grid.current.releasePointerCapture(current.pointerId);
     if (cancelled) { latestOrder.current = savedOrder.current; setOrder(savedOrder.current); }
     else if (current.active) void persist();
+    else onOpenAccount(current.id);
   }
 
   return <>
     <div ref={grid} data-account-grid className={s.accountGrid} onPointerMove={track} onPointerUp={() => finish()} onPointerCancel={() => finish(true)} onLostPointerCapture={() => finish(true)}>
       {ordered.map((account, index) => {
         const amount = balances[account.id] || '0.00';
+        const freeAmount = freeBalances[account.id] || amount;
         const tone = accounts.findIndex(item => item.id === account.id) % 3;
         const selected = account.summary_selected !== false;
-        return <article data-account-card={account.id} key={account.id} role="group" tabIndex={0} aria-label={`Ordenar ${account.name}`} aria-roledescription="Cuenta ordenable" aria-disabled={saving || mutating || undefined} aria-describedby={sortHelpId} onPointerDown={event => start(event, account.id)} style={dragging === account.id ? { '--drag-x': `${offset.x}px`, '--drag-y': `${offset.y}px` } as CSSProperties : undefined} className={`${s.accountCard} ${s[`tone${tone}`]} ${dragging === account.id ? s.dragging : ''}`} onKeyDown={event => {
+        return <article data-account-card={account.id} key={account.id} role="group" tabIndex={0} aria-label={`Cuenta ${account.name}`} aria-roledescription="Cuenta ordenable" aria-disabled={saving || mutating || undefined} aria-describedby={sortHelpId} onPointerDown={event => start(event, account.id)} style={dragging === account.id ? { '--drag-x': `${offset.x}px`, '--drag-y': `${offset.y}px` } as CSSProperties : undefined} className={`${s.accountCard} ${s[`tone${tone}`]} ${dragging === account.id ? s.dragging : ''}`} onKeyDown={event => {
             if (event.target !== event.currentTarget) return;
             if (event.key === 'Escape' && drag.current) { event.preventDefault(); finish(true); return; }
-            if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); setAnnouncement('Usa las flechas del teclado para mover la cuenta.'); return; }
+            if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); if (!savingRef.current && !mutationRef.current) onOpenAccount(account.id); return; }
             const direction = ['ArrowLeft', 'ArrowUp'].includes(event.key) ? -1 : ['ArrowRight', 'ArrowDown'].includes(event.key) ? 1 : 0;
             if (!direction) return;
             event.preventDefault();
@@ -130,12 +132,13 @@ export default function AccountCards({ accounts, balances, saveOrder, toggleSumm
             if (!savingRef.current && !mutationRef.current && !drag.current && target) { move(account.id, target.id); void persist(); }
           }}>
           <div className={s.cardTop}><span className={s.cardBrand}><button type="button" className={`${s.brandMark} ${selected ? s.brandMarkSelected : ''}`} aria-label={`${selected ? 'Quitar' : 'Añadir'} ${account.name} ${selected ? 'del' : 'al'} total de cuentas`} aria-pressed={selected} disabled={saving || mutating || !!dragging} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); void toggleSummary(account.id, !selected); }}>{toggling === account.id ? '·' : selected ? <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-9" /></svg> : <span aria-hidden="true">+</span>}</button><span>{selected ? 'INCLUIDA EN TOTAL' : 'EXCLUIDA DEL TOTAL'}</span></span><AccountActions account={account} balance={amount} disabled={saving || mutating || !!dragging} rename={renameAccount} remove={removeAccount} onBusy={busy => { mutationRef.current = busy; setMutating(busy); }} onResult={(message, removedId) => { setAnnouncement(message); if (removedId) { removedFocus.current = removedId; setFocusRevision(value => value + 1); } }} /></div>
-          <div className={s.cardBottom}><div className={s.accountCopy}><h3>{account.name} <small aria-label={`Moneda ${account.currency || 'PEN'}`}>{account.currency || 'PEN'}</small></h3><strong className={`${s.accountBalance} ${amount.startsWith('-') ? s.negative : ''}`}>{account.currency === 'USD' ? `$ ${amount}` : soles(amount)}</strong></div></div>
+          <div className={s.cardBottom}><div className={s.accountCopy}><h3>{account.name} <small aria-label={`Moneda ${account.currency || 'PEN'}`}>{account.currency || 'PEN'}</small></h3><strong className={`${s.accountBalance} ${freeAmount.startsWith('-') ? s.negative : ''}`}>{account.currency === 'USD' ? `$ ${freeAmount}` : soles(freeAmount)}</strong></div></div>
+          <button type="button" className={s.openAccount} disabled={saving || mutating || !!dragging} onPointerDown={event => event.stopPropagation()} onClick={() => onOpenAccount(account.id)} aria-label={`Ver movimientos y alcancías de ${account.name}`}>Movimientos y alcancías</button>
         </article>;
       })}
       {creationCard}
     </div>
-    <span id={sortHelpId} className={s.srOnly}>Arrastra la tarjeta o usa las flechas del teclado para ordenar. Escape cancela el arrastre.</span>
+    <span id={sortHelpId} className={s.srOnly}>Pulsa Enter para ver movimientos y alcancías. Arrastra la tarjeta o usa las flechas para ordenar. Escape cancela el arrastre.</span>
     <p className={s.orderNote} role="status" aria-live="polite">{saving ? 'Guardando orden…' : announcement}</p>
   </>;
 }

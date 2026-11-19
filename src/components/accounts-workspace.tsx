@@ -1,15 +1,16 @@
 'use client';
 
-import { cloneElement, isValidElement, useState, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
+import AccountDetail, { type Piggybank, type PiggybankActions } from './account-detail';
+import type { PrivateMovement } from '@/app/privado/movements-table';
 import { soles } from '@/lib/money.mjs';
+import { accountAllocation } from '@/lib/piggybank-policy.mjs';
 import AccountCards from './account-cards';
 import s from './accounts.module.css';
 import w from './wallet.module.css';
-import CategoriesSection, { type EditCategory, type RemoveCategory } from './categories-section';
 import type { RenameAccount, RemoveAccount } from './account-actions';
 
 export type Account = { id: string; name: string; bank_code?: string | null; currency?: string; opening_balance?: string; sort_order?: number | null; summary_selected?: boolean };
-export type Category = Account & { kind: string; icon?: string | null };
 const walletMoney = (value: string, currency: string) => currency === 'USD' ? `$ ${value}` : soles(value);
 
 export function AccountIcon({ name = 'wallet' }: { name?: string }) {
@@ -18,19 +19,31 @@ export function AccountIcon({ name = 'wallet' }: { name?: string }) {
   </svg>;
 }
 
-export default function AccountsWorkspace({ accounts, categories, balances, accountForm, categoryForm, saveOrder, toggleSummaryAccount, editCategory, removeCategory, renameAccount, removeAccount, creditSection, currencyTotals, availableByCurrency }: {
+export default function AccountsWorkspace({ accounts, balances, accountForm, saveOrder, toggleSummaryAccount, renameAccount, removeAccount, creditSection, currencyTotals, availableByCurrency, movements, piggybanks, piggybankActions, today, demo = false }: {
+  movements: PrivateMovement[]; piggybanks: Piggybank[]; piggybankActions: PiggybankActions; today: string; demo?: boolean;
   creditSection: ReactNode; currencyTotals: Record<string, { cash: string; debt: string }>; availableByCurrency: Record<string, string>;
-  accounts: Account[]; categories: Category[]; balances: Record<string, string>;
-  accountForm: ReactNode; categoryForm: ReactNode; editCategory: EditCategory; removeCategory: RemoveCategory;
+  accounts: Account[]; balances: Record<string, string>;
+  accountForm: ReactNode;
   renameAccount: RenameAccount; removeAccount: RemoveAccount;
   saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>;
   toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>;
 }) {
   const [currency, setCurrency] = useState('PEN');
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+  const container = useRef<HTMLDivElement>(null);
+  const lastAccount = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    if (selectedAccount) {
+      container.current?.querySelector<HTMLElement>('#account-detail-title')?.focus({ preventScroll: true });
+      container.current?.scrollIntoView({ block: 'start' });
+    }
+    else if (lastAccount.current) container.current?.querySelector<HTMLElement>(`[data-account-card="${lastAccount.current}"]`)?.focus({ preventScroll: true });
+  }, [selectedAccount]);
   const [selectionOverrides, setSelectionOverrides] = useState<Record<string, boolean>>({});
   const accountsWithSelection = accounts.map(account => ({ ...account, summary_selected: selectionOverrides[account.id] ?? account.summary_selected ?? true }));
   const visibleAccounts = accountsWithSelection.filter(account => (account.currency || 'PEN') === currency);
   const selectedAccounts = visibleAccounts.filter(account => account.summary_selected !== false);
+  const freeBalances = Object.fromEntries(accounts.map(account => [account.id, accountAllocation(balances[account.id] || '0.00', piggybanks.filter(bank => bank.account_id === account.id)).free]));
   const favoritesTotal = selectedAccounts.reduce((sum, account) => sum + BigInt((balances[account.id] || '0.00').replace('.', '')), BigInt(0));
   const favoriteAmount = `${favoritesTotal < 0 ? '-' : ''}${((favoritesTotal < 0 ? -favoritesTotal : favoritesTotal) / BigInt(100)).toString()}.${((favoritesTotal < 0 ? -favoritesTotal : favoritesTotal) % BigInt(100)).toString().padStart(2, '0')}`;
   const bankGroups = [...new Set(visibleAccounts.map(account => account.bank_code || 'Otro banco'))];
@@ -50,20 +63,21 @@ export default function AccountsWorkspace({ accounts, categories, balances, acco
     }
   }
   const creationCard = <details className={s.newAccountCard}><summary><span className={s.newCardArt} aria-hidden="true"><span><AccountIcon name="plus" /></span></span><strong>Nueva cuenta</strong><span className={s.newCardToggle} aria-hidden="true">⌄</span></summary><div className={s.newAccountForm}>{accountForm}</div></details>;
-  return <div className={s.workspace}>
+  const active = accounts.find(account => account.id === selectedAccount);
+  if (active) return <div ref={container}><AccountDetail key={active.id} account={active} balance={balances[active.id] || '0.00'} movements={movements} banks={piggybanks.filter(bank => bank.account_id === active.id)} today={today} actions={piggybankActions} demo={demo} onBack={() => setSelectedAccount(null)} /></div>;
+  return <div ref={container} className={s.workspace}>
     <section className={w.wallet} aria-labelledby="wallet-title">
       <div className={w.heading}><div className={w.title}><span className={w.walletIcon}><AccountIcon /></span><h1 id="wallet-title">Tu billetera</h1></div><div className={w.currency} role="group" aria-label="Filtrar por moneda"><button type="button" className={currency === 'PEN' ? w.activeCurrency : ''} aria-pressed={currency === 'PEN'} onClick={() => setCurrency('PEN')}>PEN</button><span aria-hidden="true">·</span><button type="button" className={currency === 'USD' ? w.activeCurrency : ''} aria-pressed={currency === 'USD'} onClick={() => setCurrency('USD')}>USD</button></div></div>
       <dl className={w.overview}><div className={w.cashTotal}><dt>En tus cuentas</dt><dd key={`${currency}-${favoriteAmount}`}>{walletMoney(favoriteAmount, currency)}</dd></div><div><dt>Deuda en tarjetas</dt><dd>{walletMoney(selectedTotals.debt, currency)}</dd></div><div><dt>Crédito</dt><dd>{walletMoney(selectedAvailable, currency)}</dd></div></dl>
       <div className={w.groups}>
       <section className={w.cashGroup} aria-labelledby="accounts-list-title">
       <div className={w.groupHeading}><div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div></div>
-      {bankGroups.map(bank => <div key={bank} className={w.bankGroup}><h3 className={w.bankTitle}>{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Otro banco') === bank)} balances={balances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} creationCard={bank === bankGroups[bankGroups.length - 1] ? creationCard : null} /></div>)}
+      {bankGroups.map(bank => <div key={bank} className={w.bankGroup}><h3 className={w.bankTitle}>{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Otro banco') === bank)} balances={balances} freeBalances={freeBalances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} onOpenAccount={id => { lastAccount.current = id; setSelectedAccount(id); }} creationCard={bank === bankGroups[bankGroups.length - 1] ? creationCard : null} /></div>)}
       {!bankGroups.length && creationCard}
       </section>
       <div className={w.creditGroup}>{filteredCreditSection}</div>
       </div>
     </section>
 
-    <CategoriesSection categories={categories} creation={categoryForm} editCategory={editCategory} removeCategory={removeCategory} />
   </div>;
 }

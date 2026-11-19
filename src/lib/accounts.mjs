@@ -25,7 +25,7 @@ export async function deleteAccount(pool, userId, accountId) {
     const [result] = await pool.execute("DELETE FROM accounts WHERE user_id = ? AND id = ? AND account_type = 'asset'", [userId, accountId]);
     if (!result.affectedRows) throw new AccountInputError('Esta cuenta ya no está disponible. Actualiza la página.');
   } catch (error) {
-    if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.code === 'ER_ROW_IS_REFERENCED') throw new AccountInputError('Esta cuenta tiene movimientos, metas o pagos asociados. No se puede eliminar para conservar su historial.');
+    if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.code === 'ER_ROW_IS_REFERENCED') throw new AccountInputError('Esta cuenta tiene movimientos, metas, pagos o alcancías asociados. No se puede eliminar para conservar su historial.');
     throw error;
   }
 }

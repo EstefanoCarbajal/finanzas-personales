@@ -1,5 +1,20 @@
 # Verificación y pendientes de QA
 
+## Cuentas y alcancías · 19/11/2026
+
+- Acceso: Cuentas → pulsar tarjeta o Enter → detalle con movimientos como origen/destino y hasta cuatro alcancías. Las tarjetas de crédito conservan su flujo. Crear una alcancía reserva saldo libre; liberar con confirmación lo devuelve a libre. La fecha de Lima solo recuerda cuándo usarlo. El detalle reutiliza búsqueda/mes/tipo y Excel, sin editar desde esta vista.
+- Pruebas nuevas: tests/piggybanks.test.mjs (3) y tests/piggybanks-integration.mjs (5 escenarios + contenedor), todas correctas. Integración incluye carreras de cinco altas y gasto contra reserva, precisión, permisos, PEN/USD, idempotencia tras liberar, CHECK 1–4 y rollback de movimientos/ediciones/borrados/pagos/aportes. Migración 015 aplicada solo en base de pruebas con TLS. test:integration ahora incluye el archivo nuevo.
+- Resultados de suites: npm test 28/31 por los tres fallos históricos documentados; integración completa 21/23 contando contenedores, con una aserción de totales anterior a byCurrency y su contenedor como fallos. Build final y typecheck posterior correctos. No confundir estos fallos de expectativas con una suite completamente aprobada.
+- Navegador demo: cuatro espacios y límite, importe con coma, fecha persistida en memoria, exceso de saldo conservando datos, borrador/Escape/foco, liberación y cuenta vacía aislada; recarga restablece ejemplos. Privado: identidad desechable independiente, ingreso/transferencia ficticios, historial Ahorros con solo transferencia recibida, reserva S/ 45.50 de S/ 100, fecha/recordatorio, espera con controles bloqueados, recarga conservando reserva, rechazo de S/ 55 frente a S/ 54.50 libres, cancelar/liberar y logout. Orden por teclado/Enter/regreso verificado. Fixture y datos eliminados; cleanup de ui-fixture ahora incluye alcancías y claves de idempotencia.
+- Visual: 1440 px escritorio claro y tigre oscuro, 390 px formulario con error, 320 px detalle/confirmación, sin desbordamiento medido en escenarios revisados. Consola capturada sin errores; viewport restaurado. Durante QA se corrigieron recogida de fecha, color del título y foco al guardar/liberar. Pendientes: táctil/arrastre, movimiento reducido/accesibilidad exhaustivos, demás paletas y exportación de cuenta abierta en Excel. Sin publicación ni datos reales.
+
+## Categorías independiente · 19/11/2026
+
+- Nueva ubicación privada: /privado?seccion=categorias; acceso debajo de Cuentas en el sidebar de escritorio/móvil. Cuentas contiene únicamente la billetera. Componentes y acciones de categorías reutilizados.
+- QA nuevo de demo: alta ficticia, conservación entre secciones, reinicio al recargar, navegación móvil y revisión visual a 1440/390/320 px; sin desbordamiento medido tras permitir envolver el encabezado a 320 px. Build/typecheck y seis pruebas locales de categorías aprobados; consola capturada sin errores.
+- Pendiente comprobar esta navegación y las mutaciones con fixture privado, edición/eliminación en la nueva ubicación, teclado exhaustivo y demás temas. No se ejecutó integración remota ni se accedió a datos reales.
+
+
 ## Gestión de tarjetas · 16/11/2026
 
 - Edición de nombre/línea/últimos dígitos y eliminación protegida disponibles desde el lápiz, en billetera y Configuración. Deuda inicial inmutable; solo borrar sin apertura ni referencias. Integración específica ampliada aprobada con dos usuarios ficticios limpiados: aislamiento, límites/duplicados, historial, deuda cero y concurrencia edición/compra. Suite local 25/26 con fallo previo fox: deep/accent.

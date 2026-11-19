@@ -1,5 +1,7 @@
 "use client";
 
+import { accountAllocation, assertReservations, validatePiggybank } from "@/lib/piggybank-policy.mjs";
+import type { Piggybank, PiggybankActions } from "./account-detail";
 import CreditCards from "./credit-cards";
 import { creditCards, validateCard } from "@/lib/credit.mjs";
 import type { MovementAccount } from "./movement-fields";
@@ -12,6 +14,7 @@ import MovementsWorkspace from "./movements-workspace";
 import MovementsTable from "@/app/privado/movements-table";
 import DemoMovementForm, { demoAccounts, demoCategories, type DemoMovementDraft } from "./demo-movement-form";
 import AccountsDemo from "./accounts-demo";
+import CategoriesDemo from "./categories-demo";
 import MovementModal from "./movement-modal";
 import { totals, toCents, decimal } from "@/lib/money.mjs";
 import { validCategoryIcon } from "@/lib/category-icons.mjs";
@@ -22,7 +25,7 @@ import PlanningDemo from "./planning-demo";
 
 const exampleGoals: SavingsGoal[] = [{ id: 'example-travel', name: 'Un viaje para recordar', target_amount: '1200.00', saved: '480.00', target_on: null, account_id: 'example', account_name: 'Ahorro ilustrativo' }];
 
-type Section = "Resumen" | "Movimientos" | "Cuentas" | "Planificación" | "Pagos futuros" | "Hábitos y recompensas" | "Configuración";
+type Section = "Resumen" | "Movimientos" | "Cuentas" | "Categorías" | "Planificación" | "Pagos futuros" | "Hábitos y recompensas" | "Configuración";
 type Movement = { id: number; name: string; category: string; amount: number; date: string; kind?: string; categoryId?: string; accountId?: string; destinationId?: string | null; account?: string; destination?: string | null };
 
 const initial: Movement[] = [
@@ -39,11 +42,12 @@ export default function Dashboard() {
   const [movements, setMovements] = useState(initial);
   const [accounts, setAccounts] = useState<MovementAccount[]>([...demoAccounts, { id: 'credit-demo', name: 'Visa personal', account_type: 'credit', credit_limit: '5000.00', opening_debt: '0.00', last_four: '2026' }]);
   const [categories, setCategories] = useState<Array<{ id: string; name: string; kind: string; icon?: string | null }>>(demoCategories);
+  const [piggybanks, setPiggybanks] = useState<Piggybank[]>([]);
   const [formOpen, setFormOpen] = useState(false);
 
   const [notice, setNotice] = useState("");
 
-  const sharedMovements = movements.map(m => ({ id: String(m.id), kind: m.kind || (m.amount > 0 ? "income" : "expense"), description: m.name, occurred_on: m.date, amount: (Math.abs(m.amount) / 100).toFixed(2), account_id: m.accountId || "cash", destination_id: m.destinationId || null, account_type: accounts.find(a => a.id === (m.accountId || "cash"))?.account_type, destination_type: accounts.find(a => a.id === m.destinationId)?.account_type || null, account_name: accounts.find(a => a.id === (m.accountId || "cash"))?.name || "Cuenta", destination_name: accounts.find(a => a.id === m.destinationId)?.name || null, category_id: m.kind === "transfer" ? null : m.categoryId || null, category_name: m.kind === "transfer" ? null : categories.find(category => category.id === m.categoryId)?.name || m.category }));
+  const sharedMovements = movements.map(m => ({ id: String(m.id), currency: accounts.find(a => a.id === (m.accountId || "cash"))?.currency || "PEN", kind: m.kind || (m.amount > 0 ? "income" : "expense"), description: m.name, occurred_on: m.date, amount: (Math.abs(m.amount) / 100).toFixed(2), account_id: m.accountId || "cash", destination_id: m.destinationId || null, account_type: accounts.find(a => a.id === (m.accountId || "cash"))?.account_type, destination_type: accounts.find(a => a.id === m.destinationId)?.account_type || null, account_name: accounts.find(a => a.id === (m.accountId || "cash"))?.name || "Cuenta", destination_name: accounts.find(a => a.id === m.destinationId)?.name || null, category_id: m.kind === "transfer" ? null : m.categoryId || null, category_name: m.kind === "transfer" ? null : categories.find(category => category.id === m.categoryId)?.name || m.category }));
   const accountTotals = totals(sharedMovements, accounts);
   const cards = creditCards(accounts, sharedMovements);
   const availableByCurrency = Object.fromEntries(['PEN', 'USD'].map(currency => [currency, decimal(cards.filter((card: { currency?: string; available: string }) => (card.currency || 'PEN') === currency).reduce((sum: bigint, card: { available: string }) => sum + toCents(card.available), BigInt(0)))]));
@@ -59,10 +63,32 @@ export default function Dashboard() {
       if (BigInt(card.debt.replace('.', '')) < BigInt(0)) return 'El pago no puede superar la deuda de la tarjeta.';
       if (BigInt(card.available.replace('.', '')) < BigInt(0)) return 'La compra supera el crédito disponible.';
     }
+    try { assertReservations(totals([...sharedMovements, proposed], accounts).accounts, piggybanks); }
+    catch { return 'El saldo libre no alcanza. Libera dinero de tus alcancías antes de continuar.'; }
     setMovements(current => [draft, ...current]);
     setFormOpen(false);
     setNotice("Movimiento añadido a la demo. Se borrará al recargar la página.");
   }
+  const piggybankActions: PiggybankActions = {
+    create: async form => {
+      try {
+        const accountId = String(form.get('account_id'));
+        if (!cashAccounts.some(a => a.id === accountId)) return { success: false, message: 'La cuenta ya no está disponible.' };
+        const value = validatePiggybank(Object.fromEntries(form), '2026-11-11');
+        const existing = piggybanks.filter(bank => bank.account_id === accountId);
+        const slot = [1, 2, 3, 4].find(slot => !existing.some(bank => bank.slot === slot));
+        if (!slot) return { success: false, message: 'Ya tienes cuatro alcancías en esta cuenta.' };
+        if (toCents(value.amount) > BigInt(accountAllocation(accountTotals.accounts[accountId] || '0.00', existing).free.replace('.', ''))) return { success: false, message: 'El importe supera el dinero libre de esta cuenta.' };
+        const bank = { ...value, id: String(form.get('id')), account_id: accountId, slot };
+        setPiggybanks(current => current.some(item => item.id === bank.id) ? current : [...current, bank]);
+        return { success: true, message: 'Dinero separado. Los cambios de la demo se reinician al recargar.' };
+      } catch (error) { return { success: false, message: error instanceof Error ? error.message : 'Revisa los datos de la alcancía.' }; }
+    },
+    release: async id => {
+      setPiggybanks(current => current.filter(bank => bank.id !== id));
+      return { success: true, message: 'El dinero vuelve a estar libre en esta cuenta.' };
+    },
+  };
   const cardWorkspace = <CreditCards update={async (id, form) => {
     const existing = accounts.find(a => a.id === id && a.account_type === 'credit');
     if (!existing) return { success: false, message: 'La tarjeta ya no está disponible.' };
@@ -102,8 +128,8 @@ export default function Dashboard() {
   }} />;
   return <DashboardShell demo active={navigation.find(item => item.label === section)!.id} onNewMovement={() => setFormOpen(true)} onNavigate={id => { setSection(navigation.find(item => item.id === id)!.label); setNotice(""); }}>
       <div className="content">
-        {section !== "Configuración" && section !== "Planificación" && section !== "Pagos futuros" && <>{section !== "Cuentas" && <div className="page-heading"><div>{(section !== "Resumen" && section !== "Movimientos") && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Tu resumen" : section}</h1>{(section !== "Resumen" && section !== "Movimientos") && <p>Reconoce tus avances cotidianos y suma puntos virtuales.</p>}</div></div>}
-        <div className="demo-note">{(section === "Cuentas" || section === "Resumen" || section === "Movimientos") ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
+        {section !== "Configuración" && section !== "Planificación" && section !== "Pagos futuros" && <>{section !== "Cuentas" && section !== "Categorías" && <div className="page-heading"><div>{(section !== "Resumen" && section !== "Movimientos") && <div className="eyebrow">TU DINERO, CON PROPÓSITO</div>}<h1>{section === "Resumen" ? "Tu resumen" : section}</h1>{(section !== "Resumen" && section !== "Movimientos") && <p>Reconoce tus avances cotidianos y suma puntos virtuales.</p>}</div></div>}
+        <div className="demo-note">{(section === "Cuentas" || section === "Categorías" || section === "Resumen" || section === "Movimientos") ? "Datos de ejemplo · Los cambios se reinician al recargar." : "Estás explorando datos de ejemplo. Los cambios que hagas aquí solo viven en esta página y se reinician al recargar; nada se guarda en una cuenta ni en una base de datos."}</div>
         <p className="notice" role="status">{notice}</p>
         </>}
         {section === "Configuración" && <SettingsWorkspace demo creditCards={cardWorkspace} />}
@@ -113,7 +139,7 @@ export default function Dashboard() {
         </>}
 
         {section === "Movimientos" && <MovementsWorkspace><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
-        {section === "Cuentas" && <AccountsDemo creditSection={cardWorkspace} currencyTotals={accountTotals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} categories={categories} balances={accountTotals.accounts} saveOrder={async ids => { setAccounts(current => [...ids.map(id => current.find(account => account.id === id)!).filter(Boolean), ...current.filter(a => a.account_type === 'credit')]); return { success: true, message: 'Orden actualizado en la demo.' }; }} toggleSummaryAccount={async (id, selected) => { if (!accounts.some(account => account.id === id && account.account_type !== 'credit')) return { success: false, message: 'La cuenta ya no está disponible.' }; setAccounts(current => current.map(account => account.id === id ? { ...account, summary_selected: selected } : account)); return { success: true, message: selected ? 'Cuenta incluida en el total de la demo.' : 'Cuenta excluida del total de la demo.' }; }} renameAccount={async (id, name, bank) => {
+        {section === "Cuentas" && <AccountsDemo movements={sharedMovements} piggybanks={piggybanks} piggybankActions={piggybankActions} creditSection={cardWorkspace} currencyTotals={accountTotals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} balances={accountTotals.accounts} saveOrder={async ids => { setAccounts(current => [...ids.map(id => current.find(account => account.id === id)!).filter(Boolean), ...current.filter(a => a.account_type === 'credit')]); return { success: true, message: 'Orden actualizado en la demo.' }; }} toggleSummaryAccount={async (id, selected) => { if (!accounts.some(account => account.id === id && account.account_type !== 'credit')) return { success: false, message: 'La cuenta ya no está disponible.' }; setAccounts(current => current.map(account => account.id === id ? { ...account, summary_selected: selected } : account)); return { success: true, message: selected ? 'Cuenta incluida en el total de la demo.' : 'Cuenta excluida del total de la demo.' }; }} renameAccount={async (id, name, bank) => {
           const trimmed = name.trim();
           if (!trimmed || trimmed.length > 80) return { success: false, message: 'Escribe un nombre de hasta 80 caracteres.' };
           if (!accounts.some(account => account.id === id)) return { success: false, message: 'La cuenta ya no está disponible.' };
@@ -121,10 +147,12 @@ export default function Dashboard() {
           setAccounts(current => current.map(account => account.id === id ? { ...account, name: trimmed, bank_code: bank } : account));
           return { success: true, message: 'Cuenta actualizada en la demo.' };
         }} removeAccount={async id => {
+          if (piggybanks.some(bank => bank.account_id === id)) return { success: false, message: 'Libera sus alcancías antes de eliminar esta cuenta.' };
           if (sharedMovements.some(movement => movement.account_id === id || movement.destination_id === id)) return { success: false, message: 'Esta cuenta tiene movimientos asociados y no se puede eliminar.' };
           setAccounts(current => current.filter(account => account.id !== id));
           return { success: true, message: 'Cuenta eliminada en la demo.' };
-        }} onAddAccount={(name, currency = 'PEN', bank = 'BCP', openingBalance = '0.00') => setAccounts(current => [...current, { id: crypto.randomUUID(), name, currency, bank_code: bank, opening_balance: openingBalance || '0.00', summary_selected: true }])} editCategory={async (id, input) => {
+        }} onAddAccount={(name, currency = 'PEN', bank = 'BCP', openingBalance = '0.00') => setAccounts(current => [...current, { id: crypto.randomUUID(), name, currency, bank_code: bank, opening_balance: openingBalance || '0.00', summary_selected: true }])} />}
+        {section === "Categorías" && <CategoriesDemo categories={categories} editCategory={async (id, input) => {
           const category = categories.find(item => item.id === id), name = input.name.trim();
           if (!category) return { success: false, message: 'La categoría ya no está disponible.' };
           if (!name || name.length > 80 || !['income', 'expense'].includes(input.kind) || !validCategoryIcon(input.icon)) return { success: false, message: 'Revisa el nombre, tipo e icono.' };
@@ -143,7 +171,7 @@ export default function Dashboard() {
 
         {section === "Hábitos y recompensas" && <HabitsDemo />}
 
-        <footer>Hecho para avanzar a tu ritmo.<span>Vista previa · Datos ficticios</span></footer>
+        <footer><span>Vista previa · Datos ficticios</span></footer>
       </div>
     <MovementModal open={formOpen} onClose={() => setFormOpen(false)} demo><DemoMovementForm onAdd={addMovement} accounts={accounts} categories={categories} modal /></MovementModal>
   </DashboardShell>;

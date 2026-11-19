@@ -1,0 +1,28 @@
+'use client';
+
+import { useState, type FormEvent } from 'react';
+import { decimal, toCents } from '@/lib/money.mjs';
+import AccountSetupFields from './account-setup-fields';
+
+export default function DemoSetupForm({ category = false, existing, onCreate }: { category?: boolean; existing: { name: string; kind?: string }[]; onCreate: (name: string, kind: string, icon: string, currency?: string, bank?: string, openingBalance?: string) => void }) {
+  const [name, setName] = useState('');
+  const [kind, setKind] = useState('expense');
+  const [icon, setIcon] = useState('tag');
+  const [currency, setCurrency] = useState('PEN');
+  const [bank, setBank] = useState('BCP');
+  const [openingBalance, setOpeningBalance] = useState('');
+  const [feedback, setFeedback] = useState({ message: '', success: false });
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed || trimmed.length > 80) { setFeedback({ message: 'Escribe un nombre de hasta 80 caracteres.', success: false }); return; }
+    if (existing.some(item => (!category || item.kind === kind) && item.name.localeCompare(trimmed, 'es', { sensitivity: 'base' }) === 0)) { setFeedback({ message: 'Ya existe un elemento con ese nombre.', success: false }); return; }
+    let opening = '0.00';
+    try { opening = decimal(toCents(openingBalance || '0')); } catch { setFeedback({ message: 'Escribe un saldo inicial válido con hasta dos decimales.', success: false }); return; }
+    onCreate(trimmed, kind, icon, currency, bank, opening);
+    setName('');
+    setFeedback({ message: category ? 'Categoría creada.' : 'Cuenta creada.', success: true });
+  }
+  return <form onSubmit={submit}><AccountSetupFields category={category} name={name} onNameChange={setName} currency={currency} onCurrencyChange={setCurrency} bank={bank} onBankChange={setBank} openingBalance={openingBalance} onOpeningBalanceChange={setOpeningBalance} kind={kind} onKindChange={setKind} icon={icon} onIconChange={setIcon} message={feedback.message} success={feedback.success} /></form>;
+}
+

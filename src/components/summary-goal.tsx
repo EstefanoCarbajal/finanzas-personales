@@ -2,7 +2,7 @@
 
 import type { CSSProperties } from 'react';
 import SelectedAvatar from './selected-avatar';
-import { decimal, soles, toCents } from '@/lib/money.mjs';
+import { soles, toCents } from '@/lib/money.mjs';
 import s from './summary-goal.module.css';
 
 export default function SummaryGoal({ goal, onOpen, demo = false }: {
@@ -16,7 +16,7 @@ export default function SummaryGoal({ goal, onOpen, demo = false }: {
   return <section className={`${s.card} ${complete ? s.complete : ''}`} aria-label="Tu meta de ahorro">
     <div className={s.copy}><span className={s.eyebrow}>{complete ? '¡META ALCANZADA!' : 'TU PRÓXIMA VICTORIA'}{demo && <span> · Ejemplo</span>}</span>
       <h2>{goal?.name || 'Todo empieza con una meta'}</h2>
-      {goal ? <><div className={s.amount}><strong>{soles(goal.saved)}</strong><span>de {soles(goal.target_amount)}</span></div><p>{complete ? '¡Llegaste! Cada aporte cuenta.' : `A ${soles(decimal(target - saved))} de lograrlo.`}</p></> : <p>Elige tu destino y empieza a avanzar.</p>}
+      {goal ? <><div className={s.amount}><strong>{soles(goal.saved)}</strong><span>de {soles(goal.target_amount)}</span></div>{complete && <p>¡Llegaste! Cada aporte cuenta.</p>}</> : <p>Elige tu destino y empieza a avanzar.</p>}
       {onOpen ? <button className={s.link} onClick={onOpen}>{label}<span aria-hidden="true">↗</span></button> : <a className={s.link} href="/privado?seccion=planificacion#metas">{label}<span aria-hidden="true">↗</span></a>}
     </div>
     <div className={s.race}>

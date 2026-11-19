@@ -1,5 +1,6 @@
 'use server';
 import { CreditError } from '@/lib/credit.mjs';
+import { PiggybankError } from '@/lib/piggybank-policy.mjs';
 
 import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/server/auth';
@@ -45,6 +46,7 @@ export async function updateAccountOrder(ids: string[]) {
   const user = await requireUser();
   try { await saveAccountOrder(db(), user.id, ids); }
   catch { return { success: false, message: 'No pudimos guardar el orden. Actualiza la página e inténtalo de nuevo.' }; }
+  revalidatePath('/privado');
   return { success: true, message: 'Orden guardado.' };
 }
 
@@ -53,7 +55,7 @@ export async function addMovement(_previous: { message: string; success: boolean
   try {
     await saveMovement(db(), user.id, Object.fromEntries(form));
   } catch (error) {
-    return { message: error instanceof InputError || error instanceof CreditError ? error.message : 'No pudimos guardar el movimiento. Inténtalo de nuevo.', success: false };
+    return { message: error instanceof InputError || error instanceof CreditError || error instanceof PiggybankError ? error.message : 'No pudimos guardar el movimiento. Inténtalo de nuevo.', success: false };
   }
   revalidatePath('/privado');
   return { message: 'Movimiento guardado.', success: true };
@@ -64,7 +66,7 @@ export async function editMovement(_previous: { message: string; success: boolea
   try {
     await updateMovement(db(), user.id, form.get('movement_id'), Object.fromEntries(form));
   } catch (error) {
-    return { message: error instanceof InputError || error instanceof CreditError ? error.message : 'No pudimos actualizar el movimiento. Inténtalo de nuevo.', success: false };
+    return { message: error instanceof InputError || error instanceof CreditError || error instanceof PiggybankError ? error.message : 'No pudimos actualizar el movimiento. Inténtalo de nuevo.', success: false };
   }
   revalidatePath('/privado');
   return { message: 'Movimiento actualizado.', success: true };
@@ -75,7 +77,7 @@ export async function removeMovement(form: FormData) {
   try {
     await deleteMovement(db(), user.id, form.get('movement_id'));
   } catch (error) {
-    return { message: error instanceof InputError || error instanceof CreditError ? error.message : 'No pudimos eliminar el movimiento. Inténtalo de nuevo.', success: false };
+    return { message: error instanceof InputError || error instanceof CreditError || error instanceof PiggybankError ? error.message : 'No pudimos eliminar el movimiento. Inténtalo de nuevo.', success: false };
   }
   revalidatePath('/privado');
   return { message: 'Movimiento eliminado.', success: true };
@@ -155,7 +157,7 @@ export async function addScheduledPayment(_previous: { message: string; success:
 export async function markPaymentPaid(form: FormData) {
   const user = await requireUser();
   try { await settlePayment(db(), user.id, form.get('id')); }
-  catch (error) { return { success: false, message: error instanceof PlanningInputError ? error.message : 'No pudimos confirmar el pago. Revisa su estado antes de reintentar.' }; }
+  catch (error) { return { success: false, message: error instanceof PlanningInputError || error instanceof PiggybankError ? error.message : 'No pudimos confirmar el pago. Revisa su estado antes de reintentar.' }; }
   revalidatePath('/privado');
   return { success: true, message: 'Pago confirmado. El gasto ya está registrado.' };
 }
@@ -179,7 +181,7 @@ export async function addGoal(_previous: { message: string; success: boolean }, 
 export async function addGoalContribution(_previous: { message: string; success: boolean }, form: FormData) {
   const user = await requireUser();
   try { await contributeToGoal(db(), user.id, Object.fromEntries(form)); }
-  catch (error) { return { message: error instanceof GoalInputError ? error.message : 'No pudimos guardar el aporte.', success: false }; }
+  catch (error) { return { message: error instanceof GoalInputError || error instanceof PiggybankError ? error.message : 'No pudimos guardar el aporte.', success: false }; }
   revalidatePath('/privado');
   return { message: 'Aporte guardado como transferencia entre tus cuentas.', success: true };
 }

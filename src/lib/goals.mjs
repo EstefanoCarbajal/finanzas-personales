@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { checkAccountReservations } from './piggybanks.mjs';
 import { decimal, toCents } from './money.mjs';
 import { todayLima } from './repository.mjs';
 
@@ -32,6 +33,7 @@ export async function contributeToGoal(pool, userId, input) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
+    await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
     const [[goal]] = await connection.execute('SELECT id, account_id, name FROM goals WHERE id = ? AND user_id = ? FOR UPDATE', [input.goal_id, userId]);
     if (!goal) throw new GoalInputError('La meta seleccionada no está disponible.');
     if (goal.account_id === input.account_id) throw new GoalInputError('Elige una cuenta de origen distinta a la cuenta de ahorro.');
@@ -43,6 +45,7 @@ export async function contributeToGoal(pool, userId, input) {
     [movementId, userId, input.request_id, input.account_id, goal.account_id, amount, `Aporte: ${goal.name}`.slice(0, 100), todayLima()]);
     await connection.execute('INSERT INTO goal_contributions (id, user_id, goal_id, movement_id, request_id, amount) VALUES (?, ?, ?, ?, ?, ?)',
       [randomUUID(), userId, goal.id, movementId, input.request_id, amount]);
+    await checkAccountReservations(connection, userId);
     await connection.commit();
   } catch (error) {
     await connection.rollback();

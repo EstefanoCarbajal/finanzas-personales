@@ -16,3 +16,5 @@
 .editInfo{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.8fr);gap:22px;align-items:end;margin-top:22px}.editInfo .kindChoices{margin:0;min-height:46px}.editorFooter{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-top:22px}.removeButton{border:1px solid var(--theme-expenseEdge);border-radius:12px;background:var(--theme-expenseBg);color:var(--theme-expense);font-size:12px;font-weight:750;min-height:46px;padding:12px 16px}.editorFooter .save{flex:1;max-width:240px;margin:0}.editorFields .nameLabel input{background:var(--tile)}
 @media(max-width:700px){.editInfo{grid-template-columns:1fr;gap:18px}.editorFooter{flex-direction:column-reverse;align-items:stretch}.editorFooter .save{max-width:none;width:100%}.removeButton{width:100%}}
 @media(prefers-reduced-motion:reduce){.section *{transition:none!important;transform:none!important}}
+
+@media(max-width:370px){.heading{flex-wrap:wrap}}
