@@ -1,12 +1,12 @@
 "use client";
 
-import { accountAllocation, assertReservations, validatePiggybank } from "@/lib/piggybank-policy.mjs";
+import { validatePiggybankName, balanceAfterTopUp, remainingAfterRelease, accountAllocation, assertReservations, validatePiggybank } from "@/lib/piggybank-policy.mjs";
 import type { Piggybank, PiggybankActions } from "./account-detail";
 import CreditCards from "./credit-cards";
 import { creditCards, validateCard } from "@/lib/credit.mjs";
 import type { MovementAccount } from "./movement-fields";
 import SettingsWorkspace from "./settings-workspace";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import DashboardShell, { navigation } from "./dashboard-shell";
 import MonthlySummary from "@/app/privado/monthly-summary";
 import HabitsDemo from "./habits-demo";
@@ -18,6 +18,7 @@ import CategoriesDemo from "./categories-demo";
 import MovementModal from "./movement-modal";
 import { totals, toCents, decimal } from "@/lib/money.mjs";
 import { validCategoryIcon } from "@/lib/category-icons.mjs";
+import { validateGoalEdit } from "@/lib/goal-edit-policy.mjs";
 import GoalsWorkspace, { SavingsGoalCard, type SavingsGoal } from "./goals-workspace";
 import GoalCreateForm from "./goal-create-form";
 import SummaryGoal from "./summary-goal";
@@ -38,6 +39,7 @@ const money = (cents: number) => new Intl.NumberFormat("es-PE", { style: "curren
 
 
 export default function Dashboard() {
+  const [demoGoals, setDemoGoals] = useState(exampleGoals);
   const [section, setSection] = useState<Section>("Resumen");
   const [movements, setMovements] = useState(initial);
   const [accounts, setAccounts] = useState<MovementAccount[]>([...demoAccounts, { id: 'credit-demo', name: 'Visa personal', account_type: 'credit', credit_limit: '5000.00', opening_debt: '0.00', last_four: '2026' }]);
@@ -69,7 +71,16 @@ export default function Dashboard() {
     setFormOpen(false);
     setNotice("Movimiento añadido a la demo. Se borrará al recargar la página.");
   }
+  const piggybankChangeRequests = useRef(new Set<string>());
   const piggybankActions: PiggybankActions = {
+    rename: async (id, inputName) => {
+      if (!piggybanks.some(bank => bank.id === id)) return { success: false, message: 'La alcancía ya no está disponible.' };
+      try {
+        const name = validatePiggybankName(inputName);
+        setPiggybanks(current => current.map(bank => bank.id === id ? { ...bank, name } : bank));
+        return { success: true, message: 'Nombre de alcancía actualizado en la demo.' };
+      } catch (error) { return { success: false, message: error instanceof Error ? error.message : 'Revisa el nombre.' }; }
+    },
     create: async form => {
       try {
         const accountId = String(form.get('account_id'));
@@ -84,9 +95,29 @@ export default function Dashboard() {
         return { success: true, message: 'Dinero separado. Los cambios de la demo se reinician al recargar.' };
       } catch (error) { return { success: false, message: error instanceof Error ? error.message : 'Revisa los datos de la alcancía.' }; }
     },
-    release: async id => {
-      setPiggybanks(current => current.filter(bank => bank.id !== id));
-      return { success: true, message: 'El dinero vuelve a estar libre en esta cuenta.' };
+    topUp: async (id, amount, requestId) => {
+      if (piggybankChangeRequests.current.has(requestId)) return { success: true, message: 'Dinero agregado a tu alcancía.' };
+      const bank = piggybanks.find(bank => bank.id === id);
+      if (!bank) return { success: false, message: 'La alcancía ya no está disponible.' };
+      try {
+        const balance = balanceAfterTopUp(bank.amount, amount);
+        const free = accountAllocation(accountTotals.accounts[bank.account_id] || '0.00', piggybanks.filter(item => item.account_id === bank.account_id)).free;
+        if (toCents(amount) > toCents(free)) return { success: false, message: 'El saldo libre no alcanza para agregar ese importe.' };
+        piggybankChangeRequests.current.add(requestId);
+        setPiggybanks(current => current.map(item => item.id === id ? { ...item, amount: balance } : item));
+        return { success: true, message: 'Dinero agregado a tu alcancía.' };
+      } catch (error) { return { success: false, message: error instanceof Error ? error.message : 'Revisa el importe.' }; }
+    },
+    release: async (id, amount, expectedBalance, requestId) => {
+      if (piggybankChangeRequests.current.has(requestId)) return { success: true, message: 'El dinero vuelve a estar libre en esta cuenta.' };
+      const bank = piggybanks.find(bank => bank.id === id);
+      if (!bank) return { success: false, message: 'La alcancía ya no está disponible.' };
+      try {
+        const remaining = remainingAfterRelease(bank.amount, amount, expectedBalance);
+        piggybankChangeRequests.current.add(requestId);
+        setPiggybanks(current => remaining === '0.00' ? current.filter(bank => bank.id !== id) : current.map(bank => bank.id === id ? { ...bank, amount: remaining } : bank));
+        return { success: true, message: 'El dinero vuelve a estar libre en esta cuenta.' };
+      } catch (error) { return { success: false, message: error instanceof Error ? error.message : 'Revisa el importe.' }; }
     },
   };
   const cardWorkspace = <CreditCards update={async (id, form) => {
@@ -135,7 +166,7 @@ export default function Dashboard() {
         {section === "Configuración" && <SettingsWorkspace demo creditCards={cardWorkspace} />}
         {section === "Resumen" && <>
           <MonthlySummary currentMonth="2026-11" balance={accountTotals.balance} demo onRegister={() => setFormOpen(true)} onViewMovements={() => setSection("Movimientos")} movements={sharedMovements} />
-          <SummaryGoal demo goal={exampleGoals[0]} onOpen={() => setSection("Planificación")} />
+          <SummaryGoal demo goal={demoGoals[0]} onOpen={() => setSection("Planificación")} />
         </>}
 
         {section === "Movimientos" && <MovementsWorkspace><MovementsTable movements={sharedMovements} demo /></MovementsWorkspace>}
@@ -152,7 +183,7 @@ export default function Dashboard() {
           setAccounts(current => current.filter(account => account.id !== id));
           return { success: true, message: 'Cuenta eliminada en la demo.' };
         }} onAddAccount={(name, currency = 'PEN', bank = 'BCP', openingBalance = '0.00') => setAccounts(current => [...current, { id: crypto.randomUUID(), name, currency, bank_code: bank, opening_balance: openingBalance || '0.00', summary_selected: true }])} />}
-        {section === "Categorías" && <CategoriesDemo categories={categories} editCategory={async (id, input) => {
+        {section === "Categorías" && <CategoriesDemo categories={categories} movements={sharedMovements} editCategory={async (id, input) => {
           const category = categories.find(item => item.id === id), name = input.name.trim();
           if (!category) return { success: false, message: 'La categoría ya no está disponible.' };
           if (!name || name.length > 80 || !['income', 'expense'].includes(input.kind) || !validCategoryIcon(input.icon)) return { success: false, message: 'Revisa el nombre, tipo e icono.' };
@@ -167,7 +198,13 @@ export default function Dashboard() {
           return { success: true, message: 'Categoría eliminada en la demo.' };
         }} onAddCategory={(name, kind, icon) => setCategories(current => [...current, { id: crypto.randomUUID(), name, kind, icon }])} />}
 
-        {(section === "Planificación" || section === "Pagos futuros") && <PlanningDemo section={section === "Pagos futuros" ? 'pagos' : 'planificacion'} categories={categories} accounts={cashAccounts} movements={sharedMovements} goals={<div id="metas"><GoalsWorkspace goals={exampleGoals} demo creation={<GoalCreateForm accounts={cashAccounts} today="2026-11-11" />}>{exampleGoals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} />)}</GoalsWorkspace></div>} />}
+        {(section === "Planificación" || section === "Pagos futuros") && <PlanningDemo section={section === "Pagos futuros" ? 'pagos' : 'planificacion'} categories={categories} accounts={cashAccounts} movements={sharedMovements} goals={<div id="metas"><GoalsWorkspace goals={demoGoals} demo creation={<GoalCreateForm accounts={cashAccounts} today="2026-11-11" />}>{demoGoals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} demo today="2026-11-11" manage={async (id, mode, input) => {
+          const existing = demoGoals.find(goal => goal.id === id);
+          if (!existing) return { success: false, message: 'La meta ya no está disponible.' };
+          if (mode === 'delete') { setDemoGoals(current => current.filter(goal => goal.id !== id)); return { success: true, message: 'Meta eliminada en la demo.' }; }
+          try { const value = validateGoalEdit(input, '2026-11-11', existing.target_on); setDemoGoals(current => current.map(goal => goal.id === id ? { ...goal, ...value } : goal)); return { success: true, message: 'Meta actualizada en la demo.' }; }
+          catch (error) { return { success: false, message: error instanceof Error ? error.message : 'Revisa los datos.' }; }
+        }} />)}</GoalsWorkspace></div>} />}
 
         {section === "Hábitos y recompensas" && <HabitsDemo />}
 

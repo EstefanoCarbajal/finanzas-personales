@@ -23,3 +23,31 @@ test('historial de cuenta: incluye origen y destino una sola vez', () => {
   assert.deepEqual(accountMovements(movements, 'a').map(m => m.id), [1, 2, 3]);
   assert.deepEqual(accountMovements(movements, 'new'), []);
 });
+
+
+test('liberación parcial: céntimos exactos, límites y saldo obsoleto', async () => {
+  const { remainingAfterRelease } = await import('../src/lib/piggybank-policy.mjs');
+  assert.equal(remainingAfterRelease('80.01', '20.10', '80.01'), '59.91');
+  assert.equal(remainingAfterRelease('80.01', '80.01', '80.01'), '0.00');
+  assert.equal(remainingAfterRelease('99999999999.99', '0.01', '99999999999.99'), '99999999999.98');
+  for (const amount of ['0', '-1', '80.02', '1.001', '', 'NaN']) assert.throws(() => remainingAfterRelease('80.01', amount, '80.01'));
+  assert.throws(() => remainingAfterRelease('59.91', '20.10', '80.01'), /cambió/);
+  assert.throws(() => remainingAfterRelease('80.01', '20.10'), /Revisa el saldo/);
+});
+
+
+test('agregar dinero: céntimos exactos, importes positivos y límite DECIMAL', async () => {
+  const { balanceAfterTopUp } = await import('../src/lib/piggybank-policy.mjs');
+  assert.equal(balanceAfterTopUp('10.01', '20.10'), '30.11');
+  assert.equal(balanceAfterTopUp('99999999999.98', '0.01'), '99999999999.99');
+  for (const amount of ['0', '-1', '1.001', '', 'NaN']) assert.throws(() => balanceAfterTopUp('10.01', amount));
+  assert.throws(() => balanceAfterTopUp('99999999999.99', '0.01'), /máximo/);
+});
+
+
+test('nombre de alcancía: recorta espacios y rechaza vacío, tipo y longitud inválidos', async () => {
+  const { validatePiggybankName } = await import('../src/lib/piggybank-policy.mjs');
+  assert.equal(validatePiggybankName('  Vacaciones Perú  '), 'Vacaciones Perú');
+  assert.equal(validatePiggybankName('a'.repeat(60)), 'a'.repeat(60));
+  for (const name of ['', '   ', null, undefined, 123, 'a'.repeat(61)]) assert.throws(() => validatePiggybankName(name), /nombre/);
+});

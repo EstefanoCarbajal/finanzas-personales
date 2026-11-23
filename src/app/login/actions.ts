@@ -5,6 +5,17 @@ import { redirect } from 'next/navigation';
 import { login, revokeSession } from '@/lib/repository.mjs';
 import { db, databaseConfigured } from '@/server/db';
 import { cookieName, cookieOptions } from '@/server/auth';
+import { registerUser, RegistrationError } from '@/lib/registration.mjs';
+
+export async function signUp(_previous: { message: string; success: boolean }, form: FormData) {
+  if (!databaseConfigured()) return { message: 'El registro todavía no está configurado.', success: false };
+  try {
+    await registerUser(db(), { email: form.get('email'), password: form.get('password'), confirmPassword: form.get('confirmPassword') });
+    return { message: 'Si el correo estaba disponible, tu cuenta ya está creada. Ahora puedes iniciar sesión.', success: true };
+  } catch (error) {
+    return { message: error instanceof RegistrationError ? error.message : 'No pudimos crear la cuenta. Inténtalo más tarde.', success: false };
+  }
+}
 
 export async function signIn(_previous: { message: string }, form: FormData) {
   if (!databaseConfigured()) return { message: 'El acceso privado todavía no está configurado.' };

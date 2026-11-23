@@ -1,5 +1,10 @@
 # Verificación y pendientes de QA
 
+## Registro desde login · 23/11/2026
+
+- Prueba de validación e integración específica aprobadas con base exclusiva de pruebas TLS y usuario ficticio limpiado; cubren duplicados concurrentes, hash, ausencia de permisos de administración, estado inicial, login/logout y límite persistente por correo. El contador global de prueba expira por ventana; no se eliminó un bucket compartido.
+- Pendiente QA de navegador: alternar registro/login, teclado, mensajes de error/espera, 320/390 px y escritorio, registro y entrada con identidad ficticia y limpieza posterior. No hay verificación de correo ni recuperación automática; no considerar el registro listo para producción por estas pruebas.
+
 ## Cuentas y alcancías · 19/11/2026
 
 - Acceso: Cuentas → pulsar tarjeta o Enter → detalle con movimientos como origen/destino y hasta cuatro alcancías. Las tarjetas de crédito conservan su flujo. Crear una alcancía reserva saldo libre; liberar con confirmación lo devuelve a libre. La fecha de Lima solo recuerda cuándo usarlo. El detalle reutiliza búsqueda/mes/tipo y Excel, sin editar desde esta vista.
@@ -165,3 +170,18 @@ Registrar resultados nuevos en STATUS y actualizar esta matriz al completarlos; 
 ## Verificación adicional: tigre y modo oscuro · 13/11/2026
 
 Nueve pruebas locales, build y typecheck aprobados. Integración específica de perfil reejecutada con tigre, aislamiento y limpieza en la base exclusiva de pruebas; no se reejecutó la suite general. QA de demo: vista previa/confirmación, seis secciones, colores del modal, cambio a koala claro y móvil 320/390 px sin desbordamiento horizontal medido ni errores de consola registrados. QA autenticado y teclado/movimiento reducido exhaustivos siguen pendientes. Detalles de compatibilidad del valor histórico panda en STATUS y PROJECT_CONTEXT.
+
+## Alta privada de usuarios · 23/11/2026
+
+- Integración nueva user-management-integration.mjs aprobada: dos escenarios y contenedor (3/3), con datos ficticios limpiados. Comprueba permisos, sesión/contraseña actual, límite persistente, login/logout, correo único y separación de cuentas/categorías/movimientos. No constituye QA de navegador ni auditoría exhaustiva.
+- Pendiente probar Configuración → Usuarios con una identidad administradora ficticia aislada: guardado, errores, espera, duplicado, foco, responsive y login con el usuario creado. Comprobar que un usuario normal no ve el formulario ni puede invocar la acción. No usar credenciales del propietario para mutaciones de QA.
+
+## Directorio y gestión de usuarios · 23/11/2026
+
+- Integración de directorio y regresión de altas ejecutadas juntas: 7/7 incluyendo contenedores, con identidades ficticias eliminadas. Edición revoca sesiones; borrado completo probado con presupuestos/pagos, metas/aportes/transferencias, alcancías, hábitos/marcas, premios/canjes, preferencias y cuentas/categorías. Se comprobó que otro usuario y el administrador conservan sus datos y acceso.
+- Pendiente navegador con administrador ficticio: lista tras crear, edición de correo/contraseña y posterior login, protección de administrador, confirmación de borrado y errores/espera, teclado/foco, 320/390 px/escritorio y ausencia de controles/datos de directorio para usuario normal. No mutar la cuenta propietaria durante QA.
+
+## Alta sin cuentas predeterminadas · 23/11/2026
+
+- Regresión de alta/directorio aprobada (7/7 contando contenedores), más dos pruebas locales. Nuevo usuario inicia sesión con cero cuentas; el fixture añade cuentas explícitas cuando requiere movimientos/borrado de módulos. Fixtures limpiados.
+- Pendiente navegador con nueva identidad ficticia: Resumen/Cuentas vacíos, creación manual de primera cuenta y controles que requieren cuenta. Las cuentas de usuarios anteriores se conservan.

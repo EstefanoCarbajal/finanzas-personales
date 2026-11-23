@@ -133,7 +133,6 @@
 .accountCard .accountBalance.negative{color:#ffe0dc}
 .workspace .accountCard:focus-visible{outline:3px solid var(--theme-strong);outline-offset:4px}
 .orderNote{margin:10px 2px 0;color:var(--theme-muted);font-size:11px}
-.openAccount{align-self:flex-start;margin-top:6px;padding:5px 0;border:0;background:transparent;color:#fff;font:750 13px var(--font-body);text-decoration:underline;text-decoration-color:#ffffff60;text-underline-offset:4px;cursor:pointer;min-height:44px}
 .srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.accountGrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))}}
 @media(max-width:480px){.accountGrid{grid-template-columns:1fr}.accountCard,.accountCard.tone1,.accountCard.tone2{min-height:210px;padding:20px 22px}.accountCard .accountBalance{font-size:27px}}
@@ -141,10 +140,12 @@
 
 /* Creation occupies a card in the same grid and expands in place. */
 .accountGrid{position:relative;align-items:start}
-.accountCard{cursor:grab;user-select:none;touch-action:pan-y}
+.accountCard{cursor:pointer;user-select:none;touch-action:pan-y}
+.accountCard.reordering{cursor:grab;touch-action:none}
 .accountCard[aria-disabled=true]{cursor:progress}
-@media(hover:hover) and (pointer:fine){.accountCard{touch-action:none}}
-@media(hover:hover) and (prefers-reduced-motion:no-preference){.accountCard:hover:not(.dragging):not([aria-disabled=true]){animation:readyToMove .4s ease-out both}@keyframes readyToMove{0%{transform:translateY(0) rotate(0)}45%{transform:translateY(-6px) rotate(-1deg)}75%{transform:translateY(-5px) rotate(.4deg)}100%{transform:translateY(-5px) rotate(-.35deg)}}}
+.moveHint{position:absolute;right:22px;bottom:20px;display:grid;place-items:center;width:44px;height:44px;border:1px solid #ffffff80;border-radius:15px;background:var(--theme-accent);color:var(--theme-deep);box-shadow:0 6px 18px #0003,0 0 0 5px #ffffff18;pointer-events:none}
+.moveHint svg{width:25px;height:25px}
+@media(prefers-reduced-motion:no-preference){.accountCard.reordering:not(.dragging){animation:reorderWiggle 1.4s ease-in-out infinite}.accountCard.reordering:nth-child(even):not(.dragging){animation-delay:-.7s}.moveHint{animation:handGesture 1.4s ease-in-out infinite}@keyframes reorderWiggle{0%,100%{transform:rotate(-.7deg)}50%{transform:rotate(.7deg) translateY(-3px)}}@keyframes handGesture{0%,100%{transform:translateX(-3px) rotate(-10deg)}50%{transform:translateX(3px) rotate(10deg)}}}
 .newAccountCard{min-width:0;overflow:hidden;border:1.5px dashed var(--theme-shade);border-radius:23px;background:var(--theme-surface);transition:border-color .25s,box-shadow .25s,background .25s}
 .newAccountCard>summary{position:relative;display:flex;min-height:217px;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:20px;overflow:hidden;list-style:none;text-align:center;cursor:pointer}
 .newAccountCard>summary::-webkit-details-marker{display:none}

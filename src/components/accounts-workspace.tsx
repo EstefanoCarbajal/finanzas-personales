@@ -29,6 +29,7 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
   toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>;
 }) {
   const [currency, setCurrency] = useState('PEN');
+  const [reordering, setReordering] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const container = useRef<HTMLDivElement>(null);
   const lastAccount = useRef<string | null>(null);
@@ -71,8 +72,8 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
       <dl className={w.overview}><div className={w.cashTotal}><dt>En tus cuentas</dt><dd key={`${currency}-${favoriteAmount}`}>{walletMoney(favoriteAmount, currency)}</dd></div><div><dt>Deuda en tarjetas</dt><dd>{walletMoney(selectedTotals.debt, currency)}</dd></div><div><dt>Crédito</dt><dd>{walletMoney(selectedAvailable, currency)}</dd></div></dl>
       <div className={w.groups}>
       <section className={w.cashGroup} aria-labelledby="accounts-list-title">
-      <div className={w.groupHeading}><div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div></div>
-      {bankGroups.map(bank => <div key={bank} className={w.bankGroup}><h3 className={w.bankTitle}>{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Otro banco') === bank)} balances={balances} freeBalances={freeBalances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} onOpenAccount={id => { lastAccount.current = id; setSelectedAccount(id); }} creationCard={bank === bankGroups[bankGroups.length - 1] ? creationCard : null} /></div>)}
+      <div className={w.groupHeading}><div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div>{visibleAccounts.length > 0 && <button type="button" className={`${w.reorderButton} ${reordering ? w.reorderActive : ''}`} aria-pressed={reordering} onClick={() => setReordering(value => !value)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 12V5a2 2 0 0 1 4 0v5-3a2 2 0 0 1 4 0v4-2a2 2 0 0 1 4 0v5c0 4-2.5 7-6.5 7h-1c-2 0-3.3-.7-4.5-2L4 15a2 2 0 0 1 3-2.5L8 14" /></svg><span>{reordering ? 'Listo' : 'Ordenar'}</span></button>}</div>
+      {bankGroups.map(bank => <div key={bank} className={w.bankGroup}><h3 className={w.bankTitle}>{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Otro banco') === bank)} balances={balances} freeBalances={freeBalances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} reordering={reordering} onOpenAccount={id => { lastAccount.current = id; setSelectedAccount(id); }} creationCard={bank === bankGroups[bankGroups.length - 1] ? creationCard : null} /></div>)}
       {!bankGroups.length && creationCard}
       </section>
       <div className={w.creditGroup}>{filteredCreditSection}</div>

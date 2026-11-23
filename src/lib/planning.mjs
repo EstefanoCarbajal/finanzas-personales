@@ -1,3 +1,4 @@
+import { validatePaymentEdit } from './payment-edit-policy.mjs';
 import { randomUUID } from 'node:crypto';
 import { checkAccountReservations } from './piggybanks.mjs';
 import { decimal, toCents } from './money.mjs';
@@ -90,7 +91,7 @@ export async function readPlanning(pool, userId, month) {
     LEFT JOIN movements m ON m.user_id = b.user_id AND m.category_id = b.category_id AND m.kind = 'expense'
       AND m.occurred_on >= b.month_start AND m.occurred_on < DATE_ADD(b.month_start, INTERVAL 1 MONTH)
     WHERE b.user_id = ? AND b.month_start = ? GROUP BY b.id, b.category_id, c.name, b.month_start, b.amount ORDER BY c.name`, [userId, monthStart]);
-  const [payments] = await pool.execute(`SELECT p.id, p.description, p.amount, p.due_on, p.status, p.paid_on, p.automatic_at,
+  const [payments] = await pool.execute(`SELECT p.id, p.account_id, p.category_id, p.description, p.amount, p.due_on, p.status, p.paid_on, p.automatic_at,
     DATE_FORMAT(DATE_SUB(p.automatic_at, INTERVAL 5 HOUR), '%H:%i') AS automatic_time,
     a.name AS account_name, a.currency, c.name AS category_name FROM scheduled_payments p
     JOIN accounts a ON a.id = p.account_id AND a.user_id = p.user_id
@@ -116,4 +117,47 @@ export async function processAutomaticPayments(pool, userId = null) {
     catch { failed++; }
   }
   return { checked: payments.length, failed };
+}
+
+export async function updateBudget(pool, userId, id, inputAmount) {
+  if (!uuid(id)) throw new PlanningInputError('Selecciona un presupuesto válido.');
+  const amount = parseAmount(inputAmount);
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    const [[budget]] = await connection.execute('SELECT id FROM budgets WHERE user_id = ? AND id = ? FOR UPDATE', [userId, id]);
+    if (!budget) throw new PlanningInputError('El presupuesto ya no está disponible.');
+    await connection.execute('UPDATE budgets SET amount = ? WHERE user_id = ? AND id = ?', [amount, userId, id]);
+    await connection.commit();
+  } catch (error) { await connection.rollback(); throw error; }
+  finally { connection.release(); }
+}
+
+export async function deleteBudget(pool, userId, id) {
+  if (!uuid(id)) throw new PlanningInputError('Selecciona un presupuesto válido.');
+  const [result] = await pool.execute('DELETE FROM budgets WHERE user_id = ? AND id = ?', [userId, id]);
+  if (!result.affectedRows) throw new PlanningInputError('El presupuesto ya no está disponible.');
+}
+
+export async function manageFuturePayment(pool, userId, id, mode, input) {
+  if (!uuid(id) || !['edit', 'delete'].includes(mode)) throw new PlanningInputError('Elige un pago y acción válidos.');
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
+    const [[payment]] = await connection.execute("SELECT due_on FROM scheduled_payments WHERE user_id = ? AND id = ? AND status = 'scheduled' FOR UPDATE", [userId, id]);
+    if (!payment) throw new PlanningInputError('El pago ya fue procesado o no está disponible.');
+    if (mode === 'delete') await connection.execute("UPDATE scheduled_payments SET status = 'cancelled' WHERE user_id = ? AND id = ?", [userId, id]);
+    else {
+      let value;
+      try { value = validatePaymentEdit(input, todayLima(), payment.due_on); } catch (error) { throw new PlanningInputError(error.message); }
+      if (!uuid(input.account_id) || !uuid(input.category_id)) throw new PlanningInputError('Elige una cuenta y categoría válidas.');
+      const [[account]] = await connection.execute("SELECT id FROM accounts WHERE user_id = ? AND id = ? AND account_type = 'asset' FOR UPDATE", [userId, input.account_id]);
+      const [[category]] = await connection.execute("SELECT id FROM categories WHERE user_id = ? AND id = ? AND kind = 'expense' FOR UPDATE", [userId, input.category_id]);
+      if (!account || !category) throw new PlanningInputError('La cuenta o categoría ya no está disponible.');
+      await connection.execute('UPDATE scheduled_payments SET description = ?, amount = ?, due_on = ?, automatic_at = ?, account_id = ?, category_id = ? WHERE user_id = ? AND id = ?', [value.description, value.amount, value.due_on, value.automatic_at, input.account_id, input.category_id, userId, id]);
+    }
+    await connection.commit();
+  } catch (error) { await connection.rollback(); throw error; }
+  finally { connection.release(); }
 }

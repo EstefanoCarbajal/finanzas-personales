@@ -7,8 +7,8 @@ import { requireUser } from '@/server/auth';
 import { db } from '@/server/db';
 import { deleteMovement, InputError, saveMovement, updateMovement } from '@/lib/repository.mjs';
 import { randomUUID } from 'node:crypto';
-import { cancelPayment, PlanningInputError, saveBudget, schedulePayment, settlePayment } from '@/lib/planning.mjs';
-import { contributeToGoal, createGoal, GoalInputError } from '@/lib/goals.mjs';
+import { manageFuturePayment, deleteBudget, updateBudget, cancelPayment, PlanningInputError, saveBudget, schedulePayment, settlePayment } from '@/lib/planning.mjs';
+import { manageGoal, contributeToGoal, createGoal, GoalInputError } from '@/lib/goals.mjs';
 import { createHabit, createPersonalReward, HabitInputError, markHabitComplete, redeemPersonalReward } from '@/lib/habits.mjs';
 import { saveAccountOrder } from '@/lib/account-order.mjs';
 import { createCategory, saveCategoryIcon, updateCategory, deleteCategory, CategoryInputError } from '@/lib/categories.mjs';
@@ -216,4 +216,31 @@ export async function redeemReward(_previous: { message: string; success: boolea
   catch (error) { return { message: error instanceof HabitInputError ? error.message : 'No pudimos procesar el canje.', success: false }; }
   revalidatePath('/privado');
   return { message: 'Recompensa canjeada. ¡Disfrútala!', success: true };
+}
+
+export async function manageBudget(id: string, mode: 'edit' | 'delete', amount?: string) {
+  const user = await requireUser();
+  try {
+    if (mode === 'edit') await updateBudget(db(), user.id, id, amount);
+    else if (mode === 'delete') await deleteBudget(db(), user.id, id);
+    else return { success: false, message: 'Elige una acción válida.' };
+  } catch (error) { return { success: false, message: error instanceof PlanningInputError ? error.message : 'No pudimos actualizar el presupuesto. Inténtalo de nuevo.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: mode === 'edit' ? 'Presupuesto actualizado.' : 'Presupuesto eliminado. Tus gastos se conservan.' };
+}
+
+export async function changeGoal(id: string, mode: 'edit' | 'delete', input?: { name: string; target_amount: string; target_on: string | null }) {
+  const user = await requireUser();
+  try { await manageGoal(db(), user.id, id, mode, input); }
+  catch (error) { return { success: false, message: error instanceof GoalInputError ? error.message : 'No pudimos actualizar la meta. Inténtalo de nuevo.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: mode === 'edit' ? 'Meta actualizada.' : 'Meta eliminada. Los aportes y movimientos se conservan.' };
+}
+
+export async function changeFuturePayment(id: string, mode: 'edit' | 'delete', input?: { description: string; amount: string; due_on: string; account_id: string; category_id: string; payment_mode: string; automatic_time: string }) {
+  const user = await requireUser();
+  try { await manageFuturePayment(db(), user.id, id, mode, input); }
+  catch (error) { return { success: false, message: error instanceof PlanningInputError ? error.message : 'No pudimos actualizar el pago. Inténtalo de nuevo.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: mode === 'edit' ? 'Pago actualizado.' : 'Pago eliminado sin registrar un gasto.' };
 }

@@ -16,3 +16,5 @@
 .workspace.workspace .hero .heroCopy h1{color:var(--theme-ondark)}
 
 .futureRow[href]{color:var(--theme-ink);text-decoration:none}.futureRow[href]:hover{color:var(--theme-strong)}
+
+.directory{margin-top:26px}.userList{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:12px}.userList li{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:16px;border:1px solid var(--theme-line);border-radius:14px}.userList li>div{min-width:0}.userList strong{display:block;overflow-wrap:anywhere;color:var(--theme-ink)}.userList span{display:block;margin-top:6px;font-size:13px;color:var(--theme-muted)}.userList .formActions{margin:0}.directory button:focus-visible{outline:3px solid var(--theme-strong);outline-offset:3px}

@@ -4,7 +4,11 @@ import { creditCards } from '@/lib/credit.mjs';
 import { addCreditCard, updateCreditCard, removeCreditCard } from './credit-actions';
 import { addMovement } from './actions';
 import { readPiggybanks } from '@/lib/piggybanks.mjs';
-import { addPiggybank, freePiggybank } from './piggybank-actions';
+import { addPiggybank, freePiggybank, increasePiggybank, changePiggybankName } from './piggybank-actions';
+import UserDirectory from '@/components/user-directory';
+import UserCreateForm from '@/components/user-create-form';
+import { editOrDeleteUser, addPrivateUser } from './user-actions';
+import { readManagedUsers, isUserAdmin } from '@/lib/user-management.mjs';
 import SettingsWorkspace from '@/components/settings-workspace';
 import { saveCredentials } from './settings-actions';
 import { randomUUID } from 'node:crypto';
@@ -40,6 +44,8 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const rawSection = Array.isArray(params.seccion) ? params.seccion[0] : params.seccion;
   const requested = rawSection === 'metas' ? 'planificacion' : rawSection;
   const section: Section = sections.includes(requested as Section) ? requested as Section : 'resumen';
+  const canCreateUsers = section === 'configuracion' && await isUserAdmin(db(), user.id);
+  const managedUsers = canCreateUsers ? await readManagedUsers(db(), user.id) : [];
   const avatar = await readAvatar(db(), user.id);
   const today = todayLima();
   const month = today.slice(0, 7);
@@ -66,12 +72,12 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
         </>}
         {section === 'cuentas' && data && <>
 
-          <AccountsWorkspace movements={data.movements} piggybanks={piggybanks} piggybankActions={{ create: addPiggybank, release: freePiggybank }} today={today} creditSection={cardWorkspace} currencyTotals={data.totals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} balances={data.totals.accounts} saveOrder={updateAccountOrder} toggleSummaryAccount={toggleAccountSummary} renameAccount={editAccount} removeAccount={removeAccount} accountForm={<SetupForms />} />
+          <AccountsWorkspace movements={data.movements} piggybanks={piggybanks} piggybankActions={{ create: addPiggybank, release: freePiggybank, topUp: increasePiggybank, rename: changePiggybankName }} today={today} creditSection={cardWorkspace} currencyTotals={data.totals.byCurrency || {}} availableByCurrency={availableByCurrency} accounts={cashAccounts} balances={data.totals.accounts} saveOrder={updateAccountOrder} toggleSummaryAccount={toggleAccountSummary} renameAccount={editAccount} removeAccount={removeAccount} accountForm={<SetupForms />} />
         </>}
-        {section === 'categorias' && <CategoriesSection categories={data.categories} creation={<SetupForms category />} editCategory={editCategory} removeCategory={removeCategory} />}
+        {section === 'categorias' && <CategoriesSection categories={data.categories} movements={data.movements} currentMonth={month} creation={<SetupForms category />} editCategory={editCategory} removeCategory={removeCategory} />}
         {(section === 'planificacion' || section === 'pagos') && data && planning && <PlanningPanel section={section} accounts={cashAccounts} categories={data.categories} budgets={planning.budgets} payments={planning.payments} month={month} today={today} goals={section === 'planificacion' && goals ? <div id="metas"><GoalsPanel accounts={cashAccounts} goals={goals} today={today} /></div> : undefined} />}
         {section === 'habitos' && habits && <><section className="page-heading"><div><span className="eyebrow">PEQUEÑOS PASOS, TODOS LOS DÍAS</span><h1>Hábitos y recompensas</h1><p>Reconoce tus avances cotidianos y elige premios personales.</p></div></section><HabitsRewards data={habits} today={today} /></>}
-        {section === 'configuracion' && <SettingsWorkspace email={user.email} saveAction={saveCredentials} creditCards={cardWorkspace} />}
+        {section === 'configuracion' && <SettingsWorkspace userCreation={canCreateUsers ? <UserCreateForm create={addPrivateUser}><UserDirectory users={managedUsers} manage={editOrDeleteUser} /></UserCreateForm> : undefined} email={user.email} saveAction={saveCredentials} creditCards={cardWorkspace} />}
       </div>
   </PrivateDashboardShell>;
 }

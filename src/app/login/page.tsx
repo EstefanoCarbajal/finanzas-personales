@@ -36,14 +36,13 @@ export default function LoginPage() {
       </div>
 
       <section className={styles.card}>
-        <div className={styles.cardTopline}><span className={styles.cardEyebrow}>BIENVENIDO DE VUELTA</span><span className={styles.secure}><span /> Privado</span></div>
-        <h2>Tu espacio<br /><span>te estaba esperando.</span></h2>
-        <p className={styles.cardLead}>Ingresa para continuar con tus metas.</p>
+        <div className={styles.cardTopline}><span className={styles.cardEyebrow}>TU ESPACIO PERSONAL</span><span className={styles.secure}><span /> Privado</span></div>
+        <h2>Tu dinero,<br /><span>tu espacio.</span></h2>
+        <p className={styles.cardLead}>Inicia sesión o crea tu cuenta.</p>
         {!enabled && <p className={styles.demoNote}>El acceso privado está pendiente de configuración. Mientras tanto puedes explorar la demo con datos ficticios.</p>}
         <LoginForm enabled={enabled} />
         <div className={styles.divider}><span>o</span></div>
         <Link className={styles.demoLink} href="/demo"><span>Explorar la demo</span><span aria-hidden="true">↗</span></Link>
-        <p className={styles.legal}>El registro público está cerrado. Tu cuenta se gestiona de forma privada.</p>
       </section>
     </section>
     <div className={styles.footer}>Hecho para avanzar <span>•</span> PEN · America/Lima</div>

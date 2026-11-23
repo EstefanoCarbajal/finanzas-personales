@@ -18,7 +18,7 @@ La aplicación se ejecuta localmente y dispone de acceso privado con persistenci
 | Hábitos y recompensas | Hábitos iniciales/personalizados, puntos diarios y canjes con límite semanal. | Marcas, creación y canjes simulados. |
 | Perfil | Seis avatares originales y temas, guardados por usuario en MySQL. | Selección solo en memoria. |
 
-No hay registro público, recuperación automática de contraseña, edición/borrado de movimientos desde la interfaz ni motor de recurrencia automática de pagos. Respaldo/restauración y preparación para producción siguen pendientes.
+Hay registro desde el login. No hay verificación de correo ni recuperación automática de contraseña; respaldo/restauración y preparación para producción siguen pendientes.
 
 La demo usa ejemplos de noviembre de 2026 (hábitos: 11/11/2026), no la fecha actual. No escribe en MySQL ni persiste en el almacenamiento del navegador. Recargar restablece los ejemplos; los hábitos también se reinician al salir de su sección.
 
@@ -108,3 +108,13 @@ En una copia existente, revisar rama y cambios locales antes de actualizar con `
 Nunca versionar contraseñas, tokens, archivos privados de entorno, datos financieros reales ni volcados de base. Git conserva código, no respalda MySQL. No cargar datos reales antes de probar restauración y las demás condiciones de producción.
 
 Fuera del alcance inicial: conexión bancaria, IA, SMS/WhatsApp, cobros a usuarios, premios comerciales, planes familiares, múltiples monedas e intereses de tarjetas.
+
+## Crear usuarios adicionales
+
+Desde /login cualquier persona puede crear una cuenta con correo y contraseña de 12 a 128 caracteres y luego iniciar sesión. Comienza sin cuentas financieras y con categorías iniciales propias; no recibe permisos de administrador. El registro no verifica la titularidad del correo ni envía mensajes y usa límites persistentes de intentos. La instalación requiere una cuenta administradora inicial antes de habilitar el registro.
+
+El administrador también puede crear usuarios en Configuración → Usuarios, confirmando con su contraseña actual. Ninguna modalidad copia datos financieros de otros usuarios.
+
+La migración 017 concede administración a la cuenta existente únicamente cuando hay una sola. En una instalación nueva, ejecutar migraciones y luego db:create-user crea la primera cuenta administradora. Ese comando sigue sin servir para crear usuarios adicionales.
+
+En Configuración → Usuarios, el administrador también ve el directorio y puede editar el correo o asignar una nueva contraseña a usuarios normales. Guardar revoca las sesiones de ese usuario. Eliminar requiere la contraseña del administrador y escribir el correo del usuario: borra permanentemente su cuenta y todos sus datos. Las cuentas administradoras están protegidas; la cuenta propia se modifica desde Acceso y seguridad.

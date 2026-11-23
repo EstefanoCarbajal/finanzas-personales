@@ -1,5 +1,5 @@
 import { totals } from './money.mjs';
-import { PiggybankError, assertReservations, validatePiggybank } from './piggybank-policy.mjs';
+import { PiggybankError, assertReservations, validatePiggybank, remainingAfterRelease, balanceAfterTopUp, validatePiggybankName } from './piggybank-policy.mjs';
 
 const checkId = id => {
   if (typeof id !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)) throw new PiggybankError('Selecciona una cuenta o alcancía válida.');
@@ -45,14 +45,57 @@ export async function createPiggybank(pool, userId, input) {
   finally { connection.release(); }
 }
 
-export async function releasePiggybank(pool, userId, bankId) {
+export async function releasePiggybank(pool, userId, bankId, amount, expectedBalance, requestId) {
   checkId(bankId);
+  if (requestId !== undefined) checkId(requestId);
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
     await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
-    const [result] = await connection.execute('DELETE FROM account_piggybanks WHERE user_id = ? AND id = ?', [userId, bankId]);
-    if (!result.affectedRows) throw new PiggybankError('Esta alcancía ya se liberó o no está disponible.');
+    if (requestId !== undefined) {
+      const [[request]] = await connection.execute('SELECT id FROM piggybank_requests WHERE user_id = ? AND id = ? FOR UPDATE', [userId, requestId]);
+      if (request) { await connection.commit(); return; }
+    }
+    const [[bank]] = await connection.execute('SELECT amount FROM account_piggybanks WHERE user_id = ? AND id = ? FOR UPDATE', [userId, bankId]);
+    if (!bank) throw new PiggybankError('Esta alcancía ya se liberó o no está disponible.');
+    if (requestId !== undefined) await connection.execute('INSERT INTO piggybank_requests (id, user_id) VALUES (?, ?)', [requestId, userId]);
+    const remaining = amount === undefined ? '0.00' : remainingAfterRelease(bank.amount, amount, expectedBalance);
+    if (remaining === '0.00') await connection.execute('DELETE FROM account_piggybanks WHERE user_id = ? AND id = ?', [userId, bankId]);
+    else await connection.execute('UPDATE account_piggybanks SET amount = ? WHERE user_id = ? AND id = ?', [remaining, userId, bankId]);
+    await connection.commit();
+  } catch (error) { await connection.rollback(); throw error; }
+  finally { connection.release(); }
+}
+
+export async function topUpPiggybank(pool, userId, bankId, amount, requestId) {
+  checkId(bankId); checkId(requestId);
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
+    const [[request]] = await connection.execute('SELECT id FROM piggybank_requests WHERE user_id = ? AND id = ? FOR UPDATE', [userId, requestId]);
+    if (request) { await connection.commit(); return; }
+    const [[bank]] = await connection.execute('SELECT amount FROM account_piggybanks WHERE user_id = ? AND id = ? FOR UPDATE', [userId, bankId]);
+    if (!bank) throw new PiggybankError('Esta alcancía ya no está disponible.');
+    const balance = balanceAfterTopUp(bank.amount, amount);
+    await connection.execute('INSERT INTO piggybank_requests (id, user_id) VALUES (?, ?)', [requestId, userId]);
+    await connection.execute('UPDATE account_piggybanks SET amount = ? WHERE user_id = ? AND id = ?', [balance, userId, bankId]);
+    await checkAccountReservations(connection, userId);
+    await connection.commit();
+  } catch (error) { await connection.rollback(); throw error; }
+  finally { connection.release(); }
+}
+
+export async function renamePiggybank(pool, userId, bankId, inputName) {
+  checkId(bankId);
+  const name = validatePiggybankName(inputName);
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    await connection.execute('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId]);
+    const [[bank]] = await connection.execute('SELECT id FROM account_piggybanks WHERE user_id = ? AND id = ? FOR UPDATE', [userId, bankId]);
+    if (!bank) throw new PiggybankError('Esta alcancía ya no está disponible.');
+    await connection.execute('UPDATE account_piggybanks SET name = ? WHERE user_id = ? AND id = ?', [name, userId, bankId]);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }

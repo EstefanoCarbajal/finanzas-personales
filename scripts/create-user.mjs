@@ -17,9 +17,7 @@ try {
   if (Number(count.total) !== 0) throw new Error('Ya existe un usuario. Este comando solo crea la cuenta inicial.');
   const id = randomUUID();
   await connection.execute('INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)', [id, email, hash]);
-  for (const name of ['Efectivo', 'Cuenta principal', 'Ahorros']) {
-    await connection.execute('INSERT INTO accounts (id, user_id, name) VALUES (?, ?, ?)', [randomUUID(), id, name]);
-  }
+  await connection.execute('INSERT INTO user_admins (user_id) VALUES (?)', [id]);
   for (const [name, kind] of [['Ingresos', 'income'], ['Alimentación', 'expense'], ['Transporte', 'expense'], ['Vivienda', 'expense'], ['Ocio', 'expense'], ['Salud', 'expense'], ['Otros', 'expense']]) {
     await connection.execute('INSERT INTO categories (id, user_id, name, kind) VALUES (?, ?, ?, ?)', [randomUUID(), id, name, kind]);
   }

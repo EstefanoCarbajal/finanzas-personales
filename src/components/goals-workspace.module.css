@@ -10,3 +10,5 @@
 @media(min-width:1200px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.grid:has(>.card:only-child){grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.grid{grid-template-columns:1fr}.sectionHeading{margin-top:25px}.cardArt{height:140px}.fields{grid-template-columns:1fr}.cardBody,.form{padding:20px}.demoLabel{font-size:10px}}
 @media(prefers-reduced-motion:no-preference){.card{animation:arrive .45s ease both}.card:nth-child(2){animation-delay:.07s}.card:nth-child(3){animation-delay:.14s}.card:hover{transform:translateY(-3px);box-shadow:0 9px 20px color-mix(in srgb,var(--theme-deep) 9%,transparent)}.button{transition:transform .18s,box-shadow .18s}@keyframes arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}}
+
+.goalTitle{display:flex;align-items:flex-start;gap:10px}.goalTitle>h3{flex:1;min-width:0}.card:has([data-open="true"]){z-index:2;overflow:visible}.goalTitle :is(button):focus-visible{outline:3px solid var(--theme-strong);outline-offset:3px}

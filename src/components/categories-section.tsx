@@ -6,6 +6,8 @@ import CategoryIcon from './category-icon';
 import { CategoryIconPicker, CategoryKindPicker } from './category-fields';
 import CategoryDeleteDialog from './category-delete-dialog';
 import s from './categories.module.css';
+import CategoryInsights from './category-insights';
+import type { PrivateMovement } from '@/app/privado/movements-table';
 
 export type CategoryItem = { id: string; name: string; kind: string; icon?: string | null };
 export type CategoryChange = { name: string; kind: string; icon: string };
@@ -37,7 +39,7 @@ function CategoryEditor({ category, save, onClose, onSaved, onPending, onDelete,
   </form>;
 }
 
-export default function CategoriesSection({ categories, creation, editCategory, removeCategory }: { categories: CategoryItem[]; creation: ReactNode; editCategory: EditCategory; removeCategory: RemoveCategory }) {
+export default function CategoriesSection({ categories, creation, editCategory, removeCategory, movements, currentMonth }: { categories: CategoryItem[]; creation: ReactNode; editCategory: EditCategory; removeCategory: RemoveCategory; movements: PrivateMovement[]; currentMonth: string }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [removing, setRemoving] = useState<CategoryItem | null>(null);
   const [status, setStatus] = useState('');
@@ -56,7 +58,7 @@ export default function CategoriesSection({ categories, creation, editCategory, 
     }
   }, [editing, saving, removing, categories]);
   function closeEditor(id: string) { returnFocus.current = id; setEditing(null); }
-  return <section className={s.section} aria-labelledby="categories-title">
+  return <><section className={s.section} aria-labelledby="categories-title">
     <div className={s.heading}><h2 id="categories-title">Categorías</h2><button ref={creator} type="button" className={s.newCategoryButton} aria-expanded={creationOpen} aria-controls="category-creation" onClick={() => setCreationOpen(open => !open)}><span aria-hidden="true">+</span>Nueva categoría<span className={s.chevron} aria-hidden="true">⌄</span></button></div>
     <details ref={composer} id="category-creation" className={`${s.composer} ${s.creationPanel}`} open={creationOpen} onToggle={event => setCreationOpen(event.currentTarget.open)}><summary className={s.srOnly}>Nueva categoría</summary>{creation}</details>
     <div className={s.groups}>{[{ kind: 'expense', label: 'Gastos', arrow: '↗' }, { kind: 'income', label: 'Ingresos', arrow: '↙' }].map(group => {
@@ -73,5 +75,5 @@ export default function CategoriesSection({ categories, creation, editCategory, 
     })}</div>
     <p role="status" className={s.status}>{status}</p>
     {removing && <CategoryDeleteDialog category={removing} remove={removeCategory} onBusy={setSaving} onClose={() => setRemoving(null)} onRemoved={message => { deletedId.current = removing.id; closeEditor(removing.id); setRemoving(null); setStatus(message); }} />}
-  </section>;
+  </section><CategoryInsights movements={movements} currentMonth={currentMonth} /></>;
 }

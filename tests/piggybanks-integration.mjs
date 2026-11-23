@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import nextEnv from '@next/env';
 import { createDatabasePool } from '../src/lib/database.mjs';
-import { createPiggybank, releasePiggybank, readPiggybanks } from '../src/lib/piggybanks.mjs';
+import { createPiggybank, releasePiggybank, readPiggybanks, topUpPiggybank, renamePiggybank } from '../src/lib/piggybanks.mjs';
 import { readDashboard, saveMovement, updateMovement, deleteMovement, todayLima } from '../src/lib/repository.mjs';
 import { createGoal, contributeToGoal } from '../src/lib/goals.mjs';
 import { schedulePayment, settlePayment } from '../src/lib/planning.mjs';
+import { accountAllocation } from '../src/lib/piggybank-policy.mjs';
 import { deleteAccount } from '../src/lib/accounts.mjs';
 
 nextEnv.loadEnvConfig(process.cwd());
@@ -41,6 +42,101 @@ test('MySQL: alcancías aisladas, límite atómico, idempotencia y protección d
       await releasePiggybank(pool, users[0], bank.id);
       await createPiggybank(pool, users[0], bank); // a delayed create after release must stay released
       assert.equal((await readPiggybanks(pool, users[0])).filter(b => b.account_id === account).length, 0);
+    });
+    await t.test('liberación parcial atómica, aislamiento y reenvíos', async () => {
+      const bank = makeBank('80.01');
+      await createPiggybank(pool, users[0], bank);
+      await assert.rejects(releasePiggybank(pool, users[1], bank.id, '20.10', '80.01'), /disponible/);
+      await assert.rejects(releasePiggybank(pool, users[0], bank.id, '80.02', '80.01'), /importe/);
+      const attempts = await Promise.allSettled([
+        releasePiggybank(pool, users[0], bank.id, '20.10', '80.01'),
+        releasePiggybank(pool, users[0], bank.id, '20.10', '80.01'),
+      ]);
+      assert.equal(attempts.filter(r => r.status === 'fulfilled').length, 1);
+      assert.equal((await readPiggybanks(pool, users[0])).find(b => b.id === bank.id).amount, '59.91');
+      await assert.rejects(releasePiggybank(pool, users[0], bank.id, '20.10', '80.01'), /cambió/);
+      const data = await readDashboard(pool, users[0]);
+      assert.equal(data.totals.accounts[account], '100.00');
+      assert.equal(data.movements.length, 0);
+      await releasePiggybank(pool, users[0], bank.id, '59.91', '59.91');
+      assert.equal((await readPiggybanks(pool, users[0])).some(b => b.id === bank.id), false);
+    });
+    await t.test('agregar dinero: propiedad, saldo libre, reenvíos y liberación repetida', async () => {
+      const bank = makeBank('10.01');
+      await createPiggybank(pool, users[0], bank);
+      await assert.rejects(topUpPiggybank(pool, users[1], bank.id, '1.00', randomUUID()), /disponible/);
+      const request = randomUUID();
+      await assert.rejects(topUpPiggybank(pool, users[0], bank.id, '100.00', request), /saldo libre/);
+      await topUpPiggybank(pool, users[0], bank.id, '20.10', request);
+      await topUpPiggybank(pool, users[0], bank.id, '20.10', request);
+      assert.equal((await readPiggybanks(pool, users[0])).find(b => b.id === bank.id).amount, '30.11');
+      const releaseRequest = randomUUID();
+      await releasePiggybank(pool, users[0], bank.id, '20.10', '30.11', releaseRequest);
+      await topUpPiggybank(pool, users[0], bank.id, '20.10', randomUUID());
+      await releasePiggybank(pool, users[0], bank.id, '20.10', '30.11', releaseRequest);
+      assert.equal((await readPiggybanks(pool, users[0])).find(b => b.id === bank.id).amount, '30.11');
+      const data = await readDashboard(pool, users[0]);
+      assert.equal(data.totals.accounts[account], '100.00');
+      assert.equal(data.movements.length, 0);
+      await releasePiggybank(pool, users[0], bank.id);
+      await topUpPiggybank(pool, users[0], bank.id, '20.10', request);
+      assert.equal((await readPiggybanks(pool, users[0])).some(b => b.id === bank.id), false);
+      const dollarBank = (await readPiggybanks(pool, users[0])).find(b => b.account_id === usd);
+      await topUpPiggybank(pool, users[0], dollarBank.id, '0.01', randomUUID());
+      assert.equal((await readPiggybanks(pool, users[0])).find(b => b.id === dollarBank.id).amount, '90.01');
+      await releasePiggybank(pool, users[0], dollarBank.id, '0.01', '90.01', randomUUID());
+    });
+    await t.test('agregados concurrentes no exceden el saldo libre', async () => {
+      const banks = [makeBank('10.00'), makeBank('10.00')];
+      for (const bank of banks) await createPiggybank(pool, users[0], bank);
+      const request = randomUUID();
+      await Promise.all([
+        topUpPiggybank(pool, users[0], banks[0].id, '0.01', request),
+        topUpPiggybank(pool, users[0], banks[0].id, '0.01', request),
+      ]);
+      assert.equal((await readPiggybanks(pool, users[0])).find(b => b.id === banks[0].id).amount, '10.01');
+      const results = await Promise.allSettled(banks.map(bank => topUpPiggybank(pool, users[0], bank.id, '70.00', randomUUID())));
+      assert.equal(results.filter(r => r.status === 'fulfilled').length, 1);
+      for (const bank of banks) await releasePiggybank(pool, users[0], bank.id);
+    });
+    await t.test('cambio de nombre: propiedad, validación, persistencia y saldo intacto', async () => {
+      const bank = makeBank('10.01');
+      await createPiggybank(pool, users[0], bank);
+      const before = (await readPiggybanks(pool, users[0])).find(b => b.id === bank.id);
+      await assert.rejects(renamePiggybank(pool, users[1], bank.id, 'Ajena'), /disponible/);
+      for (const name of ['  ', 'a'.repeat(61)]) await assert.rejects(renamePiggybank(pool, users[0], bank.id, name), /nombre/);
+      assert.deepEqual((await readPiggybanks(pool, users[0])).find(b => b.id === bank.id), before);
+      await renamePiggybank(pool, users[0], bank.id, '  Vacaciones Perú  ');
+      await renamePiggybank(pool, users[0], bank.id, 'Vacaciones Perú');
+      assert.deepEqual((await readPiggybanks(pool, users[0])).find(b => b.id === bank.id), { ...before, name: 'Vacaciones Perú' });
+      const data = await readDashboard(pool, users[0]);
+      assert.equal(data.totals.accounts[account], '100.00');
+      assert.equal(data.movements.length, 0);
+      await releasePiggybank(pool, users[0], bank.id);
+      await assert.rejects(renamePiggybank(pool, users[0], bank.id, 'Liberada'), /disponible/);
+    });
+    await t.test('eliminar devuelve todo a libre y permite reutilizar el espacio sin duplicar', async () => {
+      const bank = makeBank('45.50');
+      await createPiggybank(pool, users[0], bank);
+      const before = (await readPiggybanks(pool, users[0])).find(b => b.id === bank.id);
+      assert.deepEqual(accountAllocation('100.00', [before]), { reserved: '45.50', free: '54.50' });
+      const request = randomUUID();
+      await assert.rejects(releasePiggybank(pool, users[1], bank.id, '45.50', '45.50', request), /disponible/);
+      await releasePiggybank(pool, users[0], bank.id, '45.50', '45.50', request);
+      const banks = (await readPiggybanks(pool, users[0])).filter(b => b.account_id === account);
+      assert.deepEqual(accountAllocation('100.00', banks), { reserved: '0.00', free: '100.00' });
+      const replacement = makeBank('20.00');
+      await createPiggybank(pool, users[0], replacement);
+      await releasePiggybank(pool, users[0], bank.id, '45.50', '45.50', request);
+      await createPiggybank(pool, users[0], bank);
+      const after = (await readPiggybanks(pool, users[0])).filter(b => b.account_id === account);
+      assert.equal(after.length, 1);
+      assert.equal(after[0].id, replacement.id);
+      assert.equal(after[0].slot, before.slot);
+      const data = await readDashboard(pool, users[0]);
+      assert.equal(data.totals.accounts[account], '100.00');
+      assert.equal(data.movements.length, 0);
+      await releasePiggybank(pool, users[0], replacement.id);
     });
     await t.test('cinco altas simultáneas: solo cuatro espacios', async () => {
       const results = await Promise.allSettled(Array.from({ length: 5 }, () => createPiggybank(pool, users[0], makeBank('20.00'))));

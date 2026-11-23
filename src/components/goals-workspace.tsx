@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { decimal, soles, toCents } from '@/lib/money.mjs';
+import GoalControls, { type ManageGoal } from './goal-controls';
 import VacationAvatar from './vacation-avatar';
 import s from './goals-workspace.module.css';
 
@@ -22,14 +23,14 @@ function Summit({ complete = false }: { complete?: boolean }) {
   </svg>;
 }
 
-export function SavingsGoalCard({ goal, children }: { goal: SavingsGoal; children?: ReactNode }) {
+export function SavingsGoalCard({ goal, children, manage, today = '2026-11-11', demo = false }: { goal: SavingsGoal; children?: ReactNode; manage?: ManageGoal; today?: string; demo?: boolean }) {
   const target = toCents(goal.target_amount), saved = toCents(goal.saved);
   const complete = saved >= target;
   const percentage = Math.min(100, Number(saved * BigInt(100) / target));
   return <article className={`${s.card} ${complete ? s.completed : ''}`}>
     <div className={s.cardArt}><span className={s.badge}>{complete ? '✓ Meta alcanzada' : 'En camino'}</span><VacationAvatar className={s.cardAvatar} sizes="138px" /><span className={s.artNumber} aria-hidden="true">{String(percentage).padStart(2, '0')}<small>%</small></span></div>
     <div className={s.cardBody}>
-      <h3>{goal.name}</h3><div className={s.account}><span aria-hidden="true">↳</span> {goal.account_name}</div>
+      <div className={s.goalTitle}><h3>{goal.name}</h3>{manage && <GoalControls goal={goal} manage={manage} today={today} demo={demo} />}</div><div className={s.account}><span aria-hidden="true">↳</span> {goal.account_name}</div>
       <div className={s.amount}><strong>{soles(goal.saved)}</strong><span>de {soles(goal.target_amount)}</span></div>
       <progress className={s.progress} aria-label={`Avance de ${goal.name}: ${percentage}%`} value={percentage} max={100} />
       <div className={s.cardMeta}><span>{complete ? '¡Lo conseguiste!' : <>Faltan <b>{soles(decimal(target - saved))}</b></>}</span><span>{goal.target_on ? dateLabel(goal.target_on) : 'Sin fecha límite'}</span></div>
@@ -40,7 +41,7 @@ export function SavingsGoalCard({ goal, children }: { goal: SavingsGoal; childre
 
 export default function GoalsWorkspace({ goals, creation, children, demo = false }: { goals: SavingsGoal[]; creation?: ReactNode; children: ReactNode; demo?: boolean }) {
   return <section className={s.workspace} aria-label="Metas de ahorro">
-    <div className={s.sectionHeading}><h2>Tus metas</h2>{demo && <span className={s.demoLabel}>Vista ilustrativa</span>}</div>
+    <div className={s.sectionHeading}><h2 id="goals-heading" tabIndex={-1}>Tus metas</h2>{demo && <span className={s.demoLabel}>Vista ilustrativa</span>}</div>
     {creation}
     <div className={s.grid}>{children}{!goals.length && <div className={s.empty}><Summit /><h3>¿Qué quieres hacer realidad?</h3><p>Crea tu primera meta y empieza a acercarte.</p></div>}</div>
     {demo && <p className={s.demoFoot}>Crea metas y registra aportes en tu espacio privado.</p>}

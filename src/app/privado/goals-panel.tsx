@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from 'react';
 import GoalsWorkspace, { SavingsGoalCard, type SavingsGoal } from '@/components/goals-workspace';
 import GoalCreateForm from '@/components/goal-create-form';
 import s from '@/components/goals-workspace.module.css';
-import { addGoal, addGoalContribution } from './actions';
+import { changeGoal, addGoal, addGoalContribution } from './actions';
 
 type Account = { id: string; name: string };
 const initialState = { message: '', success: false };
@@ -35,5 +35,5 @@ function ContributionForm({ goal, accounts }: { goal: SavingsGoal; accounts: Acc
 
 
 export default function GoalsPanel({ accounts, goals, today }: { accounts: Account[]; goals: SavingsGoal[]; today: string }) {
-  return <GoalsWorkspace goals={goals} creation={<GoalCreateForm accounts={accounts} today={today} saveAction={addGoal} />}>{goals.map(goal => <SavingsGoalCard key={goal.id} goal={goal}><ContributionForm goal={goal} accounts={accounts} /></SavingsGoalCard>)}</GoalsWorkspace>;
+  return <GoalsWorkspace goals={goals} creation={<GoalCreateForm accounts={accounts} today={today} saveAction={addGoal} />}>{goals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} manage={changeGoal} today={today}><ContributionForm goal={goal} accounts={accounts} /></SavingsGoalCard>)}</GoalsWorkspace>;
 }
