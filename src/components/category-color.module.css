@@ -5,6 +5,12 @@
   --category-violet: #7752a0;
   --category-pink: #a34572;
   --category-sand: #806344;
+  --category-chart-sun: color-mix(in srgb, var(--category-sun) 34%, var(--theme-surface));
+  --category-chart-leaf: color-mix(in srgb, var(--category-leaf) 34%, var(--theme-surface));
+  --category-chart-blue: color-mix(in srgb, var(--category-blue) 34%, var(--theme-surface));
+  --category-chart-violet: color-mix(in srgb, var(--category-violet) 34%, var(--theme-surface));
+  --category-chart-pink: color-mix(in srgb, var(--category-pink) 34%, var(--theme-surface));
+  --category-chart-sand: color-mix(in srgb, var(--category-sand) 34%, var(--theme-surface));
 }
 :global([data-avatar-theme=tiger]) :is(.scope, .tone) {
   --category-sun: #ffc378;
@@ -13,6 +19,12 @@
   --category-violet: #cfb2ff;
   --category-pink: #f9add1;
   --category-sand: #d9c3a7;
+  --category-chart-sun: var(--category-sun);
+  --category-chart-leaf: var(--category-leaf);
+  --category-chart-blue: var(--category-blue);
+  --category-chart-violet: var(--category-violet);
+  --category-chart-pink: var(--category-pink);
+  --category-chart-sand: var(--category-sand);
 }
 .tone[data-tone=sun] { --icon-color: var(--category-sun); }
 .tone[data-tone=leaf] { --icon-color: var(--category-leaf); }

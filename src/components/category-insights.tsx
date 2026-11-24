@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { PrivateMovement } from '@/app/privado/movements-table';
 import type { CategoryItem } from './categories-section';
 import palette from './category-color.module.css';
-import { expenseCategoryColors, expenseGradient, neutralCategoryColor, categoryInsights, previousMonth, ratioPercent } from '@/lib/category-insights.mjs';
+import { expenseCategoryColors, expenseGradient, neutralCategoryColor, categoryInsights, ratioPercent } from '@/lib/category-insights.mjs';
 import { decimal, soles } from '@/lib/money.mjs';
 import s from './category-insights.module.css';
 
@@ -15,19 +15,15 @@ export default function CategoryInsights({ movements, categories, currentMonth }
   const [month, setMonth] = useState(currentMonth);
   const [currency, setCurrency] = useState('PEN');
   const data = categoryInsights(movements, month, currency);
-  const previous = categoryInsights(movements, previousMonth(month), currency);
   const colors = expenseCategoryColors(categories);
   const groups = data.groups.map(group => ({
     ...group, color: colors.get(group.key) ?? neutralCategoryColor, share: ratioPercent(group.amount, data.total),
   }));
-  const leading = groups[0];
   const gradient = expenseGradient(groups);
-  const change = data.total - previous.total;
   return <section className={`${s.dashboard} ${palette.scope}`} aria-labelledby="insights-title">
     <header className={s.header}><h2 id="insights-title">Gastos por categoría</h2><div className={s.filters}><label><input aria-label="Mes" type="month" value={month} min="0002-01" max={currentMonth} onChange={event => { if (event.target.value && event.target.validity.valid) setMonth(event.target.value); }} /></label><div className={s.currency} role="group" aria-label="Moneda de los gastos">{['PEN', 'USD'].map(item => <button type="button" key={item} aria-pressed={currency === item} onClick={() => setCurrency(item)}>{item}</button>)}</div></div></header>
     {data.total === BigInt(0) ? <div className={s.empty}><span aria-hidden="true">✳</span><div><strong>Sin gastos este mes</strong><p>{monthLabel(month)} · {currency}</p></div></div> : <>
-      <div className={s.metrics}><div className={s.hero}><span>Gasto total</span><strong>{format(data.total, currency)}</strong><span className={s.sparkle} aria-hidden="true">✳</span></div><div className={s.metric}><span>Mayor gasto</span><strong>{leading.name}</strong></div><div className={s.metric}><span>Respecto al mes anterior</span><strong>{previous.total === BigInt(0) ? 'Sin comparación' : `${change > BigInt(0) ? '+' : change < BigInt(0) ? '−' : ''}${format(change < BigInt(0) ? -change : change, currency)}`}</strong></div></div>
-      <div className={s.charts}><div className={s.distribution}><div className={s.chartTitle}><div><h3>Distribución</h3></div><span aria-hidden="true">✳</span></div><div className={s.donutLayout}><div className={s.donut} style={{ background: `conic-gradient(${gradient})` }} aria-hidden="true"><div><strong>{data.groups.length}</strong><span>{data.groups.length === 1 ? 'categoría' : 'categorías'}</span></div></div><div className={s.legend}>{groups.slice(0, 5).map((group) => <div key={group.key}><i style={{ background: group.color }} /><span>{group.name}</span><strong>{group.share.toLocaleString('es-PE')} %</strong></div>)}{data.groups.length > 5 && <small>+{data.groups.length - 5} en el ranking</small>}</div></div></div>
+      <div className={s.charts}><div className={s.distribution}><div className={s.chartTitle}><div><h3>Distribución</h3></div><span aria-hidden="true">✳</span></div><div className={s.donutLayout}><div className={s.donut} style={{ background: `conic-gradient(${gradient})` }} aria-hidden="true"></div><div className={s.legend}>{groups.slice(0, 5).map((group) => <div key={group.key}><i style={{ background: group.color }} /><span>{group.name}</span><strong>{group.share.toLocaleString('es-PE')} %</strong></div>)}{data.groups.length > 5 && <small>+{data.groups.length - 5} en el ranking</small>}</div></div></div>
       <div className={s.ranking}><div className={s.chartTitle}><div><h3>Ranking</h3></div><span aria-hidden="true">↗</span></div><ol>{groups.map((group, index) => <li key={group.key}><div className={s.row}><span className={s.rank}>{String(index + 1).padStart(2, '0')}</span><strong>{group.name}</strong><b>{format(group.amount, currency)}</b></div><div className={s.track} aria-hidden="true"><span style={{ width: `${group.share}%`, background: group.color }} /></div></li>)}</ol></div></div>
     </>}
   </section>;

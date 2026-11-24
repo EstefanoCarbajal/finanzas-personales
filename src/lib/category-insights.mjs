@@ -7,7 +7,7 @@ export function expenseCategoryColors(categories) {
   const colors = new Map();
   for (const category of categories) {
     if (category.kind !== 'expense') continue;
-    const color = `var(--category-${categoryToneFor(category)})`;
+    const color = `var(--category-chart-${categoryToneFor(category)})`;
     colors.set(category.id, color);
     colors.set(`name:${category.name}`, color);
   }

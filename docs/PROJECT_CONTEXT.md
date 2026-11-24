@@ -782,3 +782,33 @@ Este documento es el contexto persistente del proyecto, guardado en Git; no supo
 ## Tarjetas de Cuentas sin etiqueta de importe · 19/11/2026
 
 - En «Tu billetera», las tarjetas de cuentas muestran únicamente el número de dinero libre, sin la etiqueta visible «Dinero libre». El cálculo y el detalle de cuenta no cambian.
+
+## Colores claros en gráficos de categorías · 24/11/2026
+
+- Los gráficos de gastos del Resumen y Categorías usan la misma mezcla clara del fondo de cada icono, incluido el color elegido o automático. El tema tigre blanco conserva sus colores anteriores; las agrupaciones sin categoría conservan su color neutral. Compartido por demo y privado, sin cambios de cálculos ni persistencia.
+- Build, typecheck posterior y tres pruebas locales de categorías aprobados. Sin revisión visual nueva en navegador; queda pendiente comprobar la distinción de segmentos y barras en los temas y tamaños disponibles.
+
+## Intensidad de gráficos de categorías · 24/11/2026
+
+- Tras revisar la imagen aportada por el usuario, la mezcla de los gráficos sube de 11 % a 24 % del color de categoría para mejorar su visibilidad manteniendo tonos suaves. Sustituye la coincidencia exacta con el fondo del icono indicada arriba; el tigre blanco conserva sus colores anteriores. Build y typecheck posteriores aprobados; sin nueva revisión en navegador.
+
+## Más intensidad en gráficos · 24/11/2026
+
+- La mezcla de color de los gráficos aumenta de 24 % a 34 % por solicitud del usuario; el tigre blanco mantiene su paleta anterior. Build y typecheck aprobados; sin revisión visual nueva en navegador.
+
+## Métricas retiradas del tablero de categorías · 24/11/2026
+
+- Se retiraron las tarjetas de gasto total, mayor gasto y comparación mensual del tablero de gastos por categoría. Se conservan filtros, distribución, ranking y estado vacío en demo y privado. Build y typecheck aprobados; sin revisión visual nueva en navegador.
+
+## Superficies blancas por avatar · 24/11/2026
+
+- La superficie de zorro, gato, conejo y oso es blanca (#ffffff); koala y tigre blanco conservan sus valores. El gato ya era blanco. Build, typecheck y comprobación de las seis superficies aprobados. La prueba de contraste reproduce el fallo previo zorro deep/accent; sin revisión visual nueva en navegador.
+
+## Gráfico de distribución sin texto central · 24/11/2026
+
+- Retirados el contador y la etiqueta de categorías dentro del gráfico de distribución; se conservan su leyenda y ranking en demo y privado. Build y typecheck aprobados; sin revisión visual nueva en navegador.
+
+## Orden de bancos en la billetera · 24/11/2026
+
+- En «Ordenar», los botones de cada banco permiten subirlo o bajarlo; se conserva el orden interno de sus cuentas y el cambio abarca las cuentas de ambas monedas del banco. El orden privado reutiliza `sort_order` y el guardado transaccional existente; demo lo conserva en memoria. El guardado de tarjetas envía ahora la lista completa de cuentas, incluidas las de otros bancos y monedas.
+- Build, typecheck y cuatro pruebas locales de orden aprobados. Sin integración remota ni QA nuevo de navegador; quedan pendientes revisión de teclado, responsive, espera/error y recarga privada ficticia.

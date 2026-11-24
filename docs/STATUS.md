@@ -948,3 +948,35 @@ main debe mantenerse como la última versión comprobada e integrada.
 ## Tarjetas de Cuentas sin etiqueta de importe · 19/11/2026
 
 - Retirada la etiqueta visible «Dinero libre» de las tarjetas de Cuentas en «Tu billetera»; se conserva el número calculado como saldo menos alcancías. Sin cambios de datos ni reglas.
+
+## Gráficos de gastos con fondos de categoría · 24/11/2026
+
+- Se aplicó a los gráficos del Resumen y del tablero de Categorías la mezcla de color del fondo del icono correspondiente. El avatar tigre blanco mantiene los tonos anteriores y las agrupaciones neutrales no cambian. Demo y privado comparten la implementación.
+- Validación nueva: `npm run build`, `npm run typecheck` posterior y `node --test tests/category-insights.test.mjs` aprobados (3 pruebas). Sin QA visual nuevo ni cambios en persistencia; pendiente revisar contraste y diferenciación de segmentos y barras en navegador, temas y tamaños.
+
+## Intensidad de gráficos de categorías · 24/11/2026
+
+- A partir de la captura proporcionada se aumentó la intensidad de los gráficos de 11 % a 24 % del color de categoría; se mantienen los tonos suaves y la excepción del tigre blanco. El ajuste afecta Resumen y Categorías en demo y privado, sin modificar el fondo de los iconos.
+- Validación nueva: `npm run build` y `npm run typecheck` posterior aprobados. Sin revisión nueva en navegador; sigue pendiente comprobar visualmente la diferenciación de colores en otros temas y tamaños.
+
+## Más intensidad en gráficos · 24/11/2026
+
+- Aumentada de 24 % a 34 % la proporción de color en los gráficos de gastos compartidos por demo y privado. El tema tigre blanco conserva sus colores. `npm run build` y `npm run typecheck` posterior aprobados; sin nueva revisión visual en navegador.
+
+## Métricas retiradas del tablero de categorías · 24/11/2026
+
+- Retirado el bloque de tres métricas de gastos por categoría y sus estilos y cálculos exclusivos. Los gráficos, filtros y estado vacío se conservan en demo y privado. `npm run build` y `npm run typecheck` posterior aprobados; sin revisión visual nueva en navegador.
+
+## Superficies blancas por avatar · 24/11/2026
+
+- Cambiada a #ffffff la superficie de zorro, conejo y oso; gato ya usaba ese valor. Koala y tigre blanco conservan sus superficies. Afecta las áreas que usan `--theme-surface` en demo y privado.
+- Validación: build, typecheck y comprobación puntual de los seis valores aprobados. La prueba de contraste de avatares vuelve a fallar por la combinación previa zorro deep/accent, ajena a la superficie; la prueba del tigre pasa. Sin QA nuevo en navegador.
+
+## Gráfico de distribución sin texto central · 24/11/2026
+
+- Retirados el contador y la etiqueta de categorías superpuestos al gráfico de distribución. La leyenda, los porcentajes y el ranking siguen disponibles en demo y privado. `npm run build` y `npm run typecheck` posterior aprobados; sin revisión nueva en navegador.
+
+## Orden de bancos en la billetera · 24/11/2026
+
+- En modo Ordenar, flechas suben o bajan los grupos de banco conservando el orden de sus cuentas y agrupando también sus cuentas de la otra moneda. El orden se guarda con el mecanismo existente y revierte ante error. El orden de tarjetas envía todas las cuentas al servidor, corrigiendo el envío parcial por grupo; demo conserva el orden en memoria.
+- Validación nueva: `npm run build`, `npm run typecheck` posterior y cuatro pruebas locales de `wallet-order.test.mjs` y `account-order.test.mjs` aprobados, incluidos múltiples bancos/monedas y aislamiento del propietario con conexión simulada. Sin migración, integración remota ni QA interactivo nuevo; pendiente verificar recarga privada con fixture, errores/espera, teclado y responsive.

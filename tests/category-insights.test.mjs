@@ -21,9 +21,9 @@ test('la identidad de color respeta el gasto, su icono automático y los registr
     { id: 'ingreso', name: 'Alimentación', kind: 'income', color: 'sand' },
   ];
   const colors = expenseCategoryColors(categories);
-  assert.equal(colors.get('comida'), 'var(--category-pink)');
+  assert.equal(colors.get('comida'), 'var(--category-chart-pink)');
   assert.equal(colors.get('name:Alimentación'), colors.get('comida'));
-  assert.equal(colors.get('viajes'), 'var(--category-blue)');
+  assert.equal(colors.get('viajes'), 'var(--category-chart-blue)');
   assert.deepEqual(colors, expenseCategoryColors(categories.toReversed()));
 });
 

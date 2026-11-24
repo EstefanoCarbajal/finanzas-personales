@@ -11,6 +11,7 @@ import w from './wallet.module.css';
 import bankStyle from './account-bank.module.css';
 import type { RenameAccount, RemoveAccount } from './account-actions';
 import WalletCreateModal, { WalletCreateContext } from './wallet-create-modal';
+import { bankOf, orderedAccounts, reorderBankAccounts, reorderBanks } from '@/lib/wallet-order.mjs';
 
 export type Account = { id: string; name: string; bank_code?: string | null; currency?: string; opening_balance?: string; sort_order?: number | null; summary_selected?: boolean };
 const walletMoney = (value: string, currency: string) => currency === 'USD' ? `$ ${value}` : soles(value);
@@ -34,6 +35,11 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
   const [creatingAccount, setCreatingAccount] = useState(false);
   const [accountPending, setAccountPending] = useState(false);
   const [reordering, setReordering] = useState(false);
+  const [accountOrder, setAccountOrder] = useState(() => [...accounts].sort((a, b) => (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity)).map(account => account.id));
+  const [orderSaving, setOrderSaving] = useState(false);
+  const [orderMessage, setOrderMessage] = useState('');
+  const orderSavingRef = useRef(false);
+  const orderRef = useRef(accountOrder);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const container = useRef<HTMLDivElement>(null);
   const lastAccount = useRef<string | null>(null);
@@ -45,13 +51,44 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
     else if (lastAccount.current) container.current?.querySelector<HTMLElement>(`[data-account-card="${lastAccount.current}"]`)?.focus({ preventScroll: true });
   }, [selectedAccount]);
   const [selectionOverrides, setSelectionOverrides] = useState<Record<string, boolean>>({});
-  const accountsWithSelection = accounts.map(account => ({ ...account, summary_selected: selectionOverrides[account.id] ?? account.summary_selected ?? true }));
+  const accountsWithSelection = orderedAccounts(accounts, accountOrder).map(account => ({ ...account, summary_selected: selectionOverrides[account.id] ?? account.summary_selected ?? true }));
   const visibleAccounts = accountsWithSelection.filter(account => (account.currency || 'PEN') === currency);
   const selectedAccounts = visibleAccounts.filter(account => account.summary_selected !== false);
   const freeBalances = Object.fromEntries(accounts.map(account => [account.id, accountAllocation(balances[account.id] || '0.00', piggybanks.filter(bank => bank.account_id === account.id)).free]));
   const favoritesTotal = selectedAccounts.reduce((sum, account) => sum + BigInt((balances[account.id] || '0.00').replace('.', '')), BigInt(0));
   const favoriteAmount = `${favoritesTotal < 0 ? '-' : ''}${((favoritesTotal < 0 ? -favoritesTotal : favoritesTotal) / BigInt(100)).toString()}.${((favoritesTotal < 0 ? -favoritesTotal : favoritesTotal) % BigInt(100)).toString().padStart(2, '0')}`;
-  const bankGroups = [...new Set(visibleAccounts.map(account => account.bank_code || 'Sin banco'))];
+  const bankGroups = [...new Set(visibleAccounts.map(bankOf))] as string[];
+  async function persistOrder(ids: string[]) {
+    if (orderSavingRef.current) return { success: false, message: 'Espera a que termine de guardarse el orden.' };
+    const previous = orderedAccounts(accounts, orderRef.current).map(account => account.id);
+    orderSavingRef.current = true;
+    setOrderSaving(true);
+    orderRef.current = ids;
+    setAccountOrder(ids);
+    try {
+      const result = await saveOrder(ids);
+      if (!result.success) throw new Error(result.message);
+      setOrderMessage(result.message);
+      return result;
+    } catch (error) {
+      orderRef.current = previous;
+      setAccountOrder(previous);
+      const message = error instanceof Error ? error.message : 'No pudimos guardar el orden.';
+      setOrderMessage(message);
+      return { success: false, message };
+    } finally { orderSavingRef.current = false; setOrderSaving(false); }
+  }
+  async function saveGroupOrder(bank: string, ids: string[]) {
+    try {
+      const current = orderedAccounts(accounts, orderRef.current);
+      const visibleIds = new Set(visibleAccounts.filter(account => bankOf(account) === bank).map(account => account.id));
+      const visibleOrder = new Set(ids);
+      if (ids.length !== visibleIds.size || visibleOrder.size !== visibleIds.size || ids.some(id => !visibleIds.has(id))) throw new Error('Las cuentas cambiaron. Actualiza la página.');
+      let index = 0;
+      const groupIds = current.filter(account => bankOf(account) === bank).map(account => visibleIds.has(account.id) ? ids[index++] : account.id);
+      return await persistOrder(reorderBankAccounts(current, bank, groupIds));
+    } catch (error) { return { success: false, message: error instanceof Error ? error.message : 'No pudimos guardar el orden.' }; }
+  }
   const selectedTotals = currencyTotals[currency] || { cash: '0.00', debt: '0.00' };
   const selectedAvailable = availableByCurrency[currency] || '0.00';
   const filteredCreditSection = isValidElement(creditSection) ? cloneElement(creditSection as ReactElement<{ currency?: string }>, { currency }) : creditSection;
@@ -85,7 +122,8 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
           </button>
         </div>
       </header>
-      {bankGroups.map(bank => <div key={bank} data-bank={bank} className={`${w.bankGroup} ${bankStyle.palette}`}><h3 className={w.bankTitle}><span className={bankStyle.swatch} aria-hidden="true" />{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Sin banco') === bank)} balances={balances} freeBalances={freeBalances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} reordering={reordering} onOpenAccount={id => { lastAccount.current = id; setSelectedAccount(id); }} /></div>)}
+      {bankGroups.map((bank, index) => <div key={bank} data-bank={bank} className={`${w.bankGroup} ${bankStyle.palette}`}><div className={w.bankHeader}><h3 className={w.bankTitle}><span className={bankStyle.swatch} aria-hidden="true" />{bank}</h3>{reordering && bankGroups.length > 1 && <div className={w.bankOrder} aria-label={`Orden de ${bank}`}><button type="button" aria-label={`Subir ${bank}`} disabled={orderSaving || index === 0} onClick={() => void persistOrder(reorderBanks(orderedAccounts(accounts, orderRef.current), bank, bankGroups[index - 1]))}>↑</button><button type="button" aria-label={`Bajar ${bank}`} disabled={orderSaving || index === bankGroups.length - 1} onClick={() => void persistOrder(reorderBanks(orderedAccounts(accounts, orderRef.current), bank, bankGroups[index + 1]))}>↓</button></div>}</div><AccountCards accounts={visibleAccounts.filter(account => bankOf(account) === bank)} balances={balances} freeBalances={freeBalances} saveOrder={ids => saveGroupOrder(bank, ids)} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} reordering={reordering} onOpenAccount={id => { lastAccount.current = id; setSelectedAccount(id); }} /></div>)}
+      <p className={s.orderNote} role="status" aria-live="polite">{orderSaving ? 'Guardando orden…' : orderMessage}</p>
       </section>
       <div className={w.creditGroup}>{filteredCreditSection}</div>
       </div>
