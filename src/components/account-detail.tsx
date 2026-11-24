@@ -7,6 +7,7 @@ import type { Account } from './accounts-workspace';
 import MovementsTable, { type PrivateMovement } from '@/app/privado/movements-table';
 import MovementModal from './movement-modal';
 import s from './account-detail.module.css';
+import bankStyle from './account-bank.module.css';
 
 export type Piggybank = { id: string; account_id: string; slot: number; name: string; amount: string; target_on: string | null };
 export type PiggybankActions = {
@@ -190,20 +191,21 @@ export default function AccountDetail({ account, balance, banks, movements, acti
   }
   return <div className={s.detail}>
     <button type="button" className={s.back} onClick={onBack}>‹ Todas mis cuentas</button>
-    <section className={s.hero} aria-labelledby="account-detail-title">
-      <div className={s.heroCopy}><span className={s.bank}>{account.bank_code || 'Mi cuenta'} · {account.currency || 'PEN'}</span><h1 id="account-detail-title" tabIndex={-1}>{account.name}</h1><span className={s.balanceLabel}>Saldo de la cuenta</span><strong className={s.balance}>{money(balance)}</strong><div className={s.allocationBar} role="img" aria-label={`${money(reserved)} en alcancías y ${money(free)} libres`}><span style={{ width: `${Math.min(100, percentage)}%` }} /></div><div className={s.legend}><span><i />En alcancías <b>{money(reserved)}</b></span><span><i />Dinero libre <b>{money(free)}</b></span></div></div>
-      <div className={s.heroArt} aria-hidden="true"><div className={s.orbit} /><Piggybank slot={banks.length} full={banks.length > 0} /><span className={s.spark}>✦</span><span className={s.artLabel}>Cada plan tiene su lugar</span></div>
+    <section className={`${s.hero} ${bankStyle.palette}`} data-bank={account.bank_code || ''} aria-labelledby="account-detail-title">
+      <span className={bankStyle.print} aria-hidden="true" />
+      <div className={s.heroCopy}><span className={s.bank}>{account.bank_code || 'Sin banco'} · {account.currency || 'PEN'}</span><h1 id="account-detail-title" tabIndex={-1}>{account.name}</h1><span className={s.balanceLabel}>Dinero libre</span><strong className={s.balance}>{money(free)}</strong><div className={s.allocationBar} role="img" aria-label={`${money(reserved)} en alcancías y ${money(free)} libres`}><span style={{ width: `${Math.min(100, percentage)}%` }} /></div><div className={s.legend}><span><i />En alcancías <b>{money(reserved)}</b></span><span><i aria-hidden="true" style={{ visibility: 'hidden' }} />Total <b>{money(balance)}</b></span></div></div>
+      <div className={s.heroArt} aria-hidden="true"><div className={s.orbit} /><Piggybank slot={banks.length} full={banks.length > 0} /><span className={s.spark}>✦</span></div>
     </section>
     <section aria-labelledby="piggybanks-title" className={s.piggybanks}>
-      <div className={s.sectionHeading}><div><h2 ref={jarsHeading} tabIndex={-1} id="piggybanks-title">Tus alcancías <span>{banks.length}/4</span></h2><p>Separa hoy lo que usarás después.</p></div><button ref={createButton} type="button" className={s.primary} disabled={banks.length >= 4 || BigInt(free.replace('.', '')) <= BigInt(0)} onClick={openCreate}>＋ Crear alcancía</button></div>
+      <div className={s.sectionHeading}><div><h2 ref={jarsHeading} tabIndex={-1} id="piggybanks-title">Tus alcancías <span>{banks.length}/4</span></h2></div><button ref={createButton} type="button" className={s.primary} disabled={banks.length >= 4 || BigInt(free.replace('.', '')) <= BigInt(0)} onClick={openCreate}>＋ Crear alcancía</button></div>
       {message && <p className={s.success} role="status">{message}</p>}
       <div className={s.jars}>{[1, 2, 3, 4].map(slot => {
         const bank = banks.find(bank => Number(bank.slot) === slot);
         return bank ? <article key={slot} className={s.jarCard} style={{ '--jar-delay': `${slot * 65}ms` } as CSSProperties}>
           <div className={s.jarTop}><span className={s.slot}>Alcancía {slot}</span><PiggybankMenu bank={bank} onRename={() => { setError(''); setEditName(bank.name); setRenaming(bank); }} onRemove={() => { changeRequest.current = crypto.randomUUID(); setError(''); setDeleting(bank); }} /></div><Piggybank slot={slot} /><h3>{bank.name}</h3><strong className={s.jarAmount}>{money(bank.amount)}</strong><div className={s.jarActions}><button type="button" className={s.release} disabled={BigInt(free.replace('.', '')) <= BigInt(0)} onClick={() => { changeRequest.current = crypto.randomUUID(); setError(''); setAddAmount(''); setAdding(bank); }}>Agregar dinero</button><button type="button" className={s.release} onClick={() => { changeRequest.current = crypto.randomUUID(); setError(''); setReleaseAmount(bank.amount); setReleasing(bank); }}>Liberar dinero</button></div>
-        </article> : <button type="button" key={slot} className={`${s.jarCard} ${s.emptyJar}`} disabled={BigInt(free.replace('.', '')) <= BigInt(0)} onClick={openCreate} aria-label={`Crear alcancía ${slot}`}><Piggybank slot={slot} full={false} /><strong>Un lugar para tu próximo plan</strong><span>＋ Separar dinero</span></button>;
+        </article> : <button type="button" key={slot} className={`${s.jarCard} ${s.emptyJar}`} disabled={BigInt(free.replace('.', '')) <= BigInt(0)} onClick={openCreate} aria-label={`Crear alcancía ${slot}`}><Piggybank slot={slot} full={false} /><span>＋ Separar dinero</span></button>;
       })}</div>
-      <p className={s.note}>{BigInt(free.replace('.', '')) <= BigInt(0) && banks.length < 4 ? 'No hay saldo libre para otra alcancía. ' : ''}El dinero sigue en esta cuenta. Libéralo cuando quieras para gastarlo.</p>
+      {BigInt(free.replace('.', '')) <= BigInt(0) && banks.length < 4 && <p className={s.note}>No hay saldo libre para otra alcancía.</p>}
     </section>
     <MovementsTable key={account.id} demo={demo} readOnly movements={history} accountContext={account.id} />
     <MovementModal open={creating} onClose={() => setCreating(false)} pending={pending} demo={demo} heading="Crea un espacio para tu plan">

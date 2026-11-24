@@ -39,17 +39,19 @@ const money = (cents: number) => new Intl.NumberFormat("es-PE", { style: "curren
 
 
 export default function Dashboard() {
+  const [demoBalanceHidden, setDemoBalanceHidden] = useState(false);
   const [demoGoals, setDemoGoals] = useState(exampleGoals);
   const [section, setSection] = useState<Section>("Resumen");
   const [movements, setMovements] = useState(initial);
-  const [accounts, setAccounts] = useState<MovementAccount[]>([...demoAccounts, { id: 'credit-demo', name: 'Visa personal', account_type: 'credit', credit_limit: '5000.00', opening_debt: '0.00', last_four: '2026' }]);
-  const [categories, setCategories] = useState<Array<{ id: string; name: string; kind: string; icon?: string | null }>>(demoCategories);
+  const [accounts, setAccounts] = useState<MovementAccount[]>([...demoAccounts, { id: 'credit-demo', name: 'BCP Visa Infinite Sapphire LATAM Pass · 2026', bank_code: 'BCP', credit_network: 'Visa', credit_model: 'Infinite Sapphire LATAM Pass', account_type: 'credit', credit_limit: '5000.00', opening_debt: '0.00', last_four: '2026' }]);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; kind: string; icon?: string | null; color?: string | null }>>(demoCategories);
   const [piggybanks, setPiggybanks] = useState<Piggybank[]>([]);
   const [formOpen, setFormOpen] = useState(false);
 
   const [notice, setNotice] = useState("");
 
-  const sharedMovements = movements.map(m => ({ id: String(m.id), currency: accounts.find(a => a.id === (m.accountId || "cash"))?.currency || "PEN", kind: m.kind || (m.amount > 0 ? "income" : "expense"), description: m.name, occurred_on: m.date, amount: (Math.abs(m.amount) / 100).toFixed(2), account_id: m.accountId || "cash", destination_id: m.destinationId || null, account_type: accounts.find(a => a.id === (m.accountId || "cash"))?.account_type, destination_type: accounts.find(a => a.id === m.destinationId)?.account_type || null, account_name: accounts.find(a => a.id === (m.accountId || "cash"))?.name || "Cuenta", destination_name: accounts.find(a => a.id === m.destinationId)?.name || null, category_id: m.kind === "transfer" ? null : m.categoryId || null, category_name: m.kind === "transfer" ? null : categories.find(category => category.id === m.categoryId)?.name || m.category }));
+  const categoriesById = new Map(categories.map(category => [category.id, category]));
+  const sharedMovements = movements.map(m => ({ id: String(m.id), currency: accounts.find(a => a.id === (m.accountId || "cash"))?.currency || "PEN", kind: m.kind || (m.amount > 0 ? "income" : "expense"), description: m.name, occurred_on: m.date, amount: (Math.abs(m.amount) / 100).toFixed(2), account_id: m.accountId || "cash", destination_id: m.destinationId || null, account_type: accounts.find(a => a.id === (m.accountId || "cash"))?.account_type, destination_type: accounts.find(a => a.id === m.destinationId)?.account_type || null, account_name: accounts.find(a => a.id === (m.accountId || "cash"))?.name || "Cuenta", destination_name: accounts.find(a => a.id === m.destinationId)?.name || null, category_id: m.kind === "transfer" ? null : m.categoryId || null, category_icon: categoriesById.get(m.categoryId || "")?.icon, category_color: categoriesById.get(m.categoryId || "")?.color, category_name: m.kind === "transfer" ? null : categoriesById.get(m.categoryId || "")?.name || m.category }));
   const accountTotals = totals(sharedMovements, accounts);
   const cards = creditCards(accounts, sharedMovements);
   const availableByCurrency = Object.fromEntries(['PEN', 'USD'].map(currency => [currency, decimal(cards.filter((card: { currency?: string; available: string }) => (card.currency || 'PEN') === currency).reduce((sum: bigint, card: { available: string }) => sum + toCents(card.available), BigInt(0)))]));
@@ -124,7 +126,7 @@ export default function Dashboard() {
     const existing = accounts.find(a => a.id === id && a.account_type === 'credit');
     if (!existing) return { success: false, message: 'La tarjeta ya no está disponible.' };
     try {
-      const value = validateCard({ ...Object.fromEntries(form), opening_debt: existing.opening_debt });
+      const value = validateCard({ ...Object.fromEntries(form), opening_debt: existing.opening_debt }, existing);
       if (accounts.some(a => a.id !== id && a.name.localeCompare(value.name, 'es', { sensitivity: 'base' }) === 0)) return { success: false, message: 'Ya tienes una cuenta o tarjeta con ese nombre.' };
       const card = cards.find((card: { id: string }) => card.id === id);
       if (toCents(value.credit_limit) < toCents(card.debt)) return { success: false, message: 'La línea no puede ser menor que la deuda actual.' };
@@ -165,7 +167,7 @@ export default function Dashboard() {
         </>}
         {section === "Configuración" && <SettingsWorkspace demo creditCards={cardWorkspace} />}
         {section === "Resumen" && <>
-          <MonthlySummary currentMonth="2026-11" balance={accountTotals.balance} demo onRegister={() => setFormOpen(true)} onViewMovements={() => setSection("Movimientos")} movements={sharedMovements} />
+          <MonthlySummary categories={categories} initialBalanceHidden={demoBalanceHidden} saveBalanceHidden={async hidden => { setDemoBalanceHidden(hidden); return { success: true, message: "" }; }} currentMonth="2026-11" balance={accountTotals.balance} demo onRegister={() => setFormOpen(true)} onViewMovements={() => setSection("Movimientos")} movements={sharedMovements} />
           <SummaryGoal demo goal={demoGoals[0]} onOpen={() => setSection("Planificación")} />
         </>}
 
@@ -189,14 +191,14 @@ export default function Dashboard() {
           if (!name || name.length > 80 || !['income', 'expense'].includes(input.kind) || !validCategoryIcon(input.icon)) return { success: false, message: 'Revisa el nombre, tipo e icono.' };
           if (categories.some(item => item.id !== id && item.kind === input.kind && item.name.localeCompare(name, 'es', { sensitivity: 'base' }) === 0)) return { success: false, message: 'Ya tienes una categoría con ese nombre y tipo.' };
           if (input.kind !== category.kind && sharedMovements.some(movement => movement.category_id === id)) return { success: false, message: 'Esta categoría está en uso. Puedes cambiar nombre e icono, pero conserva su tipo.' };
-          setCategories(current => current.map(item => item.id === id ? { ...item, ...input, name } : item));
+          setCategories(current => current.map(item => item.id === id ? { ...item, ...input, name, color: input.color === 'auto' ? null : input.color } : item));
           return { success: true, message: 'Categoría actualizada en la demo.' };
         }} removeCategory={async id => {
           if (!categories.some(item => item.id === id)) return { success: false, message: 'La categoría ya no está disponible.' };
           if (sharedMovements.some(movement => movement.category_id === id)) return { success: false, message: 'Esta categoría tiene movimientos asociados y no se puede eliminar.' };
           setCategories(current => current.filter(item => item.id !== id));
           return { success: true, message: 'Categoría eliminada en la demo.' };
-        }} onAddCategory={(name, kind, icon) => setCategories(current => [...current, { id: crypto.randomUUID(), name, kind, icon }])} />}
+        }} onAddCategory={(name, kind, icon, color) => setCategories(current => [...current, { id: crypto.randomUUID(), name, kind, icon, color }])} />}
 
         {(section === "Planificación" || section === "Pagos futuros") && <PlanningDemo section={section === "Pagos futuros" ? 'pagos' : 'planificacion'} categories={categories} accounts={cashAccounts} movements={sharedMovements} goals={<div id="metas"><GoalsWorkspace goals={demoGoals} demo creation={<GoalCreateForm accounts={cashAccounts} today="2026-11-11" />}>{demoGoals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} demo today="2026-11-11" manage={async (id, mode, input) => {
           const existing = demoGoals.find(goal => goal.id === id);

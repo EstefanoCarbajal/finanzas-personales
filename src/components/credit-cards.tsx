@@ -3,9 +3,12 @@ import { useEffect, useId, useRef, useState, useTransition } from 'react';
 import { soles, toCents } from '@/lib/money.mjs';
 import CreditCardActions, { type UpdateCreditCard, type DeleteCreditCard } from './credit-card-actions';
 import s from './credit-cards.module.css';
-import { BANK_GROUPS } from '@/lib/banks.mjs';
+import CatalogCardFace from './catalog-card-face';
+import { catalogCardName } from '@/lib/card-catalog.mjs';
+import CardCatalogPicker from './card-catalog-picker';
+import WalletCreateModal from './wallet-create-modal';
 
-export type CreditCard = { id: string; name: string; bank_code?: string; currency?: string; credit_limit: string; opening_debt: string; last_four: string | null; debt: string; available: string };
+export type CreditCard = { id: string; name: string; bank_code?: string | null; credit_model?: string | null; credit_network?: string | null; currency?: string; credit_limit: string; opening_debt: string; last_four: string | null; debt: string; available: string };
 type Result = { success: boolean; message: string };
 type Action = (form: FormData) => Promise<Result>;
 type Account = { id: string; name: string; currency?: string };
@@ -38,19 +41,77 @@ export default function CreditCards({ cards, accounts, today, create, pay, updat
       setRemovedId(null);
     }
   }, [visibleCards, removedId]);
-  const details = useRef<HTMLDetailsElement>(null);
-  const createTrigger = useRef<HTMLElement>(null);
+  const createTrigger = useRef<HTMLButtonElement>(null);
   const [creating, start] = useTransition();
   const [feedback, setFeedback] = useState<Result>({ success: false, message: '' });
   const [formOpen, setFormOpen] = useState(false);
-  const bankOptions = BANK_GROUPS.map(group => <optgroup key={group.label} label={group.label}>{group.options.map(([code, label]) => <option key={code} value={code}>{label}</option>)}</optgroup>);
+  const [draftKey, setDraftKey] = useState(0);
+  const [lastFour, setLastFour] = useState('');
   return <section className={s.workspace} data-credit-workspace aria-labelledby={id}>
     <div className={s.heading}><div><span className={s.creditIcon} aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3 10h18m-13 5h3" /></svg></span><h2 id={id}>Tarjetas de crédito <span>{visibleCards.length}</span></h2></div><span className={s.creditTag}>Tu línea</span></div>
-    <div ref={grid} className={s.grid}>{visibleCards.map(card => <article className={s.card} key={card.id}><div className={s.plastic}><div className={`${s.cardTop} ${s.cardTopActions}`}><CreditCardActions card={card} balance={card.debt} disabled={creating || mutating} rename={update} remove={remove} onBusy={setMutating} onResult={(message, removed) => { setFeedback({ success: true, message }); if (removed) setRemovedId(removed); }} /></div><span className={s.chip} aria-hidden="true" /><h3>{card.name}</h3><span className={s.digits}>{card.last_four ? `•••• ${card.last_four}` : 'Tarjeta personal'}</span><div className={s.available}><strong>{money(card.available, card.currency)}</strong></div></div><div className={s.cardBody}><div className={s.figures}><div><span>Deuda actual</span><strong>{money(card.debt, card.currency)}</strong></div><div><span>Línea total</span><strong>{money(card.credit_limit, card.currency)}</strong></div></div><progress aria-label={`Crédito utilizado de ${card.name}`} value={Number(toCents(card.debt) * BigInt(10000) / toCents(card.credit_limit)) / 100} max={100} /><details className={s.payment}><summary>Registrar pago <span aria-hidden="true">↗</span></summary><PayCard onBusy={setMutating} disabled={creating || mutating} card={card} accounts={visibleAccounts} today={today} pay={pay} /></details></div></article>)}
-    <div className={s.newCard}><details ref={details} open={formOpen} onToggle={event => setFormOpen(event.currentTarget.open)}><summary ref={createTrigger} aria-disabled={creating || mutating} onClick={event => { if (creating || mutating) event.preventDefault(); }}><span className={s.addArt} aria-hidden="true">＋</span><strong>Nueva tarjeta</strong></summary><form className={s.form} onSubmit={event => {
-      event.preventDefault(); const form = event.currentTarget; const data = new FormData(form); setFeedback({ success: false, message: '' });
-      start(async () => { try { const result = await create(data); setFeedback(result); if (result.success) { form.reset(); setFormOpen(false); createTrigger.current?.focus(); } } catch { setFeedback({ success: false, message: 'No pudimos crear la tarjeta. Inténtalo de nuevo.' }); } });
-    }}><fieldset disabled={creating || mutating}><label>Nombre<input name="name" required maxLength={80} placeholder="Ej. Visa personal" /></label><label>Línea de crédito · S/<input name="credit_limit" inputMode="decimal" required pattern="[0-9]+([.][0-9]{1,2})?" maxLength={14} placeholder="5000.00" onChange={event => { event.target.value = event.target.value.replace(',', '.'); }} /></label><label>Deuda inicial · S/<input name="opening_debt" inputMode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" maxLength={14} defaultValue="0.00" onChange={event => { event.target.value = event.target.value.replace(',', '.'); }} /></label><label>Últimos 4 dígitos <span>Opcional</span><input name="last_four" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} placeholder="1234" autoComplete="off" /></label><p className={s.note}>La deuda inicial no cuenta como gasto de este mes. Solo registra aquí los últimos cuatro dígitos.</p><button className={s.primary} disabled={creating}>{creating ? 'Guardando…' : 'Añadir tarjeta'}</button></fieldset></form></details><p className={feedback.success ? s.success : s.error} role="status">{feedback.message}</p></div></div>
-
+    <div ref={grid} className={s.grid}>{visibleCards.map(card => <article className={s.card} key={card.id} aria-label={card.name}>
+      <div className={s.cardArt}>
+        <CatalogCardFace bank={card.bank_code} network={card.credit_network} model={card.credit_model} name={card.name} lastFour={card.last_four} />
+      </div>
+      <div className={s.cardBody}>
+        <div className={s.balanceRow}>
+          <div><span>Crédito disponible</span><strong>{money(card.available, card.currency)}</strong></div>
+          <CreditCardActions card={card} balance={card.debt} disabled={creating || mutating} rename={update} remove={remove}
+            onBusy={setMutating} onResult={(message, removed) => { setFeedback({ success: true, message }); if (removed) setRemovedId(removed); }} />
+        </div>
+        {card.credit_model && card.name !== catalogCardName(card.bank_code, card.credit_network, card.credit_model, card.last_four) && <h3 className={s.alias}>{card.name}</h3>}
+        <div className={s.figures}><div><span>Deuda actual</span><strong>{money(card.debt, card.currency)}</strong></div><div><span>Línea total</span><strong>{money(card.credit_limit, card.currency)}</strong></div></div>
+        <progress aria-label={`Crédito utilizado de ${card.name}`} value={Number(toCents(card.debt) * BigInt(10000) / toCents(card.credit_limit)) / 100} max={100} />
+        <details className={s.payment}><summary>Registrar pago <span aria-hidden="true">↗</span></summary><PayCard onBusy={setMutating} disabled={creating || mutating} card={card} accounts={visibleAccounts} today={today} pay={pay} /></details>
+      </div>
+    </article>)}
+    <div className={s.newCard}><button type="button" className={s.newCardTrigger} ref={createTrigger} disabled={creating || mutating} onClick={() => { setFeedback({ success: false, message: '' }); setFormOpen(true); }}><span className={s.addArt} aria-hidden="true">＋</span><strong>Nueva tarjeta</strong></button><p className={feedback.success ? s.success : s.error} role="status">{!formOpen && feedback.message}</p></div></div>
+    <WalletCreateModal open={formOpen} onClose={() => setFormOpen(false)} pending={creating} kind="credit">
+      <form className={s.form} onSubmit={event => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const data = new FormData(form);
+        if (!data.get('catalog_model')) return;
+        setFeedback({ success: false, message: '' });
+        start(async () => {
+          try {
+            const result = await create(data);
+            setFeedback(result);
+            if (result.success) {
+              form.reset();
+              setDraftKey(key => key + 1);
+              setLastFour('');
+              setFormOpen(false);
+            }
+          } catch {
+            setFeedback({ success: false, message: 'No pudimos crear la tarjeta. Inténtalo de nuevo.' });
+          }
+        });
+      }}>
+        <fieldset disabled={creating || mutating}>
+          <CardCatalogPicker key={draftKey} lastFour={lastFour}>
+            <div className={s.creditFields}>
+              <div className={s.amountPair}>
+                <label>Línea de crédito · S/
+                  <input name="credit_limit" inputMode="decimal" required pattern="[0-9]+([.][0-9]{1,2})?" maxLength={14}
+                    placeholder="5000.00" onChange={event => { event.target.value = event.target.value.replace(',', '.'); }} />
+                </label>
+                <label>Deuda inicial · S/
+                  <input name="opening_debt" inputMode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" maxLength={14}
+                    defaultValue="0.00" onChange={event => { event.target.value = event.target.value.replace(',', '.'); }} />
+                </label>
+              </div>
+              <label>Últimos 4 dígitos (opcional)
+                <input name="last_four" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} placeholder="1234"
+                  autoComplete="off" value={lastFour} onChange={event => setLastFour(event.target.value)} />
+              </label>
+              <p className={s.note}>La deuda inicial no cuenta como gasto de este mes.</p>
+              <button className={s.primary} disabled={creating}>{creating ? 'Guardando…' : 'Añadir tarjeta'}</button>
+            </div>
+          </CardCatalogPicker>
+        </fieldset>
+        <p className={feedback.success ? s.success : s.error} role="status">{formOpen && feedback.message}</p>
+      </form>
+    </WalletCreateModal>
   </section>;
 }

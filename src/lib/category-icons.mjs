@@ -18,6 +18,19 @@ export const categoryIcons = [
 ];
 export const validCategoryIcon = value => typeof value === 'string' && categoryIcons.some(icon => icon.id === value);
 
+export const categoryColors = [
+  { id: 'sun', label: 'Ámbar' }, { id: 'leaf', label: 'Verde' },
+  { id: 'blue', label: 'Azul' }, { id: 'violet', label: 'Violeta' },
+  { id: 'pink', label: 'Rosa' }, { id: 'sand', label: 'Arena' },
+];
+export const validCategoryColor = value => categoryColors.some(color => color.id === value);
+
+export function categoryToneFor(category) {
+  if (validCategoryColor(category.color)) return category.color;
+  const iconId = categoryIconFor(category);
+  return categoryIcons.find(icon => icon.id === iconId).tone;
+}
+
 export function categoryIconFor(category) {
   if (validCategoryIcon(category.icon)) return category.icon;
   const name = String(category.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();

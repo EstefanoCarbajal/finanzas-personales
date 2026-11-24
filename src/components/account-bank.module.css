@@ -1,0 +1,90 @@
+/* The fallback also covers older accounts with no bank assigned. */
+.palette {
+  --bank-base: #263444;
+  --bank-edge: #506176;
+  --bank-accent: #bdccdc;
+  --bank-print: repeating-linear-gradient(135deg, transparent 0 12px, currentColor 13px 14px, transparent 15px 22px);
+  --bank-fill: linear-gradient(110deg, var(--bank-base) 5%, var(--bank-edge) 100%);
+}
+
+.palette[data-bank="BCP"] {
+  --bank-base: #05255e;
+  --bank-edge: #104fb0;
+  --bank-accent: #ff984b;
+  --bank-print: linear-gradient(126deg, transparent 0 49%, currentColor 49.3% 56%, transparent 56.3% 62%, currentColor 62.3% 76%, transparent 76.3%);
+  --bank-mask: linear-gradient(105deg, transparent 5%, #0006 45%, black 84%);
+}
+.palette[data-bank="BBVA"] {
+  --bank-base: #003254;
+  --bank-edge: #006e9c;
+  --bank-accent: #66e1ff;
+  --bank-print: conic-gradient(from 145deg at 58% 70%, transparent 0deg 55deg, currentColor 55.3deg 77deg, transparent 77.3deg 183deg, currentColor 183.3deg 205deg, transparent 205.3deg);
+}
+.palette[data-bank="Interbank"] {
+  --bank-base: #003c40;
+  --bank-edge: #087252;
+  --bank-accent: #64f2a4;
+  --bank-print: repeating-linear-gradient(118deg, transparent 0 18px, currentColor 19px 34px, transparent 35px 51px);
+}
+.palette[data-bank="Scotiabank"] {
+  --bank-base: #68132f;
+  --bank-edge: #ad203e;
+  --bank-accent: #ffb3a2;
+  --bank-print: repeating-radial-gradient(circle at 94% 40%, transparent 0 22px, currentColor 23px 34px, transparent 35px 47px);
+}
+.palette[data-bank="BanBif"] {
+  --bank-base: #12384e;
+  --bank-edge: #116787;
+  --bank-accent: #70e2ed;
+  --bank-print: repeating-radial-gradient(ellipse at 5% -25%, transparent 0 19px, currentColor 20px 24px, transparent 25px 34px);
+}
+.palette[data-bank="Banco Pichincha"] {
+  --bank-base: #182a56;
+  --bank-edge: #354a77;
+  --bank-accent: #ffdb43;
+  --bank-print: conic-gradient(from 45deg at 58% 50%, currentColor 0deg 90deg, transparent 90.3deg 180deg, currentColor 180.3deg 270deg, transparent 270.3deg);
+}
+.palette[data-bank="Banco Falabella"] {
+  --bank-base: #233c29;
+  --bank-edge: #456b24;
+  --bank-accent: #b8f35b;
+  --bank-print: repeating-radial-gradient(ellipse at 105% 110%, transparent 0 27px, currentColor 28px 43px, transparent 44px 58px);
+}
+.palette[data-bank="Banco Ripley"] {
+  --bank-base: #382145;
+  --bank-edge: #70448d;
+  --bank-accent: #ebb6ff;
+  --bank-print: radial-gradient(ellipse at center, currentColor 0 3px, transparent 3.6px) 0 0 / 15px 15px;
+}
+.palette[data-bank="Caja Arequipa"] {
+  --bank-base: #712323;
+  --bank-edge: #ae4b27;
+  --bank-accent: #ffcb91;
+  --bank-print: repeating-linear-gradient(50deg, transparent 0 22px, currentColor 23px 27px, transparent 28px 38px), repeating-linear-gradient(-50deg, transparent 0 22px, currentColor 23px 27px, transparent 28px 38px);
+}
+.palette[data-bank="Mibanco"] {
+  --bank-base: #204c36;
+  --bank-edge: #387339;
+  --bank-accent: #f8dc59;
+  --bank-print: repeating-conic-gradient(from -20deg at 95% 110%, transparent 0deg 10deg, currentColor 10.3deg 15deg, transparent 15.3deg 21deg);
+}
+
+.print {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0 0 0 auto;
+  width: min(73%, 420px);
+  color: var(--bank-accent);
+  background: var(--bank-print);
+  mask-image: var(--bank-mask, linear-gradient(to right, transparent, #0005 44%, #000b));
+}
+.swatch {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 8px;
+  border-radius: 99px;
+  background: linear-gradient(115deg, var(--bank-edge) 59%, var(--bank-accent) 60%);
+  box-shadow: inset 0 0 0 1px #0002;
+}

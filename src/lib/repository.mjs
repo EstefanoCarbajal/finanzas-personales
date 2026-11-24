@@ -100,15 +100,16 @@ export async function deleteMovement(pool, userId, movementId) {
 }
 
 export async function readDashboard(pool, userId) {
-  const [accounts] = await pool.execute('SELECT id, name, sort_order, account_type, currency, bank_code, credit_limit, opening_debt, opening_balance, last_four, summary_selected FROM accounts WHERE user_id = ? ORDER BY name', [userId]);
-  const [categories] = await pool.execute('SELECT id, name, kind, icon FROM categories WHERE user_id = ? ORDER BY name', [userId]);
+  const [accounts] = await pool.execute('SELECT id, name, sort_order, account_type, currency, bank_code, credit_network, credit_model, credit_limit, opening_debt, opening_balance, last_four, summary_selected FROM accounts WHERE user_id = ? ORDER BY name', [userId]);
+  const normalizedAccounts = accounts.map(account => ({ ...account, summary_selected: Boolean(account.summary_selected) }));
+  const [categories] = await pool.execute('SELECT id, name, kind, icon, color FROM categories WHERE user_id = ? ORDER BY name', [userId]);
   const [movements] = await pool.execute(`SELECT m.id, m.kind, m.account_id, m.destination_id, m.amount, m.description, m.occurred_on, m.category_id, m.currency,
-    a.name AS account_name, a.account_type, d.account_type AS destination_type, d.name AS destination_name, c.name AS category_name
+    a.name AS account_name, a.account_type, d.account_type AS destination_type, d.name AS destination_name, c.name AS category_name, c.icon AS category_icon, c.color AS category_color
     FROM movements m JOIN accounts a ON a.id = m.account_id AND a.user_id = m.user_id
     LEFT JOIN accounts d ON d.id = m.destination_id AND d.user_id = m.user_id
     LEFT JOIN categories c ON c.id = m.category_id AND c.user_id = m.user_id
     WHERE m.user_id = ? ORDER BY m.occurred_on DESC, m.created_at DESC, m.id`, [userId]);
-  return { accounts, categories, movements, totals: totals(movements, accounts) };
+  return { accounts: normalizedAccounts, categories, movements, totals: totals(movements, normalizedAccounts) };
 }
 
 export async function login(pool, email, password) {

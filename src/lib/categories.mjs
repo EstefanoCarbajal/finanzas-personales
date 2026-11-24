@@ -1,19 +1,26 @@
 import { randomUUID } from 'node:crypto';
-import { validCategoryIcon } from './category-icons.mjs';
+import { validCategoryColor, validCategoryIcon } from './category-icons.mjs';
 
 export class CategoryInputError extends Error {}
 const uuid = value => typeof value === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
 const checkIcon = icon => { if (!validCategoryIcon(icon)) throw new CategoryInputError('Elige un icono del catálogo.'); };
+
+function storedColor(color) {
+  if (color == null || color === 'auto') return null;
+  if (!validCategoryColor(color)) throw new CategoryInputError('Elige un color de la paleta.');
+  return color;
+}
 
 export async function updateCategory(pool, userId, categoryId, input) {
   if (!uuid(categoryId)) throw new CategoryInputError('La categoría no es válida.');
   if (typeof input.name !== 'string' || !input.name.trim() || input.name.trim().length > 80) throw new CategoryInputError('Escribe un nombre de hasta 80 caracteres.');
   if (input.kind !== 'income' && input.kind !== 'expense') throw new CategoryInputError('Elige ingreso o gasto.');
   checkIcon(input.icon);
+  const color = storedColor(input.color);
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [[category]] = await connection.execute('SELECT id, kind FROM categories WHERE user_id = ? AND id = ? FOR UPDATE', [userId, categoryId]);
+    const [[category]] = await connection.execute('SELECT id, kind, color FROM categories WHERE user_id = ? AND id = ? FOR UPDATE', [userId, categoryId]);
     if (!category) throw new CategoryInputError('Esta categoría ya no está disponible. Actualiza la página.');
     if (category.kind !== input.kind) {
       for (const table of ['movements', 'budgets', 'scheduled_payments']) {
@@ -21,7 +28,7 @@ export async function updateCategory(pool, userId, categoryId, input) {
         if (linked) throw new CategoryInputError('Esta categoría está en uso. Puedes cambiar nombre e icono, pero conserva su tipo.');
       }
     }
-    await connection.execute('UPDATE categories SET name = ?, kind = ?, icon = ? WHERE user_id = ? AND id = ?', [input.name.trim(), input.kind, input.icon, userId, categoryId]);
+    await connection.execute('UPDATE categories SET name = ?, kind = ?, icon = ?, color = ? WHERE user_id = ? AND id = ?', [input.name.trim(), input.kind, input.icon, input.color === undefined ? category.color : color, userId, categoryId]);
     await connection.commit();
   } catch (error) {
     await connection.rollback();
@@ -47,8 +54,9 @@ export async function createCategory(pool, userId, input) {
   if (input.kind !== 'expense' && input.kind !== 'income') throw new CategoryInputError('Elige ingreso o gasto.');
   const icon = input.icon ?? 'tag';
   checkIcon(icon);
+  const color = storedColor(input.color);
   try {
-    await pool.execute('INSERT INTO categories (id, user_id, name, kind, icon) VALUES (?, ?, ?, ?, ?)', [randomUUID(), userId, input.name.trim(), input.kind, icon]);
+    await pool.execute('INSERT INTO categories (id, user_id, name, kind, icon, color) VALUES (?, ?, ?, ?, ?, ?)', [randomUUID(), userId, input.name.trim(), input.kind, icon, color]);
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') throw new CategoryInputError('Ya tienes una categoría con ese nombre y tipo.');
     throw error;

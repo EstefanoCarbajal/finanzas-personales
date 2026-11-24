@@ -122,7 +122,7 @@ export async function updateCategoryIcon(categoryId: string, icon: string) {
   return { message: 'Icono actualizado.', success: true };
 }
 
-export async function editCategory(categoryId: string, input: { name: string; kind: string; icon: string }) {
+export async function editCategory(categoryId: string, input: { name: string; kind: string; icon: string; color?: string }) {
   const user = await requireUser();
   try { await updateCategory(db(), user.id, categoryId, input); }
   catch (error) { return { success: false, message: error instanceof CategoryInputError ? error.message : 'No pudimos editar la categoría.' }; }

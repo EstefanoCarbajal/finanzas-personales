@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent 
 import { soles } from '@/lib/money.mjs';
 import type { CreditCard } from './credit-cards';
 import s from './account-actions.module.css';
-import { BANK_GROUPS } from '@/lib/banks.mjs';
+import CardCatalogPicker from './card-catalog-picker';
 
 export type CardMutationResult = { success: boolean; message: string };
 export type UpdateCreditCard = (id: string, form: FormData) => Promise<CardMutationResult>;
@@ -24,6 +24,7 @@ export default function CreditCardActions({ card, balance, disabled, rename, rem
   const [menuOpen, setMenuOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [mode, setMode] = useState<'edit' | 'delete' | null>(null);
+  const [changingModel, setChangingModel] = useState(false);
   const [name, setName] = useState(card.name);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState('');
@@ -44,7 +45,7 @@ export default function CreditCardActions({ card, balance, disabled, rename, rem
   }, [mode]);
 
   function open(nextMode: 'edit' | 'delete') {
-    menu.current?.hidePopover(); setName(card.name); setMessage(''); setMode(nextMode);
+    menu.current?.hidePopover(); setName(card.name); setChangingModel(false); setMessage(''); setMode(nextMode);
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (pending || !mode) return;
@@ -70,7 +71,11 @@ export default function CreditCardActions({ card, balance, disabled, rename, rem
         <header className={s.header}><span className={`${s.symbol} ${mode === 'delete' ? s.removeSymbol : ''}`} aria-hidden="true">{mode === 'delete' ? '−' : '✎'}</span><h2 id={titleId}>{mode === 'delete' ? '¿Eliminar tarjeta?' : 'Editar tarjeta'}</h2><button type="button" aria-label="Cerrar opciones de tarjeta" disabled={pending} onClick={() => setMode(null)}>×</button></header>
         <div className={s.accountPreview}><span aria-hidden="true">▱</span><div><strong>{card.name}</strong><small>Deuda: {soles(balance)}</small></div></div>
         <form onSubmit={submit}>
-          {mode === 'edit' ? <div className={s.editFields}><label className={s.nameLabel}>Nombre<input ref={nameInput} name="name" aria-label="Nombre de tarjeta" maxLength={80} required value={name} disabled={pending} onChange={event => setName(event.target.value)} /></label><label className={s.nameLabel}>Línea de crédito · S/<input name="credit_limit" required inputMode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" maxLength={14} defaultValue={card.credit_limit} disabled={pending} onChange={event => { event.target.value = event.target.value.replace(',', '.'); }} /></label><label className={s.nameLabel}>Últimos 4 dígitos · Opcional<input name="last_four" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" defaultValue={card.last_four || ''} disabled={pending} /></label></div> : <p id={descriptionId} className={s.description}>Solo puedes eliminar tarjetas sin deuda inicial ni registros asociados.</p>}
+          {mode === 'edit' ? <div className={s.editFields}>
+            <button type="button" className={s.changeModel} disabled={pending} aria-expanded={changingModel}
+              onClick={() => setChangingModel(value => !value)}>{changingModel ? 'Conservar modelo actual' : 'Cambiar modelo de tarjeta'}</button>
+            {changingModel ? <fieldset disabled={pending} className={s.modelFields}><CardCatalogPicker /></fieldset> : <label className={s.nameLabel}>Nombre<input ref={nameInput} name="name" aria-label="Nombre de tarjeta" maxLength={80} required value={name} disabled={pending} onChange={event => setName(event.target.value)} /></label>}
+            <label className={s.nameLabel}>Línea de crédito · S/<input name="credit_limit" required inputMode="decimal" pattern="[0-9]+([.][0-9]{1,2})?" maxLength={14} defaultValue={card.credit_limit} disabled={pending} onChange={event => { event.target.value = event.target.value.replace(',', '.'); }} /></label><label className={s.nameLabel}>Últimos 4 dígitos · Opcional<input name="last_four" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" defaultValue={card.last_four || ''} disabled={pending} /></label></div> : <p id={descriptionId} className={s.description}>Solo puedes eliminar tarjetas sin deuda inicial ni registros asociados.</p>}
           <p className={s.message} role="status">{message}</p>
           <div className={s.footer}><button ref={cancel} type="button" disabled={pending} onClick={() => setMode(null)}>{mode === 'delete' ? 'Conservar tarjeta' : 'Cancelar'}</button><button type="submit" disabled={pending} className={mode === 'delete' ? s.deleteButton : s.saveButton}>{pending ? 'Guardando…' : mode === 'delete' ? 'Eliminar tarjeta' : 'Guardar cambios'}</button></div>
         </form>

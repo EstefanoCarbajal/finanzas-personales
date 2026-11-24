@@ -21,5 +21,5 @@ const shapes: Record<string, ReactNode> = {
 };
 export default function CategoryIcon({ id, className }: { id: string; className?: string }) {
   const icon = categoryIcons.find(item => item.id === id) || categoryIcons[15];
-  return <svg className={className} data-tone={icon.tone} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{shapes[icon.id]}</svg>;
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{shapes[icon.id]}</svg>;
 }

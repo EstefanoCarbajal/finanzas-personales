@@ -1,16 +1,17 @@
 'use client';
 
 import { useState, useRef, useEffect, type ReactNode, type FormEvent } from 'react';
-import { categoryIcons, categoryIconFor } from '@/lib/category-icons.mjs';
+import { categoryToneFor, categoryIconFor } from '@/lib/category-icons.mjs';
 import CategoryIcon from './category-icon';
-import { CategoryIconPicker, CategoryKindPicker } from './category-fields';
+import { CategoryColorPicker, CategoryIconPicker, CategoryKindPicker } from './category-fields';
 import CategoryDeleteDialog from './category-delete-dialog';
 import s from './categories.module.css';
+import palette from './category-color.module.css';
 import CategoryInsights from './category-insights';
 import type { PrivateMovement } from '@/app/privado/movements-table';
 
-export type CategoryItem = { id: string; name: string; kind: string; icon?: string | null };
-export type CategoryChange = { name: string; kind: string; icon: string };
+export type CategoryItem = { id: string; name: string; kind: string; icon?: string | null; color?: string | null };
+export type CategoryChange = { name: string; kind: string; icon: string; color: string };
 type Result = { success: boolean; message: string };
 export type EditCategory = (id: string, input: CategoryChange) => Promise<Result>;
 export type RemoveCategory = (id: string) => Promise<Result>;
@@ -19,20 +20,22 @@ function CategoryEditor({ category, save, onClose, onSaved, onPending, onDelete,
   const [name, setName] = useState(category.name);
   const [kind, setKind] = useState(category.kind);
   const [icon, setIcon] = useState(categoryIconFor(category));
+  const [color, setColor] = useState(category.color || 'auto');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (pending || disabled) return;
     setPending(true); onPending(true); setError('');
-    try { const result = await save(category.id, { name, kind, icon }); if (result.success) onSaved(result.message); else setError(result.message); }
+    try { const result = await save(category.id, { name, kind, icon, color }); if (result.success) onSaved(result.message); else setError(result.message); }
     catch { setError('No pudimos guardar la categoría. Inténtalo otra vez.'); }
     finally { setPending(false); onPending(false); }
   }
   return <form onSubmit={submit} className={s.editor} aria-label={`Editar categoría ${category.name}`} aria-busy={pending}>
-    <div className={s.editorHeading}><span className={s.smallIcon}><CategoryIcon id={icon} /></span><h4>Editar categoría</h4><button type="button" aria-label="Cerrar edición de categoría" disabled={pending || disabled} onClick={onClose}>×</button></div>
+    <div className={s.editorHeading}><span className={`${s.smallIcon} ${palette.tone}`} data-tone={categoryToneFor({ icon, color })}><CategoryIcon id={icon} /></span><h4>Editar categoría</h4><button type="button" aria-label="Cerrar edición de categoría" disabled={pending || disabled} onClick={onClose}>×</button></div>
     <fieldset disabled={pending || disabled} className={s.editorFields}>
       <div className={s.editInfo}><label className={s.nameLabel}>Nombre<input autoFocus name="name" aria-label="Nuevo nombre de categoría" required maxLength={80} value={name} onChange={event => setName(event.target.value)} /></label><CategoryKindPicker kind={kind} onChange={setKind} /></div>
-      <CategoryIconPicker icon={icon} onChange={setIcon} />
+      <CategoryIconPicker icon={icon} color={color} onChange={setIcon} />
+      <CategoryColorPicker color={color} onChange={setColor} />
       <div className={s.editorFooter}><button type="button" className={s.removeButton} onClick={onDelete}>Eliminar categoría</button><button className={s.save}>{pending ? 'Guardando…' : 'Guardar cambios'}<span aria-hidden="true">✓</span></button></div>
     </fieldset>
     <p role="status" className={s.message}>{error}</p>
@@ -67,13 +70,13 @@ export default function CategoriesSection({ categories, creation, editCategory, 
       return <div className={s.group} key={group.kind}>
         <h3 className={s.groupTitle} data-kind={group.kind}><span aria-hidden="true">{group.arrow}</span>{group.label}</h3>
         <ul className={s.tiles}>{items.map(category => {
-          const id = categoryIconFor(category), icon = categoryIcons.find(item => item.id === id)!;
-          return <li key={category.id}><button ref={node => { if (node) tiles.current.set(category.id, node); else tiles.current.delete(category.id); }} type="button" className={s.tile} disabled={saving} aria-label={`Editar categoría ${category.name}`} aria-expanded={editing === category.id} onClick={() => { setEditing(editing === category.id ? null : category.id); setStatus(''); }}><span className={s.largeIcon} data-tone={icon.tone}><CategoryIcon id={id} /><span className={s.editMark} aria-hidden="true">✎</span></span><strong>{category.name}</strong></button></li>;
+          const id = categoryIconFor(category);
+          return <li key={category.id}><button ref={node => { if (node) tiles.current.set(category.id, node); else tiles.current.delete(category.id); }} type="button" className={s.tile} disabled={saving} aria-label={`Editar categoría ${category.name}`} aria-expanded={editing === category.id} onClick={() => { setEditing(editing === category.id ? null : category.id); setStatus(''); }}><span className={`${s.largeIcon} ${palette.tone}`} data-tone={categoryToneFor(category)}><CategoryIcon id={id} /><span className={s.editMark} aria-hidden="true">✎</span></span><strong>{category.name}</strong></button></li>;
         })}{!items.length && <li className={s.empty}><CategoryIcon id={group.kind === 'income' ? 'salary' : 'bag'} /><span>Sin categorías</span></li>}</ul>
         {selected && <CategoryEditor key={selected.id} category={selected} save={editCategory} disabled={saving} onPending={setSaving} onClose={() => closeEditor(selected.id)} onSaved={message => { setStatus(message); closeEditor(selected.id); }} onDelete={() => setRemoving(selected)} />}
       </div>;
     })}</div>
     <p role="status" className={s.status}>{status}</p>
     {removing && <CategoryDeleteDialog category={removing} remove={removeCategory} onBusy={setSaving} onClose={() => setRemoving(null)} onRemoved={message => { deletedId.current = removing.id; closeEditor(removing.id); setRemoving(null); setStatus(message); }} />}
-  </section><CategoryInsights movements={movements} currentMonth={currentMonth} /></>;
+  </section><CategoryInsights movements={movements} categories={categories} currentMonth={currentMonth} /></>;
 }

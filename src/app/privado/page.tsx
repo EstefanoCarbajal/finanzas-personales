@@ -30,8 +30,8 @@ import HabitsRewards from './habits-rewards';
 import PrivateDashboardShell from './private-dashboard-shell';
 import AccountsWorkspace from '@/components/accounts-workspace';
 import CategoriesSection from '@/components/categories-section';
-import { readAvatar } from '@/lib/profile.mjs';
-import { updateAvatar } from './profile-actions';
+import { readAvatar, readBalanceHidden } from '@/lib/profile.mjs';
+import { updateAvatar, updateBalanceHidden } from './profile-actions';
 import { updateAccountOrder, editCategory, removeCategory, editAccount, removeAccount, toggleAccountSummary } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -47,6 +47,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
   const canCreateUsers = section === 'configuracion' && await isUserAdmin(db(), user.id);
   const managedUsers = canCreateUsers ? await readManagedUsers(db(), user.id) : [];
   const avatar = await readAvatar(db(), user.id);
+  const balanceHidden = section === 'resumen' ? await readBalanceHidden(db(), user.id) : false;
   const today = todayLima();
   const month = today.slice(0, 7);
   const data = await readDashboard(db(), user.id);
@@ -63,7 +64,7 @@ export default async function PrivatePage({ searchParams }: { searchParams: Prom
       <div className="content">
         {section === 'resumen' && data && <>
           <section className="page-heading" id="resumen"><h1>Tu resumen</h1></section>
-          <SummaryWithRegistration movements={data.movements} currentMonth={month} balance={data.totals.balance} />
+          <SummaryWithRegistration categories={data.categories} initialBalanceHidden={balanceHidden} saveBalanceHidden={updateBalanceHidden} movements={data.movements} currentMonth={month} balance={data.totals.balance} />
           <SummaryGoal goal={goals?.[0]} />
         </>}
         {section === 'movimientos' && data && <>

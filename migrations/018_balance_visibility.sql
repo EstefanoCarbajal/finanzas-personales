@@ -1,0 +1,1 @@
+ALTER TABLE user_preferences ADD COLUMN balance_hidden BOOLEAN NOT NULL DEFAULT FALSE;

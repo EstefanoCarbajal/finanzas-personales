@@ -23,7 +23,7 @@ test('MySQL: credit purchases, repayments, edit/delete rollback, ownership and c
     for (const id of users) await pool.execute('INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)', [id, `credit-${id}@example.invalid`, 'not-a-login-hash']);
     await pool.execute('INSERT INTO accounts (id, user_id, name) VALUES (?, ?, ?)', [cash, users[0], 'QA efectivo']);
     for (const [id, kind] of [[expenseCategory, 'expense'], [incomeCategory, 'income']]) await pool.execute('INSERT INTO categories (id, user_id, name, kind) VALUES (?, ?, ?, ?)', [id, users[0], kind, kind]);
-    const card = await createCreditCard(pool, users[0], { name: 'QA tarjeta', credit_limit: '1000.00', opening_debt: '100.00', last_four: '0123' });
+    const card = await createCreditCard(pool, users[0], { bank_code: 'BBVA', network: 'Mastercard', catalog_model: 'Black', credit_limit: '1000.00', opening_debt: '100.00', last_four: '0123' });
     const foreign = await createCreditCard(pool, users[1], { name: 'QA ajena', credit_limit: '500.00' });
     await assert.rejects(deleteAccount(pool, users[0], card));
     await assert.rejects(deleteAccount(pool, users[1], foreign));
@@ -76,6 +76,7 @@ test('MySQL: credit purchases, repayments, edit/delete rollback, ownership and c
     const edited = await readDashboard(pool, users[0]);
     const updated = creditCards(edited.accounts, edited.movements).find(c => c.id === card);
     assert.equal(updated.name, edit.name); assert.equal(updated.last_four, '9876');
+    assert.equal(updated.bank_code, 'BBVA'); assert.equal(updated.credit_network, 'Mastercard'); assert.equal(updated.credit_model, 'Black');
     assert.equal(updated.credit_limit, '1200.00'); assert.equal(updated.opening_debt, '100.00');
     assert.equal(updated.debt, '250.00'); assert.equal(updated.available, '950.00');
     assert.deepEqual(edited.movements.map(({ account_name, destination_name, ...m }) => m), current.movements.map(({ account_name, destination_name, ...m }) => m));
@@ -83,7 +84,9 @@ test('MySQL: credit purchases, repayments, edit/delete rollback, ownership and c
     await assert.rejects(deleteCreditCard(pool, users[0], cash));
     await assert.rejects(deleteCreditCard(pool, users[0], card), /inicial/);
     await assert.rejects(deleteCreditCard(pool, users[0], concurrent), /historial/);
-    const empty = await createCreditCard(pool, users[0], { name: 'QA vacía', credit_limit: '50.00' });
+    const empty = await createCreditCard(pool, users[0], { bank_code: 'other', other_bank: 'Banco QA', network: 'Diners Club', catalog_model: 'other', name: 'QA vacía', credit_limit: '50.00' });
+    const custom = (await readDashboard(pool, users[0])).accounts.find(account => account.id === empty);
+    assert.equal(custom.bank_code, 'Banco QA'); assert.equal(custom.credit_network, 'Diners Club'); assert.equal(custom.credit_model, null);
     await deleteCreditCard(pool, users[0], empty);
     await assert.rejects(deleteCreditCard(pool, users[0], empty));
     const race = await Promise.allSettled([

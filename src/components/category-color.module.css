@@ -1,0 +1,38 @@
+.scope, .tone {
+  --category-sun: #975813;
+  --category-leaf: #367245;
+  --category-blue: #356a9f;
+  --category-violet: #7752a0;
+  --category-pink: #a34572;
+  --category-sand: #806344;
+}
+:global([data-avatar-theme=tiger]) :is(.scope, .tone) {
+  --category-sun: #ffc378;
+  --category-leaf: #98dcaa;
+  --category-blue: #9acaff;
+  --category-violet: #cfb2ff;
+  --category-pink: #f9add1;
+  --category-sand: #d9c3a7;
+}
+.tone[data-tone=sun] { --icon-color: var(--category-sun); }
+.tone[data-tone=leaf] { --icon-color: var(--category-leaf); }
+.tone[data-tone=blue] { --icon-color: var(--category-blue); }
+.tone[data-tone=violet] { --icon-color: var(--category-violet); }
+.tone[data-tone=pink] { --icon-color: var(--category-pink); }
+.tone[data-tone=sand] { --icon-color: var(--category-sand); }
+.tone[data-tone] {
+  color: var(--icon-color);
+  background: color-mix(in srgb, var(--icon-color) 11%, var(--theme-surface));
+}
+.choices { display: flex; flex-wrap: wrap; gap: 4px; }
+.choice { position: relative; display: grid; place-items: center; width: 44px; height: 44px; cursor: pointer; }
+.choice input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: inherit; }
+.dot { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; pointer-events: none; }
+.choice .dot[data-tone] { background: var(--icon-color); }
+.choice .dot[data-tone=auto] { background: conic-gradient(#dfa669, #afc77c, #7eafc8, #bc8dcf, #dfa669); }
+.choice input:checked + .dot { outline: 2px solid var(--theme-ink); outline-offset: 3px; }
+.choice input:checked + .dot::after { content: '✓'; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: white; color: #26303a; font: bold 11px/1 sans-serif; }
+.choice input:focus-visible + .dot { outline: 3px dashed var(--theme-ink); outline-offset: 5px; }
+.selectedName { margin-inline-start: 8px; font-weight: 500; }
+.historyIcon { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-inline-end: 6px; border-radius: 7px; vertical-align: middle; }
+.historyIcon svg { width: 16px; height: 16px; }

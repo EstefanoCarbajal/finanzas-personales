@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import standard from './movements.module.css';
 import compact from './movement-modal.module.css';
-export type MovementAccount = { id: string; name: string; currency?: string; account_type?: string; credit_limit?: string; opening_debt?: string; last_four?: string | null };
+export type MovementAccount = { id: string; name: string; currency?: string; account_type?: string; bank_code?: string; credit_model?: string | null; credit_network?: string | null; credit_limit?: string; opening_debt?: string; last_four?: string | null };
 export type MovementCategory = MovementAccount & { kind: string };
 type Props = { accounts: MovementAccount[]; categories: MovementCategory[]; today: string; kind: string; onKindChange: (kind: string) => void; description: string; onDescriptionChange: (value: string) => void; amount: string; onAmountChange: (value: string) => void; accountId?: string; destinationId?: string | null; categoryId?: string | null; occurredOn?: string; autoFocus?: boolean; modal?: boolean };
 const types = [{ value: 'expense', label: 'Gasto', icon: '↗' }, { value: 'income', label: 'Ingreso', icon: '↙' }, { value: 'transfer', label: 'Transferencia', icon: '↔' }];

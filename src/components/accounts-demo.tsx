@@ -17,5 +17,5 @@ export default function AccountsDemo({ accounts, balances, onAddAccount, saveOrd
   saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>;
 }) {
   return <AccountsWorkspace demo today="2026-11-11" movements={movements} piggybanks={piggybanks} piggybankActions={piggybankActions} creditSection={creditSection} currencyTotals={currencyTotals} availableByCurrency={availableByCurrency} accounts={accounts} balances={balances} saveOrder={saveOrder} toggleSummaryAccount={toggleSummaryAccount} renameAccount={renameAccount} removeAccount={removeAccount}
-    accountForm={<DemoSetupForm existing={accounts} onCreate={(name, _kind, _icon, currency, bank, openingBalance) => onAddAccount(name, currency, bank, openingBalance)} />} />;
+    accountForm={<DemoSetupForm existing={accounts} onCreate={onAddAccount} />} />;
 }

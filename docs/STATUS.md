@@ -1,3 +1,92 @@
+## Iconos de categoría en el historial · 23/11/2026
+
+- El historial general y el de cada cuenta muestran el icono y tono vigentes junto al nombre de la categoría. El modo automático utiliza el tono del icono. Las transferencias muestran su destino. La lectura privada usa la unión existente por categoría y propietario.
+- Build y typecheck aprobados. En Chrome se cambió el icono y el color de Alimentación en demo y se verificó la coincidencia en ambos historiales. Sin migración ni comprobación privada nueva.
+
+## Paleta de colores para categorías · 23/11/2026
+
+- Alta y edición incorporan seis muestras con nombre, selector por teclado, indicador de selección, opción automática y vista previa. Los registros anteriores usan el tono del icono. La edición que omite el campo conserva la elección guardada.
+- Migración 020 aplicada con el migrador y TLS en la base exclusiva de pruebas. Integración específica de iconos aprobada con creación, edición, restauración del color automático, comprobación de restricción SQL, aislamiento y limpieza. Compilación y typecheck aprobados. Siete pruebas locales específicas aprobadas. Suite general 44/45 por el fallo previo de contraste del tema zorro.
+- Chrome en demo y en privado con usuario ficticio comprobó el alta con Azul mediante teclado, cambio de icono conservando el color, edición a Rosa y regreso a Automático. En privado se verificó el resultado después de recargar y se limpió el fixture. Se comprobó el ancho del formulario a 1366, 390 y 320 px y la adaptación de Rosa al tema tigre en demo. Pendiente inspección visual específica de presupuestos y del diálogo de eliminación.
+
+## Nueva cuenta como acción general · 23/11/2026
+
+- El botón pasó del último grupo bancario al encabezado de Cuentas, junto a Ordenar. Se retiró la tarjeta de alta de la cuadrícula. El alta de la demo permite elegir el banco y cierra el diálogo al guardar, igual que en privado.
+- Build y typecheck aprobados. Chrome en demo a 1366, 390 y 320 px verificó un botón único fuera de los grupos, apertura con Enter, cierre con Escape, retorno de foco y ausencia de desbordamiento horizontal. Con USD vacío se creó una cuenta ficticia eligiendo Interbank y se comprobó su aparición en ese grupo. Sin nueva revisión privada ni cambios de persistencia.
+
+## Estilos de cuentas por banco · 23/11/2026
+
+- La apariencia por posición se sustituye por paletas y motivos gráficos vinculados a la entidad. El nombre del banco ocupa la parte superior de la tarjeta, y el nombre de la cuenta y el dinero libre quedan juntos. El detalle reutiliza los mismos colores y motivos. Las cuentas antiguas sin banco reciben la presentación neutra.
+- Compilación de producción y comprobación de tipos aprobadas. Seis pruebas locales de cuentas, orden y selección aprobadas. La entrega es visual, sin migraciones. No se ejecutó integración remota ni QA autenticado nuevo.
+- Chrome en demo verificó diez fondos y tramas diferenciados, estado sin banco, actualización al editar el banco, selección para el total, entrada y salida del modo ordenar, apertura con Enter y retorno de foco. Se detectó y corrigió una regla del tema tigre que cubría el fondo. Revisión final a 1366, 390 y 320 px con el tema oscuro: lista y detalle sin desbordamiento horizontal ni excepciones de página en los escenarios probados.
+
+## Etiqueta del filtro de mes · 23/11/2026
+
+- Retirada la etiqueta visible «Mes» del filtro de gastos por categoría; el selector conserva su nombre accesible. Cambio compartido por demo y privado. Build y typecheck aprobados; sin revisión nueva en navegador.
+
+## Textos bajo barras del ranking · 23/11/2026
+
+- Retirados los porcentajes y recuentos bajo las barras del ranking de gastos por categoría en demo y privado. Se conservan categorías, importes y barras. Build y typecheck aprobados; sin revisión nueva en navegador.
+
+## Textos secundarios de gastos por categoría · 23/11/2026
+
+- Retirados los tres textos small debajo de las cifras principales del tablero de gastos por categoría, compartido por demo y privado. Se conservan cifras, ranking y cálculos. Build y typecheck aprobados; sin revisión nueva en navegador.
+
+## Catálogo y vista previa de tarjetas peruanas · 23/11/2026
+
+- Alta compartida por demo y privado con selección progresiva de banco, red y modelo, alternativa manual y vista previa. Las selecciones dependientes se limpian al cambiar el banco o la red. El nombre del modelo elegido se genera en el servidor para el alta privada y los cuatro últimos dígitos opcionales distinguen tarjetas del mismo modelo. Edición de alias y reasignación de modelo disponibles en las tarjetas existentes.
+- Migración aditiva 019 aplicada con el migrador, previa comprobación del nombre de la base exclusiva de pruebas y TLS. La integración de crédito aprobó la recuperación de un modelo de catálogo y otro manual, edición conservando el diseño, aislamiento entre propietarios, transacciones y limpieza de fixtures.
+- Build y typecheck posterior aprobados. Suite local 43/44, incluidas las seis pruebas de crédito. Sigue fallando la aserción histórica de contraste del tema zorro. Se actualizó la expectativa de totales de crédito para comprobar también el desglose PEN que ya devolvía la aplicación. No se ejecutó toda la suite de integración.
+- Chrome en demo a 1366, 390 y 320 px comprobó filtrado, cambio de banco, alta de catálogo y manual, coma decimal, borrador, Escape, retorno de foco y ausencia de desbordamiento horizontal o excepciones de página. En privado, un usuario ficticio inició sesión, creó una tarjeta Interbank American Express Gold, la cambió a Scotiabank Visa Singular Signature y editó su alias. Banco, diseño y nombre se comprobaron tras recargas. Fixture privado eliminado al terminar.
+- El catálogo requiere mantenimiento manual. Sigue pendiente la revisión con lector de pantalla y la comparación visual individual de las 64 variantes con sus plásticos físicos.
+
+## Visibilidad persistente del saldo · 23/11/2026
+
+- Resumen guarda por usuario si el saldo acumulado está oculto, con lectura desde user_preferences y acción autenticada. El control actualiza inmediatamente, bloquea clics mientras guarda y revierte con aviso ante error. Demo conserva la preferencia en memoria al cambiar de sección y la restablece al recargar. No se guardan datos en navegador.
+- Migración nueva 018_balance_visibility.sql aplicada mediante migrador y TLS únicamente a u519053982_finanzas_test. Prueba local y prueba de integración específica aprobadas: preferencia independiente entre dos usuarios ficticios, estado por defecto, cambios y conservación del avatar; fixtures limpiados y ausencia de preferencias comprobada. Integración añadida al script general, no ejecutado en conjunto. Build y typecheck aprobados; pendiente QA de navegador con sesión privada ficticia (recarga, salida/entrada, errores, espera, responsive y teclado). Sin publicación ni datos reales.
+
+## Selección persistente de cuentas · 23/11/2026
+
+- Corregida la lectura de summary_selected: mysql2 devuelve 0/1 y se convierte a booleano antes de entregar cuentas al cliente. La selección privada ya se guardaba por propietario en MySQL, pero el 0 se interpretaba como seleccionado tras recargar. No hay migración; demo conserva selección solo en memoria.
+- Prueba local con pool simulado aprobada para 0/1 y propietario; build y typecheck aprobados. No se realizó integración real ni QA privado de recarga/logout; quedan pendientes. Primer intento de prueba bloqueado por EPERM del sandbox y repetido fuera de él.
+
+## Texto de ilustración de cuenta · 23/11/2026
+
+- Retirada la frase «Cada plan tiene su lugar» de la ilustración del detalle de cuenta, compartido por demo y privado. Build y typecheck aprobados; sin revisión nueva en navegador.
+
+## Etiqueta de total en cuenta · 23/11/2026
+
+- La etiqueta del saldo de la cuenta en el detalle se abrevia a «Total» en demo y privado; el importe conserva su cálculo. Build y typecheck aprobados; sin revisión nueva en navegador.
+
+## Orden de saldos en detalle de cuenta · 23/11/2026
+
+- Dinero libre pasa a ser la cifra principal y saldo de la cuenta aparece junto al importe en alcancías; se conservan los cálculos y la descripción accesible de la barra. Se retira el punto de color del saldo total para no confundirlo con la porción libre. Cambio compartido por demo y privado. Build y typecheck aprobados; sin revisión nueva en navegador ni cambios de reglas.
+
+## Textos de la sección de alcancías · 23/11/2026
+
+- Retiradas las frases introductorias y explicativas solicitadas en la sección de alcancías de demo y privado. Se conserva el aviso cuando no hay saldo libre. Build y typecheck aprobados; sin nueva revisión en navegador ni cambios de reglas.
+
+## Texto de alcancías vacías · 23/11/2026
+
+- Retirada la frase «Un lugar para tu próximo plan» de las alcancías vacías en demo y privado; se conserva la acción de separar dinero. Build y typecheck aprobados, sin revisión nueva en navegador ni cambios de reglas.
+
+## Ancho de cuenta única por banco · 23/11/2026
+
+- Un grupo de banco con una sola tarjeta ocupa como máximo media fila en pantallas de más de 480 px; en móvil ocupa el ancho disponible. Los grupos con más tarjetas conservan el máximo de tres por fila. Cambio de presentación compartido por demo y privado. Build y typecheck aprobados; queda pendiente la revisión visual responsive y del ordenamiento en navegador.
+
+## Máximo de tres cuentas por fila · 23/11/2026
+
+- La cuadrícula de cuentas muestra hasta tres tarjetas por fila dentro de cada grupo de banco, incluida la tarjeta para crear cuenta; las adicionales pasan a la fila siguiente. Mantiene menos columnas según el espacio disponible y una en móvil. Cambio compartido entre demo y privado, sin modificar datos ni orden. Build y typecheck aprobados; revisión visual responsive y ordenamiento pendiente.
+
+## Fila de moneda y banco · 23/11/2026
+
+- En el modal de nueva cuenta, moneda y banco comparten fila también en pantallas estrechas; nombre y saldo ocupan el ancho completo. Cambio de presentación compartido por demo y privado. Build y typecheck aprobados; sin nueva revisión de navegador, pendiente comprobar 320/390 px y escritorio.
+
+## Modales de creación en la billetera · 23/11/2026
+
+- Nueva cuenta y Nueva tarjeta abren diálogos nativos compartidos con ilustración, animación discreta y colores del tema. Los formularios conservan validaciones, datos ante errores y borrador al cerrar; al guardar correctamente se cierra el diálogo. Cierre por Escape o exterior y retorno de foco; cierre bloqueado durante guardado. Demo permanece en memoria y privado conserva sus acciones existentes.
+- Validación nueva: build y typecheck aprobados. En demo de escritorio se revisaron visualmente ambos diálogos y el cierre de cuenta con Escape y retorno de foco. Pendientes creación y errores en navegador, responsive 320/390 px, teclado completo, movimiento reducido, temas y QA privado ficticio. No se ejecutó integración ni se cambió persistencia. El primer build falló por EPERM del sandbox; se completó fuera de él.
+
 # Estado al 13 de noviembre de 2026
 
 ## Registro desde el login · 23/11/2026

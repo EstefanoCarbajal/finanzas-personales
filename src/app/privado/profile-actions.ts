@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requireUser } from '@/server/auth';
 import { db } from '@/server/db';
 import { validAvatar } from '@/lib/avatars.mjs';
-import { saveAvatar } from '@/lib/profile.mjs';
+import { saveAvatar, saveBalanceHidden } from '@/lib/profile.mjs';
 
 export async function updateAvatar(avatarId: string) {
   const user = await requireUser();
@@ -13,4 +13,13 @@ export async function updateAvatar(avatarId: string) {
   catch { return { success: false, message: 'No pudimos guardar tu avatar. Inténtalo de nuevo.' }; }
   revalidatePath('/privado');
   return { success: true, message: 'Avatar actualizado' };
+}
+
+export async function updateBalanceHidden(hidden: boolean) {
+  const user = await requireUser();
+  if (typeof hidden !== 'boolean') return { success: false, message: 'La preferencia no es válida.' };
+  try { await saveBalanceHidden(db(), user.id, hidden); }
+  catch { return { success: false, message: 'No pudimos guardar la preferencia. Inténtalo de nuevo.' }; }
+  revalidatePath('/privado');
+  return { success: true, message: '' };
 }

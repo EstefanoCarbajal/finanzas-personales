@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { decimal, soles, toCents } from '@/lib/money.mjs';
-import { categoryIconFor } from '@/lib/category-icons.mjs';
+import palette from './category-color.module.css';
+import { categoryIconFor, categoryToneFor } from '@/lib/category-icons.mjs';
 import PaymentControls, { type ManagePayment } from './payment-controls';
 import BudgetControls, { type ManageBudget } from './budget-controls';
 import PaymentCalendar from './payment-calendar';
@@ -75,7 +76,7 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
           const usage = limit > BigInt(0) ? Number(spent * BigInt(100) / limit) : 0;
           const category = categories.find(item => item.id === budget.category_id) || { name: budget.category_name };
           return <article className={`${s.budgetCard} ${spent > limit ? s.overBudget : ''}`} key={budget.id} style={{ '--order': index } as CSSProperties}>
-            <div className={s.budgetTop}><span className={s.categoryIcon}><CategoryIcon id={categoryIconFor(category)} /></span>{(spent > limit || usage >= 80) && <span className={s.budgetStatus}>{spent > limit ? 'Límite superado' : 'Cerca del límite'}</span>}{manageBudget && <BudgetControls budget={budget} manage={manageBudget} demo={demo} />}</div>
+            <div className={s.budgetTop}><span className={`${s.categoryIcon} ${palette.tone}`} data-tone={categoryToneFor(category)}><CategoryIcon id={categoryIconFor(category)} /></span>{(spent > limit || usage >= 80) && <span className={s.budgetStatus}>{spent > limit ? 'Límite superado' : 'Cerca del límite'}</span>}{manageBudget && <BudgetControls budget={budget} manage={manageBudget} demo={demo} />}</div>
             <h3>{budget.category_name}</h3><div className={s.budgetAmount}><strong>{soles(budget.spent)}</strong><span>de {soles(budget.amount)}</span></div>
             <div className={s.track} role="progressbar" aria-label={`Presupuesto de ${budget.category_name}`} aria-valuenow={Math.min(100, usage)} aria-valuemin={0} aria-valuemax={100} aria-valuetext={`${usage}% utilizado`}><span style={{ width: `${Math.min(100, Math.max(0, usage))}%` }} /></div>
             <div className={s.budgetFoot}><span>{available < BigInt(0) ? 'Exceso' : 'Disponible'} <b>{soles(decimal(available < BigInt(0) ? -available : available))}</b></span><b>{usage}%</b></div>

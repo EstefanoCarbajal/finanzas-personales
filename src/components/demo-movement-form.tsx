@@ -7,7 +7,7 @@ import standard from './movements.module.css';
 import compact from './movement-modal.module.css';
 
 export type DemoMovementDraft = { name: string; category: string; amount: number; date: string; kind: string; account: string; destination: string | null };
-export const demoAccounts = [{ id: 'cash', name: 'Efectivo' }, { id: 'savings', name: 'Ahorros' }];
+export const demoAccounts = [{ id: 'cash', name: 'Efectivo' }, { id: 'savings', name: 'Ahorros', bank_code: 'BCP' }];
 export const demoCategories = [...['Alimentación', 'Transporte', 'Vivienda', 'Ocio', 'Salud', 'Otros'].map((name, i) => ({ id: `expense-${i}`, name, kind: 'expense' })), { id: 'income', name: 'Ingresos', kind: 'income' }];
 export default function DemoMovementForm({ onAdd, autoFocus = false, accounts = demoAccounts, categories = demoCategories, modal = false }: { onAdd: (movement: DemoMovementDraft) => string | void; autoFocus?: boolean; accounts?: MovementAccount[]; categories?: MovementCategory[]; modal?: boolean }) {
   const s = modal ? compact : standard;

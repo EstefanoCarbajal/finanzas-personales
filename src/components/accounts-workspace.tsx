@@ -8,7 +8,9 @@ import { accountAllocation } from '@/lib/piggybank-policy.mjs';
 import AccountCards from './account-cards';
 import s from './accounts.module.css';
 import w from './wallet.module.css';
+import bankStyle from './account-bank.module.css';
 import type { RenameAccount, RemoveAccount } from './account-actions';
+import WalletCreateModal, { WalletCreateContext } from './wallet-create-modal';
 
 export type Account = { id: string; name: string; bank_code?: string | null; currency?: string; opening_balance?: string; sort_order?: number | null; summary_selected?: boolean };
 const walletMoney = (value: string, currency: string) => currency === 'USD' ? `$ ${value}` : soles(value);
@@ -29,6 +31,8 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
   toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>;
 }) {
   const [currency, setCurrency] = useState('PEN');
+  const [creatingAccount, setCreatingAccount] = useState(false);
+  const [accountPending, setAccountPending] = useState(false);
   const [reordering, setReordering] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
   const container = useRef<HTMLDivElement>(null);
@@ -47,7 +51,7 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
   const freeBalances = Object.fromEntries(accounts.map(account => [account.id, accountAllocation(balances[account.id] || '0.00', piggybanks.filter(bank => bank.account_id === account.id)).free]));
   const favoritesTotal = selectedAccounts.reduce((sum, account) => sum + BigInt((balances[account.id] || '0.00').replace('.', '')), BigInt(0));
   const favoriteAmount = `${favoritesTotal < 0 ? '-' : ''}${((favoritesTotal < 0 ? -favoritesTotal : favoritesTotal) / BigInt(100)).toString()}.${((favoritesTotal < 0 ? -favoritesTotal : favoritesTotal) % BigInt(100)).toString().padStart(2, '0')}`;
-  const bankGroups = [...new Set(visibleAccounts.map(account => account.bank_code || 'Otro banco'))];
+  const bankGroups = [...new Set(visibleAccounts.map(account => account.bank_code || 'Sin banco'))];
   const selectedTotals = currencyTotals[currency] || { cash: '0.00', debt: '0.00' };
   const selectedAvailable = availableByCurrency[currency] || '0.00';
   const filteredCreditSection = isValidElement(creditSection) ? cloneElement(creditSection as ReactElement<{ currency?: string }>, { currency }) : creditSection;
@@ -63,18 +67,25 @@ export default function AccountsWorkspace({ accounts, balances, accountForm, sav
       return { success: false, message: 'No pudimos actualizar el total de cuentas.' };
     }
   }
-  const creationCard = <details className={s.newAccountCard}><summary><span className={s.newCardArt} aria-hidden="true"><span><AccountIcon name="plus" /></span></span><strong>Nueva cuenta</strong><span className={s.newCardToggle} aria-hidden="true">⌄</span></summary><div className={s.newAccountForm}>{accountForm}</div></details>;
   const active = accounts.find(account => account.id === selectedAccount);
   if (active) return <div ref={container}><AccountDetail key={active.id} account={active} balance={balances[active.id] || '0.00'} movements={movements} banks={piggybanks.filter(bank => bank.account_id === active.id)} today={today} actions={piggybankActions} demo={demo} onBack={() => setSelectedAccount(null)} /></div>;
   return <div ref={container} className={s.workspace}>
+    <WalletCreateModal open={creatingAccount} onClose={() => setCreatingAccount(false)} pending={accountPending} kind="account"><WalletCreateContext.Provider value={{ finish: () => setCreatingAccount(false), setPending: setAccountPending }}><div className={s.newAccountForm}>{accountForm}</div></WalletCreateContext.Provider></WalletCreateModal>
     <section className={w.wallet} aria-labelledby="wallet-title">
       <div className={w.heading}><div className={w.title}><span className={w.walletIcon}><AccountIcon /></span><h1 id="wallet-title">Tu billetera</h1></div><div className={w.currency} role="group" aria-label="Filtrar por moneda"><button type="button" className={currency === 'PEN' ? w.activeCurrency : ''} aria-pressed={currency === 'PEN'} onClick={() => setCurrency('PEN')}>PEN</button><span aria-hidden="true">·</span><button type="button" className={currency === 'USD' ? w.activeCurrency : ''} aria-pressed={currency === 'USD'} onClick={() => setCurrency('USD')}>USD</button></div></div>
       <dl className={w.overview}><div className={w.cashTotal}><dt>En tus cuentas</dt><dd key={`${currency}-${favoriteAmount}`}>{walletMoney(favoriteAmount, currency)}</dd></div><div><dt>Deuda en tarjetas</dt><dd>{walletMoney(selectedTotals.debt, currency)}</dd></div><div><dt>Crédito</dt><dd>{walletMoney(selectedAvailable, currency)}</dd></div></dl>
       <div className={w.groups}>
       <section className={w.cashGroup} aria-labelledby="accounts-list-title">
-      <div className={w.groupHeading}><div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div>{visibleAccounts.length > 0 && <button type="button" className={`${w.reorderButton} ${reordering ? w.reorderActive : ''}`} aria-pressed={reordering} onClick={() => setReordering(value => !value)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 12V5a2 2 0 0 1 4 0v5-3a2 2 0 0 1 4 0v4-2a2 2 0 0 1 4 0v5c0 4-2.5 7-6.5 7h-1c-2 0-3.3-.7-4.5-2L4 15a2 2 0 0 1 3-2.5L8 14" /></svg><span>{reordering ? 'Listo' : 'Ordenar'}</span></button>}</div>
-      {bankGroups.map(bank => <div key={bank} className={w.bankGroup}><h3 className={w.bankTitle}>{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Otro banco') === bank)} balances={balances} freeBalances={freeBalances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} reordering={reordering} onOpenAccount={id => { lastAccount.current = id; setSelectedAccount(id); }} creationCard={bank === bankGroups[bankGroups.length - 1] ? creationCard : null} /></div>)}
-      {!bankGroups.length && creationCard}
+      <header className={w.groupHeading}>
+        <div><span className={w.groupIcon}><AccountIcon /></span><h2 id="accounts-list-title">Cuentas <span className={w.count}>{visibleAccounts.length}</span></h2></div>
+        <div className={w.accountActions}>
+          {visibleAccounts.length > 0 && <button type="button" className={`${w.reorderButton} ${reordering ? w.reorderActive : ''}`} aria-pressed={reordering} onClick={() => setReordering(value => !value)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 12V5a2 2 0 0 1 4 0v5-3a2 2 0 0 1 4 0v4-2a2 2 0 0 1 4 0v5c0 4-2.5 7-6.5 7h-1c-2 0-3.3-.7-4.5-2L4 15a2 2 0 0 1 3-2.5L8 14" /></svg><span>{reordering ? 'Listo' : 'Ordenar'}</span></button>}
+          <button type="button" className={w.createAccount} aria-haspopup="dialog" onClick={() => setCreatingAccount(true)}>
+            <AccountIcon name="plus" /> Nueva cuenta
+          </button>
+        </div>
+      </header>
+      {bankGroups.map(bank => <div key={bank} data-bank={bank} className={`${w.bankGroup} ${bankStyle.palette}`}><h3 className={w.bankTitle}><span className={bankStyle.swatch} aria-hidden="true" />{bank}</h3><AccountCards accounts={visibleAccounts.filter(account => (account.bank_code || 'Sin banco') === bank)} balances={balances} freeBalances={freeBalances} saveOrder={saveOrder} toggleSummaryAccount={toggleSelection} renameAccount={renameAccount} removeAccount={removeAccount} reordering={reordering} onOpenAccount={id => { lastAccount.current = id; setSelectedAccount(id); }} /></div>)}
       </section>
       <div className={w.creditGroup}>{filteredCreditSection}</div>
       </div>

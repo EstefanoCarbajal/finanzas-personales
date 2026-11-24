@@ -1,0 +1,48 @@
+.picker { display: grid; gap: 16px; min-width: 0; }
+.details { border: 0; margin: 0; padding: 0; min-width: 0; }
+.selectors { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr)); gap: 14px; }
+.picker label { display: grid; gap: 6px; font-size: 13px; font-weight: 800; color: var(--theme-ink); }
+.picker :is(input, select) { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; font: inherit; font-size: 16px; color: var(--theme-ink); border: 1px solid var(--theme-line); border-radius: 11px; background: var(--theme-surface); }
+.preview { display: grid; place-items: center; padding: 2px 4px 10px; }
+.preview .face { width: min(100%, 320px); box-shadow: 0 12px 19px -10px #17213675, inset 0 1px #fff5; }
+.face {
+  --base: #263447; --light: #63768a; --type: #fff; --etch: #ffffff24;
+  position: relative; isolation: isolate; overflow: hidden; box-sizing: border-box;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 9px;
+  min-width: 0; min-height: 142px; aspect-ratio: 1.72; padding: clamp(16px, 3vw, 23px);
+  border-radius: 17px; color: var(--type);
+  background: linear-gradient(120deg,var(--base) 10%,var(--light) 180%);
+  box-shadow: inset 0 0 0 1px #0002, inset 0 1px #fff4;
+}
+.face[data-bank="bcp"] { --base: #071e59; --light: #1d59b3; }
+.face[data-bank="bbva"] { --base: #00346a; --light: #087cd2; }
+.face[data-bank="interbank"] { --base: #075383; --light: #167f7b; }
+.face[data-bank="scotia"] { --base: #81112c; --light: #e33243; }
+.face[data-bank="falabella"] { --base: #346615; --light: #72ac38; }
+.face[data-bank="ripley"] { --base: #411e5d; --light: #a673a9; }
+.face[data-finish="gold"] { --base: #ead393; --light: #a47a37; --type: #30230f; --etch: #70511e2d; }
+.face[data-finish="platinum"] { --base: #d4d8de; --light: #8a98a6; --type: #1c293a; --etch: #4152662e; }
+.face[data-finish="graphite"] { --base: #191c23; --light: #4c5261; }
+.face[data-finish="sapphire"] { --base: #111a2d; --light: #2555a2; }
+.face[data-finish="green"] { --base: #bdd8b9; --light: #729883; --type: #142f27; --etch: #30614435; }
+.engraving { position: absolute; z-index: -1; inset: 0; pointer-events: none;
+  background: repeating-radial-gradient(ellipse at 120% -60%, transparent 0 10px,var(--etch) 11px, transparent 12px 15px); }
+.face[data-bank="bbva"] .engraving { background: linear-gradient(120deg,transparent 47%,var(--etch) 47.3%,transparent 76%),linear-gradient(60deg,transparent 68%,var(--etch) 68.3%,transparent); }
+.face[data-bank="interbank"] .engraving { background: repeating-linear-gradient(128deg,transparent 0 13px,var(--etch) 14px, transparent 15px 18px); clip-path: polygon(52% 0,100% 0,100% 100%,15% 100%); }
+.face[data-bank="scotia"] .engraving { background: repeating-radial-gradient(circle at 86% 48%,transparent 0 18px,var(--etch) 19px 20px,transparent 21px 27px); }
+.face[data-qore] .engraving { inset: 0 -8% 0 28%; transform: rotate(-21deg) scale(1.4);
+  background: linear-gradient(90deg,transparent 44%,var(--etch) 45% 55%,transparent 56%),linear-gradient(0deg,transparent 44%,var(--etch) 45% 55%,transparent 56%); }
+.issuer { font-size: clamp(16px,2.5vw,22px); font-weight: 900; line-height: 1.1; letter-spacing: -.04em; overflow-wrap: anywhere; }
+.face[data-bank="bcp"] .issuer,.face[data-bank="interbank"] .issuer { font-style: italic; }
+.hardware { display: flex; align-items: center; gap: 7px; opacity: .94; }
+.chip { width: 31px; height: 23px; border-radius: 5px; border: 1px solid #443b2860;
+  background: linear-gradient(90deg,transparent 30%,#7f6e47 31% 33%,transparent 34% 65%,#7f6e47 66% 68%,transparent 69%),linear-gradient(0deg,transparent 45%,#7f6e47 46% 50%,transparent 51%),linear-gradient(125deg,#e4ce91,#fff2c2 50%,#bca16a); }
+.faceFoot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; min-width: 0; }
+.identity { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.identity strong { font-size: clamp(14px,2.1vw,19px); line-height: 1.1; letter-spacing: -.02em; }
+.digits { font-size: 12px; letter-spacing: .14em; font-variant-numeric: tabular-nums; }
+.network { max-width: 40%; font-size: 12px; font-weight: 900; line-height: 1; text-align: right; overflow-wrap: anywhere; }
+.network[data-network="Visa"] { font: italic 900 23px/1 Arial,sans-serif; letter-spacing: -.06em; }
+.network[data-network="American Express"] { max-width: 66px; text-transform: uppercase; font: 900 11px/.96 Arial,sans-serif; letter-spacing: -.04em; }
+.mastercard { position: relative; flex: 0 0 45px; height: 27px; background: radial-gradient(circle at 30% 50%,#ef4035 0 13px,transparent 13.5px); }
+.mastercard::after { content: ''; position: absolute; right: 0; width: 27px; height: 27px; border-radius: 50%; background: #ffa31b; opacity: .92; }

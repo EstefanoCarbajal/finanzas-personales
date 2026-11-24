@@ -1,12 +1,13 @@
 'use client';
 
-import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
 import { soles } from '@/lib/money.mjs';
 import type { Account } from './accounts-workspace';
 import s from './accounts.module.css';
+import bankStyle from './account-bank.module.css';
 import AccountActions, { type RenameAccount, type RemoveAccount } from './account-actions';
 
-export default function AccountCards({ accounts, balances, freeBalances, saveOrder, toggleSummaryAccount, creationCard, renameAccount, removeAccount, onOpenAccount, reordering }: { accounts: Account[]; balances: Record<string, string>; freeBalances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>; creationCard: ReactNode; renameAccount: RenameAccount; removeAccount: RemoveAccount; onOpenAccount: (id: string) => void; reordering: boolean }) {
+export default function AccountCards({ accounts, balances, freeBalances, saveOrder, toggleSummaryAccount, renameAccount, removeAccount, onOpenAccount, reordering }: { accounts: Account[]; balances: Record<string, string>; freeBalances: Record<string, string>; saveOrder: (ids: string[]) => Promise<{ success: boolean; message: string }>; toggleSummaryAccount: (id: string, selected: boolean) => Promise<{ success: boolean; message: string }>; renameAccount: RenameAccount; removeAccount: RemoveAccount; onOpenAccount: (id: string) => void; reordering: boolean }) {
   const [order, setOrder] = useState<string[]>(() => [...accounts].sort((a, b) => (a.sort_order ?? Infinity) - (b.sort_order ?? Infinity)).map(account => account.id));
   const [dragging, setDragging] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -118,9 +119,9 @@ export default function AccountCards({ accounts, balances, freeBalances, saveOrd
       {ordered.map((account, index) => {
         const amount = balances[account.id] || '0.00';
         const freeAmount = freeBalances[account.id] || amount;
-        const tone = accounts.findIndex(item => item.id === account.id) % 3;
+        const bankLabel = account.bank_code || 'Sin banco';
         const selected = account.summary_selected !== false;
-        return <article data-account-card={account.id} key={account.id} role="group" tabIndex={0} aria-label={`Cuenta ${account.name}`} aria-roledescription={reordering ? 'Cuenta ordenable' : undefined} aria-disabled={saving || mutating || undefined} aria-describedby={sortHelpId} onPointerDown={event => { if (reordering) start(event, account.id); }} onClick={event => { if (!reordering && !savingRef.current && !mutationRef.current && !(event.target instanceof Element && event.target.closest('button, [data-account-actions]'))) onOpenAccount(account.id); }} style={dragging === account.id ? { '--drag-x': `${offset.x}px`, '--drag-y': `${offset.y}px` } as CSSProperties : undefined} className={`${s.accountCard} ${s[`tone${tone}`]} ${reordering ? s.reordering : ''} ${dragging === account.id ? s.dragging : ''}`} onKeyDown={event => {
+        return <article data-account-card={account.id} data-bank={account.bank_code || ''} key={account.id} role="group" tabIndex={0} aria-label={`Cuenta ${account.name}, ${bankLabel}`} aria-roledescription={reordering ? 'Cuenta ordenable' : undefined} aria-disabled={saving || mutating || undefined} aria-describedby={sortHelpId} onPointerDown={event => { if (reordering) start(event, account.id); }} onClick={event => { if (!reordering && !savingRef.current && !mutationRef.current && !(event.target instanceof Element && event.target.closest('button, [data-account-actions]'))) onOpenAccount(account.id); }} style={dragging === account.id ? { '--drag-x': `${offset.x}px`, '--drag-y': `${offset.y}px` } as CSSProperties : undefined} className={`${s.accountCard} ${bankStyle.palette} ${reordering ? s.reordering : ''} ${dragging === account.id ? s.dragging : ''}`} onKeyDown={event => {
             if (event.target !== event.currentTarget) return;
             if (event.key === 'Escape' && drag.current) { event.preventDefault(); finish(true); return; }
             if (!reordering && (event.key === ' ' || event.key === 'Enter')) { event.preventDefault(); if (!savingRef.current && !mutationRef.current) onOpenAccount(account.id); return; }
@@ -131,12 +132,12 @@ export default function AccountCards({ accounts, balances, freeBalances, saveOrd
             const target = ordered[index + direction];
             if (!savingRef.current && !mutationRef.current && !drag.current && target) { move(account.id, target.id); void persist(); }
           }}>
-          <div className={s.cardTop}><span className={s.cardBrand}><button type="button" className={`${s.brandMark} ${selected ? s.brandMarkSelected : ''}`} aria-label={`${selected ? 'Quitar' : 'Añadir'} ${account.name} ${selected ? 'del' : 'al'} total de cuentas`} aria-pressed={selected} disabled={saving || mutating || !!dragging} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); void toggleSummary(account.id, !selected); }}>{toggling === account.id ? '·' : selected ? <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-9" /></svg> : <span aria-hidden="true">+</span>}</button></span><AccountActions account={account} balance={amount} disabled={saving || mutating || !!dragging} rename={renameAccount} remove={removeAccount} onBusy={busy => { mutationRef.current = busy; setMutating(busy); }} onResult={(message, removedId) => { setAnnouncement(message); if (removedId) { removedFocus.current = removedId; setFocusRevision(value => value + 1); } }} /></div>
-          <div className={s.cardBottom}><div className={s.accountCopy}><h3>{account.bank_code || 'Sin banco'} - {account.name}</h3><strong className={`${s.accountBalance} ${freeAmount.startsWith('-') ? s.negative : ''}`}>{account.currency === 'USD' ? `$ ${freeAmount}` : soles(freeAmount)}</strong></div></div>
+          <span aria-hidden="true" className={bankStyle.print} />
+          <div className={s.cardTop}><span className={s.bankName} aria-hidden="true">{bankLabel}</span><div className={s.cardControls}><button type="button" className={`${s.brandMark} ${selected ? s.brandMarkSelected : ''}`} aria-label={`${selected ? 'Quitar' : 'Añadir'} ${account.name} ${selected ? 'del' : 'al'} total de cuentas`} aria-pressed={selected} disabled={saving || mutating || !!dragging} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); void toggleSummary(account.id, !selected); }}>{toggling === account.id ? '·' : selected ? <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m4 10 4 4 8-9" /></svg> : <span aria-hidden="true">+</span>}</button><AccountActions account={account} balance={amount} disabled={saving || mutating || !!dragging} rename={renameAccount} remove={removeAccount} onBusy={busy => { mutationRef.current = busy; setMutating(busy); }} onResult={(message, removedId) => { setAnnouncement(message); if (removedId) { removedFocus.current = removedId; setFocusRevision(value => value + 1); } }} /></div></div>
+          <div className={s.cardBottom}><div className={s.accountCopy}><h3><span className={s.srOnly}>{bankLabel} - </span>{account.name}</h3><strong className={`${s.accountBalance} ${freeAmount.startsWith('-') ? s.negative : ''}`}>{account.currency === 'USD' ? `$ ${freeAmount}` : soles(freeAmount)}</strong></div></div>
           {reordering && <span className={s.moveHint} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M8 12V5a2 2 0 0 1 4 0v5-3a2 2 0 0 1 4 0v4-2a2 2 0 0 1 4 0v5c0 4-2.5 7-6.5 7h-1c-2 0-3.3-.7-4.5-2L4 15a2 2 0 0 1 3-2.5L8 14" /></svg></span>}
         </article>;
       })}
-      {creationCard}
     </div>
     <span id={sortHelpId} className={s.srOnly}>{reordering ? 'Arrastra la tarjeta o usa las flechas para ordenar dentro del banco. Escape cancela el arrastre.' : 'Pulsa Enter para ver movimientos y alcancías.'}</span>
     <p className={s.orderNote} role="status" aria-live="polite">{saving ? 'Guardando orden…' : announcement}</p>
