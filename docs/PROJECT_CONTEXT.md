@@ -812,3 +812,19 @@ Este documento es el contexto persistente del proyecto, guardado en Git; no supo
 
 - En «Ordenar», los botones de cada banco permiten subirlo o bajarlo; se conserva el orden interno de sus cuentas y el cambio abarca las cuentas de ambas monedas del banco. El orden privado reutiliza `sort_order` y el guardado transaccional existente; demo lo conserva en memoria. El guardado de tarjetas envía ahora la lista completa de cuentas, incluidas las de otros bancos y monedas.
 - Build, typecheck y cuatro pruebas locales de orden aprobados. Sin integración remota ni QA nuevo de navegador; quedan pendientes revisión de teclado, responsive, espera/error y recarga privada ficticia.
+
+## Total de pagos futuros · 24/11/2026
+
+- Al final de los pagos visibles se muestra el total pendiente, o el total del día al filtrar el calendario. Soles y dólares se suman por separado en céntimos exactos; sin pagos visibles no se muestra total. Compartido por demo y privado, sin modificar persistencia.
+- Build, typecheck y prueba local de suma y separación de monedas aprobados. Sin QA nuevo en navegador ni integración remota; pendientes revisión visual responsive y comprobación privada con fixture.
+
+## Pagos futuros con tarjetas y selección de moneda · 24/11/2026
+
+- Los pagos futuros admiten cuentas y tarjetas propias; se elige PEN o USD entre las cuentas disponibles y la moneda del gasto se deriva del origen. Al confirmar, se comprueba la línea de crédito en la misma transacción y se revierte si se supera. La edición también permite elegir tarjeta. No se descuenta ni reserva al programar. La demo permite seleccionar y editar las opciones existentes, pero la creación sigue siendo vista previa.
+- Pendiente solicitado: una misma tarjeta con líneas independientes en PEN y USD. El modelo actual solo tiene una línea y moneda por tarjeta; las tarjetas existentes se mantienen en PEN. No se mezclan ni convierten monedas. Requiere diseñar e implementar saldos, límites, pago de deuda y migración por moneda antes de admitir dólares en la misma tarjeta.
+- Build, typecheck e integración específica de pagos aprobados (cuatro pruebas incluidos contenedor y subpruebas), con usuarios ficticios limpiados en la base exclusiva. Verificados límite, rollback, idempotencia, moneda y aislamiento. Sin QA nuevo en navegador; pendientes flujo automático con tarjeta, responsive y sesión privada ficticia.
+
+## Ingresos por categoría · 24/11/2026
+
+- Debajo de gastos por categoría, demo y privado muestran distribución y ranking de ingresos con filtros independientes de mes y moneda y los colores de sus categorías. El cálculo usa céntimos exactos y excluye gastos y transferencias; sin ingresos se muestra estado vacío. Sin cambios de persistencia.
+- Build, typecheck y cuatro pruebas locales de categorías aprobados. Sin QA nuevo de navegador; pendientes revisión visual, teclado, filtros y responsive en demo y sesión privada ficticia.

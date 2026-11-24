@@ -4,9 +4,13 @@ import { categoryToneFor } from './category-icons.mjs';
 export const neutralCategoryColor = 'var(--theme-muted)';
 
 export function expenseCategoryColors(categories) {
+  return categoryColorsFor(categories, 'expense');
+}
+
+export function categoryColorsFor(categories, kind) {
   const colors = new Map();
   for (const category of categories) {
-    if (category.kind !== 'expense') continue;
+    if (category.kind !== kind) continue;
     const color = `var(--category-chart-${categoryToneFor(category)})`;
     colors.set(category.id, color);
     colors.set(`name:${category.name}`, color);
@@ -27,12 +31,12 @@ export function expenseGradient(groups) {
   }).join(', ');
 }
 
-/** Aggregate expenses in one currency and civil month using integer cents. */
-export function categoryInsights(movements, month, currency) {
+/** Aggregate movements of one type, currency and civil month using integer cents. */
+export function categoryInsights(movements, month, currency, kind = 'expense') {
   const groups = new Map();
   let total = 0n, count = 0;
   for (const movement of movements) {
-    if (movement.kind !== 'expense' || (movement.currency || 'PEN') !== currency || !movement.occurred_on.startsWith(month + '-')) continue;
+    if (movement.kind !== kind || (movement.currency || 'PEN') !== currency || !movement.occurred_on.startsWith(month + '-')) continue;
     const amount = toCents(movement.amount);
     const name = movement.category_name || 'Sin categoría';
     const key = movement.category_id || `name:${name}`;

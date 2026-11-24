@@ -7,7 +7,7 @@ import s from './planning-workspace.module.css';
 
 export type PaymentEdit = { description: string; amount: string; due_on: string; account_id: string; category_id: string; payment_mode: string; automatic_time: string };
 export type ManagePayment = (id: string, mode: 'edit' | 'delete', input?: PaymentEdit) => Promise<PlanningResult>;
-export default function PaymentControls({ payment, manage, demo, accounts, categories, today }: { payment: PlanningPayment; manage: ManagePayment; demo: boolean; accounts: { id: string; name: string; currency?: string }[]; categories: PlanningCategory[]; today: string }) {
+export default function PaymentControls({ payment, manage, demo, accounts, categories, today }: { payment: PlanningPayment; manage: ManagePayment; demo: boolean; accounts: { id: string; name: string; currency?: string; account_type?: string }[]; categories: PlanningCategory[]; today: string }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
   const menuRoot = useRef<HTMLDivElement>(null);
@@ -69,7 +69,7 @@ export default function PaymentControls({ payment, manage, demo, accounts, categ
           <label>Descripción<input ref={input} required maxLength={100} value={draft.description} onChange={event => change('description', event.target.value)} /></label>
           <label>Importe ({accounts.find(account => account.id === draft.account_id)?.currency || 'PEN'})<input required inputMode="decimal" value={draft.amount} onChange={event => change('amount', event.target.value.replace(',', '.'))} /></label>
           <label>Vence el<input type="date" required value={draft.due_on} min={payment.due_on < today ? payment.due_on : today} max="9999-12-31" onChange={event => change('due_on', event.target.value)} /></label>
-          <label>Cuenta<select required value={draft.account_id} onChange={event => change('account_id', event.target.value)}>{accounts.map(account => <option key={account.id} value={account.id}>{account.name}</option>)}</select></label>
+          <label>Cuenta o tarjeta<select required value={draft.account_id} onChange={event => change('account_id', event.target.value)}>{accounts.map(account => <option key={account.id} value={account.id}>{account.name} · {account.account_type === 'credit' ? 'Tarjeta' : 'Cuenta'} · {account.currency || 'PEN'}</option>)}</select></label>
           <label>Categoría de gasto<select required value={draft.category_id} onChange={event => change('category_id', event.target.value)}>{categories.filter(category => category.kind === 'expense').map(category => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
           <label>Modo<select value={draft.payment_mode} onChange={event => change('payment_mode', event.target.value)}><option value="manual">Manual</option><option value="automatic">Automático</option></select></label>
           {draft.payment_mode === 'automatic' && <label>Hora de Lima<input type="time" required value={draft.automatic_time} onChange={event => change('automatic_time', event.target.value)} /></label>}

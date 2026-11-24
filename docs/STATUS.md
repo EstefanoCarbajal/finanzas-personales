@@ -980,3 +980,19 @@ main debe mantenerse como la última versión comprobada e integrada.
 
 - En modo Ordenar, flechas suben o bajan los grupos de banco conservando el orden de sus cuentas y agrupando también sus cuentas de la otra moneda. El orden se guarda con el mecanismo existente y revierte ante error. El orden de tarjetas envía todas las cuentas al servidor, corrigiendo el envío parcial por grupo; demo conserva el orden en memoria.
 - Validación nueva: `npm run build`, `npm run typecheck` posterior y cuatro pruebas locales de `wallet-order.test.mjs` y `account-order.test.mjs` aprobados, incluidos múltiples bancos/monedas y aislamiento del propietario con conexión simulada. Sin migración, integración remota ni QA interactivo nuevo; pendiente verificar recarga privada con fixture, errores/espera, teclado y responsive.
+
+## Total de pagos futuros · 24/11/2026
+
+- Añadido al final de la lista de pagos visibles un total por moneda, calculado con céntimos BigInt. El calendario muestra el total del día seleccionado y la lista completa el total pendiente; el estado vacío no muestra total. Compartido por demo y privado, sin cambios de persistencia.
+- Validación nueva: `npm run build`, `npm run typecheck` posterior y `node --test tests/payment-totals.test.mjs` aprobados. Sin QA de navegador ni integración remota; quedan pendientes comprobación visual responsive y con sesión privada ficticia.
+
+## Pagos futuros con tarjetas y selección de moneda · 24/11/2026
+
+- Creación y edición admiten tarjetas propias además de cuentas; el formulario distingue PEN y USD según los orígenes disponibles. La confirmación comprueba transaccionalmente la línea y revierte gasto y estado si se supera. El próximo compromiso muestra el símbolo de su moneda. No se reserva saldo ni se realiza cobro bancario. La demo conserva su creación de pagos como vista previa.
+- Pendiente: el usuario solicitó líneas independientes PEN y USD en una misma tarjeta. El modelo actual tiene una única línea en una única moneda; no se implementó la ampliación del libro de crédito, pago de deuda y esquema necesarios para ese caso. Las tarjetas existentes solo admiten PEN; USD funciona con cuentas en USD.
+- Validación nueva: build y typecheck aprobados; integración `payment-management-integration.mjs` aprobada (cuatro pruebas contando contenedor y tres escenarios) en base exclusiva TLS, con aislamiento, límite de tarjeta, rollback, idempotencia y limpieza de usuarios ficticios. Sin revisión de navegador ni prueba automática específica con tarjeta; siguen pendientes.
+
+## Ingresos por categoría · 24/11/2026
+
+- Añadidos distribución y ranking de ingresos debajo del tablero de gastos, con filtros de mes y moneda independientes, color de categoría y estado vacío. Se filtra por tipo, mes y moneda y se suman céntimos BigInt. Compartido por demo y privado; sin cambios de persistencia.
+- Validación nueva: `npm run build`, `npm run typecheck` posterior y cuatro pruebas de `category-insights.test.mjs` aprobados; incluyen separación de ingresos, gastos, transferencias, meses y monedas. Sin QA de navegador ni integración remota; pendientes revisión visual responsive, teclado y datos privados ficticios.

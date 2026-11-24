@@ -1,6 +1,7 @@
 import { validatePaymentEdit } from './payment-edit-policy.mjs';
 import { randomUUID } from 'node:crypto';
 import { checkAccountReservations } from './piggybanks.mjs';
+import { checkCreditLedger } from './credit.mjs';
 import { decimal, toCents } from './money.mjs';
 import { todayLima } from './repository.mjs';
 
@@ -43,7 +44,7 @@ export async function schedulePayment(pool, userId, input) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [[account]] = await connection.execute(`SELECT id FROM accounts WHERE user_id = ? AND account_type = 'asset' AND id = ? FOR UPDATE`, [userId, input.account_id]);
+    const [[account]] = await connection.execute(`SELECT id FROM accounts WHERE user_id = ? AND account_type IN ('asset', 'credit') AND id = ? FOR UPDATE`, [userId, input.account_id]);
     const [[category]] = await connection.execute('SELECT id FROM categories WHERE user_id = ? AND id = ? AND kind = \'expense\' FOR UPDATE', [userId, input.category_id]);
     if (!account || !category) throw new PlanningInputError('La cuenta o categoría no está disponible.');
     await connection.execute('INSERT INTO scheduled_payments (id, user_id, account_id, category_id, description, amount, due_on, automatic_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -64,13 +65,14 @@ export async function settlePayment(pool, userId, paymentId, automatic = false) 
     if (automatic && (!payment || !payment.automatic_at || !payment.due)) { await connection.rollback(); return false; }
     if (!payment) throw new PlanningInputError('Este pago ya se confirmó o no está disponible.');
     const [[refs]] = await connection.execute(`SELECT a.id AS account_id, a.currency, c.id AS category_id FROM accounts a
-      JOIN categories c ON c.user_id = a.user_id WHERE a.user_id = ? AND a.account_type = 'asset' AND a.id = ? AND c.id = ? AND c.kind = 'expense' FOR UPDATE`,
+      JOIN categories c ON c.user_id = a.user_id WHERE a.user_id = ? AND a.account_type IN ('asset', 'credit') AND a.id = ? AND c.id = ? AND c.kind = 'expense' FOR UPDATE`,
     [userId, payment.account_id, payment.category_id]);
     if (!refs) throw new PlanningInputError('La cuenta o categoría ya no está disponible.');
     const paidOn = automatic ? payment.due_on : todayLima();
     await connection.execute(`INSERT INTO movements (id, user_id, request_id, kind, account_id, category_id, amount, description, occurred_on, currency)
       VALUES (?, ?, ?, 'expense', ?, ?, ?, ?, ?, ?)`, [randomUUID(), userId, payment.id, payment.account_id, payment.category_id, payment.amount, payment.description, paidOn, refs.currency]);
     await connection.execute("UPDATE scheduled_payments SET status = 'paid', paid_on = ? WHERE id = ? AND user_id = ?", [paidOn, paymentId, userId]);
+    await checkCreditLedger(connection, userId);
     await checkAccountReservations(connection, userId);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
@@ -152,7 +154,7 @@ export async function manageFuturePayment(pool, userId, id, mode, input) {
       let value;
       try { value = validatePaymentEdit(input, todayLima(), payment.due_on); } catch (error) { throw new PlanningInputError(error.message); }
       if (!uuid(input.account_id) || !uuid(input.category_id)) throw new PlanningInputError('Elige una cuenta y categoría válidas.');
-      const [[account]] = await connection.execute("SELECT id FROM accounts WHERE user_id = ? AND id = ? AND account_type = 'asset' FOR UPDATE", [userId, input.account_id]);
+      const [[account]] = await connection.execute("SELECT id FROM accounts WHERE user_id = ? AND id = ? AND account_type IN ('asset', 'credit') FOR UPDATE", [userId, input.account_id]);
       const [[category]] = await connection.execute("SELECT id FROM categories WHERE user_id = ? AND id = ? AND kind = 'expense' FOR UPDATE", [userId, input.category_id]);
       if (!account || !category) throw new PlanningInputError('La cuenta o categoría ya no está disponible.');
       await connection.execute('UPDATE scheduled_payments SET description = ?, amount = ?, due_on = ?, automatic_at = ?, account_id = ?, category_id = ? WHERE user_id = ? AND id = ?', [value.description, value.amount, value.due_on, value.automatic_at, input.account_id, input.category_id, userId, id]);

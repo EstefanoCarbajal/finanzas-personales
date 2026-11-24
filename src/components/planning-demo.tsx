@@ -8,7 +8,7 @@ import PlanningWorkspace, { type PlanningPayment, type PlanningCategory } from '
 import PlanningForm from './planning-form';
 
 export default function PlanningDemo({ categories, accounts, movements, section = 'planificacion', goals }: {
-  categories: PlanningCategory[]; accounts: { id: string; name: string; currency?: string }[];
+  categories: PlanningCategory[]; accounts: { id: string; name: string; currency?: string; account_type?: string }[];
   movements: { kind: string; amount: string; category_id: string | null; occurred_on: string }[];
   section?: 'planificacion' | 'pagos'; goals?: ReactNode;
 }) {

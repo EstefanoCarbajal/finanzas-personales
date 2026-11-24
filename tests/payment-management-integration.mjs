@@ -8,7 +8,7 @@ import { readDashboard } from '../src/lib/repository.mjs';
 nextEnv.loadEnvConfig(process.cwd());
 if (process.env.DB_NAME !== 'u519053982_finanzas_test' || process.env.TEST_DB_NAME !== process.env.DB_NAME || process.env.DB_SSL !== 'true') throw new Error('Base exclusiva de pruebas TLS requerida.');
 test('pagos futuros: gestión aislada y serializada con el registro automático', async t => {
-  const pool = createDatabasePool(); const users = [randomUUID(), randomUUID()]; const accounts = [randomUUID(), randomUUID(), randomUUID()]; const categories = [randomUUID(), randomUUID()];
+  const pool = createDatabasePool(); const users = [randomUUID(), randomUUID()]; const accounts = [randomUUID(), randomUUID(), randomUUID()]; const card = randomUUID(), foreignCard = randomUUID(); const categories = [randomUUID(), randomUUID()];
   const base = { account_id: accounts[0], category_id: categories[0], description: 'Pago QA', amount: '20.00', due_on: '2099-01-01', payment_mode: 'manual', automatic_time: '09:00' };
   try {
     for (let i = 0; i < 2; i++) {
@@ -16,6 +16,7 @@ test('pagos futuros: gestión aislada y serializada con el registro automático'
       await pool.execute('INSERT INTO categories (id, user_id, name, kind) VALUES (?, ?, ?, ?)', [categories[i], users[i], 'Pago QA', 'expense']);
     }
     for (let i = 0; i < 3; i++) await pool.execute('INSERT INTO accounts (id, user_id, name, opening_balance, currency) VALUES (?, ?, ?, ?, ?)', [accounts[i], users[i === 2 ? 1 : 0], accounts[i], '100.00', i === 1 ? 'USD' : 'PEN']);
+    for (const [id, owner] of [[card, users[0]], [foreignCard, users[1]]]) await pool.execute("INSERT INTO accounts (id, user_id, name, account_type, credit_limit) VALUES (?, ?, ?, 'credit', '50.00')", [id, owner, id]);
     await schedulePayment(pool, users[0], base);
     const original = (await readPlanning(pool, users[0], '2099-01')).payments[0];
     const before = await readDashboard(pool, users[0]);
@@ -54,6 +55,22 @@ test('pagos futuros: gestión aislada y serializada con el registro automático'
       const paid = (await readPlanning(pool, users[0], '2099-01')).payments[0]; await settlePayment(pool, users[0], paid.id);
       await assert.rejects(manageFuturePayment(pool, users[0], paid.id, 'delete'), /procesado/);
       await assert.rejects(manageFuturePayment(pool, users[0], paid.id, 'edit', base), /procesado/);
+    });
+    await t.test('tarjeta propia: límite, reversión, idempotencia y moneda de la cuenta', async () => {
+      await assert.rejects(schedulePayment(pool, users[0], { ...base, account_id: foreignCard }));
+      await schedulePayment(pool, users[0], { ...base, description: 'Tarjeta QA', account_id: card, amount: '50.01' });
+      const payment = (await readPlanning(pool, users[0], '2099-01')).payments.find(item => item.description === 'Tarjeta QA');
+      assert.equal(payment.currency, 'PEN');
+      await assert.rejects(settlePayment(pool, users[0], payment.id), /línea/);
+      const [[afterFailure]] = await pool.execute('SELECT status FROM scheduled_payments WHERE user_id = ? AND id = ?', [users[0], payment.id]);
+      assert.equal(afterFailure.status, 'scheduled');
+      const [failedMovements] = await pool.execute('SELECT id FROM movements WHERE user_id = ? AND request_id = ?', [users[0], payment.id]);
+      assert.equal(failedMovements.length, 0);
+      await manageFuturePayment(pool, users[0], payment.id, 'edit', { ...base, account_id: card, amount: '30.00' });
+      await settlePayment(pool, users[0], payment.id);
+      await assert.rejects(settlePayment(pool, users[0], payment.id));
+      const [moves] = await pool.execute('SELECT account_id, currency, amount FROM movements WHERE user_id = ? AND request_id = ?', [users[0], payment.id]);
+      assert.deepEqual(moves.map(row => [row.account_id, row.currency, row.amount]), [[card, 'PEN', '30.00']]);
     });
   } finally {
     for (const user of users) { for (const table of ['scheduled_payments', 'movements', 'categories', 'accounts']) await pool.execute('DELETE FROM ' + table + ' WHERE user_id = ?', [user]); await pool.execute('DELETE FROM users WHERE id = ?', [user]); }

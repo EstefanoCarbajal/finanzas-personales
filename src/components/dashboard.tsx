@@ -200,7 +200,7 @@ export default function Dashboard() {
           return { success: true, message: 'Categoría eliminada en la demo.' };
         }} onAddCategory={(name, kind, icon, color) => setCategories(current => [...current, { id: crypto.randomUUID(), name, kind, icon, color }])} />}
 
-        {(section === "Planificación" || section === "Pagos futuros") && <PlanningDemo section={section === "Pagos futuros" ? 'pagos' : 'planificacion'} categories={categories} accounts={cashAccounts} movements={sharedMovements} goals={<div id="metas"><GoalsWorkspace goals={demoGoals} demo creation={<GoalCreateForm accounts={cashAccounts} today="2026-11-11" />}>{demoGoals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} demo today="2026-11-11" manage={async (id, mode, input) => {
+        {(section === "Planificación" || section === "Pagos futuros") && <PlanningDemo section={section === "Pagos futuros" ? 'pagos' : 'planificacion'} categories={categories} accounts={accounts} movements={sharedMovements} goals={<div id="metas"><GoalsWorkspace goals={demoGoals} demo creation={<GoalCreateForm accounts={cashAccounts} today="2026-11-11" />}>{demoGoals.map(goal => <SavingsGoalCard key={goal.id} goal={goal} demo today="2026-11-11" manage={async (id, mode, input) => {
           const existing = demoGoals.find(goal => goal.id === id);
           if (!existing) return { success: false, message: 'La meta ya no está disponible.' };
           if (mode === 'delete') { setDemoGoals(current => current.filter(goal => goal.id !== id)); return { success: true, message: 'Meta eliminada en la demo.' }; }

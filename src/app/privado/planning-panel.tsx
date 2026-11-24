@@ -8,7 +8,7 @@ import { changeFuturePayment, manageBudget, addBudget, addScheduledPayment, canc
 
 const emptyState = { message: '', success: false };
 export default function PlanningPanel({ accounts, categories, budgets, payments, month, today, section = 'planificacion', goals }: {
-  accounts: { id: string; name: string; currency?: string }[]; categories: PlanningCategory[]; budgets: PlanningBudget[]; payments: PlanningPayment[]; month: string; today: string;
+  accounts: { id: string; name: string; currency?: string; account_type?: string }[]; categories: PlanningCategory[]; budgets: PlanningBudget[]; payments: PlanningPayment[]; month: string; today: string;
   section?: 'planificacion' | 'pagos'; goals?: ReactNode;
 }) {
   return <PlanningWorkspace key={section} section={section} goals={goals} accounts={accounts} managePayment={changeFuturePayment} manageBudget={manageBudget} budgets={budgets} payments={payments} categories={categories} month={month} today={today}

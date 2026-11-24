@@ -157,7 +157,7 @@ export async function addScheduledPayment(_previous: { message: string; success:
 export async function markPaymentPaid(form: FormData) {
   const user = await requireUser();
   try { await settlePayment(db(), user.id, form.get('id')); }
-  catch (error) { return { success: false, message: error instanceof PlanningInputError || error instanceof PiggybankError ? error.message : 'No pudimos confirmar el pago. Revisa su estado antes de reintentar.' }; }
+  catch (error) { return { success: false, message: error instanceof PlanningInputError || error instanceof PiggybankError || error instanceof CreditError ? error.message : 'No pudimos confirmar el pago. Revisa su estado antes de reintentar.' }; }
   revalidatePath('/privado');
   return { success: true, message: 'Pago confirmado. El gasto ya está registrado.' };
 }

@@ -28,3 +28,5 @@
 .paymentMain{position:relative;padding-right:76px}.paymentControls{position:absolute;top:12px;right:12px;z-index:2}.payment:has([data-open="true"]){position:relative;z-index:3;overflow:visible}.paymentEditFields{display:grid;gap:16px;margin:0;padding:0;border:0;min-width:0}.budgetEditor select{width:100%;min-width:0;min-height:48px;padding:10px;border:1px solid var(--theme-line);border-radius:12px;background:var(--theme-surface);color:var(--theme-ink);font-size:16px}.budgetEditor select:focus-visible{outline:3px solid var(--theme-strong);outline-offset:3px}
 
 .paymentControls>p[role="status"]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.paymentTotal{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;padding:18px 23px;border:1px solid var(--theme-line);border-radius:18px;background:var(--theme-soft);color:var(--theme-ink);font-size:14px;font-weight:800}.paymentTotal>div{display:flex;flex-wrap:wrap;gap:8px 20px}.paymentTotal strong{font-size:20px;overflow-wrap:anywhere}
