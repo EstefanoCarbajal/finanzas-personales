@@ -15,6 +15,14 @@ export const categoryIcons = [
   { id: 'heart', label: 'Bienestar', tone: 'pink' },
   { id: 'travel', label: 'Viajes', tone: 'blue' },
   { id: 'tag', label: 'Otros', tone: 'violet' },
+  { id: 'fuel', label: 'Combustible', tone: 'copper' },
+  { id: 'utilities', label: 'Servicios', tone: 'cyan' },
+  { id: 'tech', label: 'Tecnología', tone: 'indigo' },
+  { id: 'music', label: 'Música', tone: 'coral' },
+  { id: 'sports', label: 'Deporte', tone: 'lime' },
+  { id: 'insurance', label: 'Seguros', tone: 'teal' },
+  { id: 'subscriptions', label: 'Suscripciones', tone: 'red' },
+  { id: 'taxes', label: 'Impuestos', tone: 'slate' },
 ];
 export const validCategoryIcon = value => typeof value === 'string' && categoryIcons.some(icon => icon.id === value);
 
@@ -22,6 +30,10 @@ export const categoryColors = [
   { id: 'sun', label: 'Ámbar' }, { id: 'leaf', label: 'Verde' },
   { id: 'blue', label: 'Azul' }, { id: 'violet', label: 'Violeta' },
   { id: 'pink', label: 'Rosa' }, { id: 'sand', label: 'Arena' },
+  { id: 'coral', label: 'Coral' }, { id: 'red', label: 'Rojo' },
+  { id: 'teal', label: 'Turquesa' }, { id: 'cyan', label: 'Cian' },
+  { id: 'indigo', label: 'Índigo' }, { id: 'lime', label: 'Lima' },
+  { id: 'copper', label: 'Cobre' }, { id: 'slate', label: 'Pizarra' },
 ];
 export const validCategoryColor = value => categoryColors.some(color => color.id === value);
 

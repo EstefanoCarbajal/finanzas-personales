@@ -1,3 +1,4 @@
+import { paymentDates } from './payment-schedule.mjs';
 import { validatePaymentEdit } from './payment-edit-policy.mjs';
 import { randomUUID } from 'node:crypto';
 import { checkAccountReservations } from './piggybanks.mjs';
@@ -38,17 +39,19 @@ export async function saveBudget(pool, userId, input) {
 export async function schedulePayment(pool, userId, input) {
   if (!uuid(input.account_id) || !uuid(input.category_id)) throw new PlanningInputError('Elige una cuenta y categoría válidas.');
   if (typeof input.description !== 'string' || !input.description.trim() || input.description.trim().length > 100) throw new PlanningInputError('Escribe una descripción de hasta 100 caracteres.');
-  if (!validDate(input.due_on) || input.due_on < todayLima()) throw new PlanningInputError('El vencimiento debe ser hoy o una fecha futura.');
+  let dates;
+  try { dates = paymentDates(input.due_on || null, input.months || '1'); } catch (error) { throw new PlanningInputError(error.message); }
+  if (dates[0] && dates[0] < todayLima()) throw new PlanningInputError('El vencimiento debe ser hoy o una fecha futura.');
   const amount = parseAmount(input.amount);
-  const automaticAt = automaticPaymentTime(input);
+  const automaticTimes = dates.map(due_on => automaticPaymentTime({ ...input, due_on }));
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
     const [[account]] = await connection.execute(`SELECT id FROM accounts WHERE user_id = ? AND account_type IN ('asset', 'credit') AND id = ? FOR UPDATE`, [userId, input.account_id]);
     const [[category]] = await connection.execute('SELECT id FROM categories WHERE user_id = ? AND id = ? AND kind = \'expense\' FOR UPDATE', [userId, input.category_id]);
     if (!account || !category) throw new PlanningInputError('La cuenta o categoría no está disponible.');
-    await connection.execute('INSERT INTO scheduled_payments (id, user_id, account_id, category_id, description, amount, due_on, automatic_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [randomUUID(), userId, input.account_id, input.category_id, input.description.trim(), amount, input.due_on, automaticAt]);
+    for (let i = 0; i < dates.length; i++) await connection.execute('INSERT INTO scheduled_payments (id, user_id, account_id, category_id, description, amount, due_on, automatic_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [randomUUID(), userId, input.account_id, input.category_id, input.description.trim(), amount, dates[i], automaticTimes[i]]);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }
@@ -98,7 +101,7 @@ export async function readPlanning(pool, userId, month) {
     a.name AS account_name, a.currency, c.name AS category_name FROM scheduled_payments p
     JOIN accounts a ON a.id = p.account_id AND a.user_id = p.user_id
     JOIN categories c ON c.id = p.category_id AND c.user_id = p.user_id
-    WHERE p.user_id = ? AND p.status = 'scheduled' ORDER BY p.due_on, p.created_at`, [userId]);
+    WHERE p.user_id = ? AND p.status = 'scheduled' ORDER BY p.due_on IS NULL, p.due_on, p.created_at`, [userId]);
   return { budgets, payments };
 }
 

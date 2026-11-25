@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import nextEnv from '@next/env';
 import { createDatabasePool } from '../src/lib/database.mjs';
 import { createCategory, saveCategoryIcon, updateCategory } from '../src/lib/categories.mjs';
+import { categoryIcons } from '../src/lib/category-icons.mjs';
 import { readDashboard } from '../src/lib/repository.mjs';
 
 nextEnv.loadEnvConfig(process.cwd());
@@ -41,6 +42,20 @@ test('MySQL: category icons persist, preserve financial fields and isolate owner
     const legacyId = randomUUID();
     await pool.execute('INSERT INTO categories (id, user_id, name, kind) VALUES (?, ?, ?, ?)', [legacyId, users[0], 'Legacy QA', 'income']);
     assert.equal((await readDashboard(pool, users[0])).categories.find(item => item.id === legacyId).icon, null);
+    const addedIcons = categoryIcons.filter(item => ['fuel', 'utilities', 'tech', 'music', 'sports', 'insurance', 'subscriptions', 'taxes'].includes(item.id));
+    for (const { id, tone, label } of addedIcons) {
+      await createCategory(pool, users[0], { name: label, kind: 'expense', icon: id, color: tone });
+    }
+    const { categories } = await readDashboard(pool, users[0]);
+    for (const { id, tone, label } of addedIcons) {
+      const added = categories.find(item => item.name === label);
+      assert.equal(added?.icon, id);
+      assert.equal(added?.color, tone);
+    }
+    await updateCategory(pool, users[0], category.id, { ...edit, icon: 'subscriptions', color: 'teal' });
+    const updated = (await readDashboard(pool, users[0])).categories.find(item => item.id === category.id);
+    assert.equal(updated?.icon, 'subscriptions');
+    assert.equal(updated?.color, 'teal');
   } finally {
     for (const user of users) { await pool.execute('DELETE FROM categories WHERE user_id = ?', [user]); await pool.execute('DELETE FROM users WHERE id = ?', [user]); }
     const [[remaining]] = await pool.execute('SELECT COUNT(*) AS total FROM users WHERE id IN (?, ?)', users);

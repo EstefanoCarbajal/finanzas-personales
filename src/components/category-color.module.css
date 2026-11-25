@@ -5,12 +5,28 @@
   --category-violet: #7752a0;
   --category-pink: #a34572;
   --category-sand: #806344;
+  --category-coral: #b54f36;
+  --category-red: #a93742;
+  --category-teal: #167866;
+  --category-cyan: #08748c;
+  --category-indigo: #4d51a5;
+  --category-lime: #597423;
+  --category-copper: #874a36;
+  --category-slate: #4d6277;
   --category-chart-sun: color-mix(in srgb, var(--category-sun) 34%, var(--theme-surface));
   --category-chart-leaf: color-mix(in srgb, var(--category-leaf) 34%, var(--theme-surface));
   --category-chart-blue: color-mix(in srgb, var(--category-blue) 34%, var(--theme-surface));
   --category-chart-violet: color-mix(in srgb, var(--category-violet) 34%, var(--theme-surface));
   --category-chart-pink: color-mix(in srgb, var(--category-pink) 34%, var(--theme-surface));
   --category-chart-sand: color-mix(in srgb, var(--category-sand) 34%, var(--theme-surface));
+  --category-chart-coral: color-mix(in srgb, var(--category-coral) 34%, var(--theme-surface));
+  --category-chart-red: color-mix(in srgb, var(--category-red) 34%, var(--theme-surface));
+  --category-chart-teal: color-mix(in srgb, var(--category-teal) 34%, var(--theme-surface));
+  --category-chart-cyan: color-mix(in srgb, var(--category-cyan) 34%, var(--theme-surface));
+  --category-chart-indigo: color-mix(in srgb, var(--category-indigo) 34%, var(--theme-surface));
+  --category-chart-lime: color-mix(in srgb, var(--category-lime) 34%, var(--theme-surface));
+  --category-chart-copper: color-mix(in srgb, var(--category-copper) 34%, var(--theme-surface));
+  --category-chart-slate: color-mix(in srgb, var(--category-slate) 34%, var(--theme-surface));
 }
 :global([data-avatar-theme=tiger]) :is(.scope, .tone) {
   --category-sun: #ffc378;
@@ -19,12 +35,28 @@
   --category-violet: #cfb2ff;
   --category-pink: #f9add1;
   --category-sand: #d9c3a7;
+  --category-coral: #ff9e84;
+  --category-red: #ff8597;
+  --category-teal: #6de2c9;
+  --category-cyan: #75d9ee;
+  --category-indigo: #a6afff;
+  --category-lime: #bfdd79;
+  --category-copper: #e2a58b;
+  --category-slate: #a6b9cf;
   --category-chart-sun: var(--category-sun);
   --category-chart-leaf: var(--category-leaf);
   --category-chart-blue: var(--category-blue);
   --category-chart-violet: var(--category-violet);
   --category-chart-pink: var(--category-pink);
   --category-chart-sand: var(--category-sand);
+  --category-chart-coral: var(--category-coral);
+  --category-chart-red: var(--category-red);
+  --category-chart-teal: var(--category-teal);
+  --category-chart-cyan: var(--category-cyan);
+  --category-chart-indigo: var(--category-indigo);
+  --category-chart-lime: var(--category-lime);
+  --category-chart-copper: var(--category-copper);
+  --category-chart-slate: var(--category-slate);
 }
 .tone[data-tone=sun] { --icon-color: var(--category-sun); }
 .tone[data-tone=leaf] { --icon-color: var(--category-leaf); }
@@ -32,6 +64,14 @@
 .tone[data-tone=violet] { --icon-color: var(--category-violet); }
 .tone[data-tone=pink] { --icon-color: var(--category-pink); }
 .tone[data-tone=sand] { --icon-color: var(--category-sand); }
+.tone[data-tone=coral] { --icon-color: var(--category-coral); }
+.tone[data-tone=red] { --icon-color: var(--category-red); }
+.tone[data-tone=teal] { --icon-color: var(--category-teal); }
+.tone[data-tone=cyan] { --icon-color: var(--category-cyan); }
+.tone[data-tone=indigo] { --icon-color: var(--category-indigo); }
+.tone[data-tone=lime] { --icon-color: var(--category-lime); }
+.tone[data-tone=copper] { --icon-color: var(--category-copper); }
+.tone[data-tone=slate] { --icon-color: var(--category-slate); }
 .tone[data-tone] {
   color: var(--icon-color);
   background: color-mix(in srgb, var(--icon-color) 11%, var(--theme-surface));

@@ -92,3 +92,8 @@
 
 :global([data-avatar-theme="tiger"]) .dialog::backdrop { background:#08090bc9; }
 :global([data-avatar-theme="tiger"]) .form .amountInput input::placeholder { color:var(--accent); opacity:1; }
+
+.dialog[data-variant=payment] { width:min(570px,calc(100% - 16px)); }
+.dialog[data-variant=payment] .surface { background:var(--theme-surface); }
+.dialog[data-variant=payment] .heading { margin-bottom:14px; }
+.dialog[data-variant=payment] .close:hover:not(:disabled) { background:var(--theme-line); }

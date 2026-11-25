@@ -4,8 +4,8 @@ import SelectedAvatar from '@/components/selected-avatar';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import s from './movement-modal.module.css';
 
-export default function MovementModal({ open, onClose, pending = false, demo = false, heading = 'Nuevo movimiento', children }: {
-  open: boolean; onClose: () => void; pending?: boolean; demo?: boolean; heading?: string; children: ReactNode;
+export default function MovementModal({ open, onClose, pending = false, demo = false, heading = 'Nuevo movimiento', variant, children }: {
+  open: boolean; onClose: () => void; pending?: boolean; demo?: boolean; heading?: string; variant?: 'payment'; children: ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const title = useId();
@@ -25,13 +25,13 @@ export default function MovementModal({ open, onClose, pending = false, demo = f
     };
   }, [open]);
 
-  return <dialog ref={dialog} className={s.dialog} aria-labelledby={title} aria-busy={pending}
+  return <dialog ref={dialog} className={s.dialog} data-variant={variant} aria-labelledby={title} aria-busy={pending}
     onCancel={event => { event.preventDefault(); if (!pending) onClose(); }}
     onPointerDown={event => { backdropPress.current = event.target === event.currentTarget; }}
     onClick={event => { if (backdropPress.current && event.target === event.currentTarget && !pending) onClose(); backdropPress.current = false; }}>
     <div className={s.surface}>
       <header className={s.heading}>
-        <span className={s.mark} aria-hidden="true"><SelectedAvatar width={48} height={48} /><span>＋</span></span>
+        {variant !== 'payment' && <span className={s.mark} aria-hidden="true"><SelectedAvatar width={48} height={48} /><span>＋</span></span>}
         <div className={s.headingCopy}>{demo && <span className={s.eyebrow}>MODO DEMO</span>}<h2 id={title}>{heading}</h2></div>
         <button type="button" className={s.close} onClick={onClose} disabled={pending} aria-label="Cerrar formulario"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg></button>
       </header>

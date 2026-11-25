@@ -1,3 +1,52 @@
+## Cuenta o tarjeta por banco en pagos futuros · 25/11/2026
+
+- «Añadir pago futuro» comparte con «Pagar con» los grupos de cuentas y tarjetas de crédito ordenados por banco. Se muestran banco, nombre y moneda, con «Sin banco» cuando falta la entidad. El selector de pagos futuros sigue limitando las opciones a la moneda elegida.
+
+## Selector Pagar con por banco · 25/11/2026
+
+- El selector de origen de gastos separa cuentas y tarjetas de crédito en grupos por banco, ordenados alfabéticamente dentro de cada tipo. La opción muestra banco, nombre y moneda y usa «Sin banco» cuando no hay entidad registrada. El formulario sigue enviando el ID de la cuenta.
+
+## Catálogo ampliado de categorías · 25/11/2026
+
+- Categorías ofrece 24 iconos y 14 colores más «Automático». Se añadieron Combustible, Servicios, Tecnología, Música, Deporte, Seguros, Suscripciones e Impuestos, y los tonos Coral, Rojo, Turquesa, Cian, Índigo, Lima, Cobre y Pizarra. Los tonos cuentan con variantes claras, oscuras y para gráficos.
+- La migración 022 amplía las restricciones de los dos catálogos. Las categorías guardadas conservan su selección y «Automático» sigue usando el tono del icono.
+
+## Total combinado de pagos futuros · 25/11/2026
+
+- Al final de Pagos futuros, el total combinado suma los pagos de todo el mes visible y los pagos sin vencimiento, por moneda. Al seleccionar un día cambia el subtotal de los pagos fechados y el total combinado sigue cubriendo el mes.
+
+## Ficha de pago sin fecha · 25/11/2026
+
+- Las tarjetas sin vencimiento usan una ficha con icono de calendario, borde discontinuo y la etiqueta «Sin fecha». La ficha comparte el tamaño de las fechas programadas y usa los colores del tema.
+
+## Calendario y pagos sin vencimiento · 25/11/2026
+
+- Pagos futuros muestra el calendario seguido de los pagos del mes o del día seleccionado. Se retiraron los selectores de vista. Los pagos sin vencimiento aparecen al final en todos los meses y con cualquier día seleccionado. Sus importes se suman aparte de los pagos con fecha.
+
+## Lista de pagos por mes · 25/11/2026
+
+- Calendario y Lista comparten el mes visible. La Lista muestra los pagos con vencimiento en ese mes y su total por moneda. En Calendario también se puede filtrar por día. Los pagos sin fecha se consultan en «Sin vencimiento».
+
+## Texto de acciones en Pagos futuros · 25/11/2026
+
+- Se retiró «¿Ya lo pagaste?» de las tarjetas de pagos futuros; se conservan las acciones y su confirmación. Cambio compartido por demo y privado.
+- Compilación y typecheck aprobados; diff comprobado. Sin QA nuevo en navegador.
+
+## Ancho completo en Pagos futuros · 25/11/2026
+
+- Se retiró el panel de próximo compromiso y sus recuentos. La tarjeta principal de Pagos futuros ocupa todo el ancho de su sección en demo y privado.
+
+## Modal de alta de pagos futuros · 25/11/2026
+
+- El alta de pagos futuros presenta una tarjeta temática con el importe editable y una ficha que refleja el vencimiento. Fecha, frecuencia y modo comparten un bloque. El botón muestra la cantidad de pagos y los avisos aparecen según las opciones elegidas. La demo ofrece la misma vista previa con guardado deshabilitado.
+- Se reutiliza el diálogo nativo y el flujo de guardado existente. El QA de demo cubrió escritorio y móvil, teclado, borrador y estados de programación. El guardado privado en navegador queda pendiente. Los resultados de compilación y QA figuran en STATUS.
+
+## Pagos mensuales y sin vencimiento · 25/11/2026
+
+- El alta crea entre 1 y 24 pagos individuales con la misma descripción, cuenta, categoría, importe y modo; la fecha inicial fija el día de cada mes y los meses más cortos usan su último día. Se crean en una transacción. Cada pago puede editarse, confirmarse o cancelarse de forma independiente. La repetición requiere fecha.
+- Un pago manual puede no tener vencimiento; aparece como pendiente sin fecha, no se considera vencido y no ocupa un día en el calendario. La fecha es opcional también al editar. El registro automático requiere fecha y hora. La migración 021 permite fecha NULL; aplicada con TLS únicamente a la base exclusiva de pruebas.
+- Validación: build y typecheck aprobados, cuatro pruebas locales específicas aprobadas; integración de pagos nuevos, gestión y automático aprobada (6 pruebas contando contenedores), con identidades ficticias limpiadas. Suite local 52/53: persiste el fallo previo de contraste fox: deep/accent. Pendiente QA visual y funcional en navegador, responsive y teclado, incluida sesión privada ficticia. No se publicó ni se usaron datos reales.
+
 ## Iconos de categoría en el historial · 23/11/2026
 
 - El historial general y el de cada cuenta muestran el icono y tono vigentes junto al nombre de la categoría. El modo automático utiliza el tono del icono. Las transferencias muestran su destino. La lectura privada usa la unión existente por categoría y propietario.

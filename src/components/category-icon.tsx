@@ -18,8 +18,16 @@ const shapes: Record<string, ReactNode> = {
   heart: <><path d="M12 21S1 14 2 7c1-5 7-5 10-1 3-4 9-4 10 1 1 7-10 14-10 14Z" fill="currentColor" opacity=".14" /><path d="M12 21S1 14 2 7c1-5 7-5 10-1 3-4 9-4 10 1 1 7-10 14-10 14Z" /></>,
   travel: <><path d="m2 11 8 2 3 8 8-19L2 11Zm8 2L21 2M3 17l3 1m1 3 1-3" /><path d="m10 13 3 6 6-15Z" fill="currentColor" opacity=".13" stroke="none" /></>,
   tag: <><path d="M3 3h9l9 9-9 9-9-9V3Z" fill="currentColor" opacity=".13" /><path d="M3 3h9l9 9-9 9-9-9V3Z" /><circle cx="8" cy="8" r="1.5" /></>,
+  fuel: <><path d="M5 4h9v16H5z" fill="currentColor" opacity=".13" stroke="none" /><path d="M4 21h11M5 21V5a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v16M5 10h9m0 3h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0v-6l-4-4m4 4h-2a2 2 0 0 1-2-2V7" /></>,
+  utilities: <path d="M13 2 4 14h7l-1 8 10-12h-7l1-8Z" fill="currentColor" fillOpacity=".13" />,
+  tech: <><rect x="4" y="4" width="16" height="12" rx="2" fill="currentColor" fillOpacity=".13" /><path d="M4 16 2 20h20l-2-4m-10 1h4" /></>,
+  music: <><path d="M9 17V5l11-2v12M9 9l11-2" /><ellipse cx="6" cy="18" rx="3" ry="2.5" fill="currentColor" fillOpacity=".14" /><ellipse cx="17" cy="16" rx="3" ry="2.5" fill="currentColor" fillOpacity=".14" /></>,
+  sports: <><circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity=".12" /><path d="M3 12h18M12 3v18M6 5c6 4 6 10 0 14M18 5c-6 4-6 10 0 14" /></>,
+  insurance: <><path d="M12 3 4 6v6c0 4 3 7 8 9 5-2 8-5 8-9V6l-8-3Z" fill="currentColor" fillOpacity=".13" /><path d="m8 12 3 3 5-6" /></>,
+  subscriptions: <><path d="M20 10a8 8 0 0 0-14-4L3 9m0-4v4h4m-3 5a8 8 0 0 0 14 4l3-3m0 4v-4h-4" /><path d="m10 9 5 3-5 3V9Z" fill="currentColor" fillOpacity=".15" /></>,
+  taxes: <><path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Z" fill="currentColor" fillOpacity=".12" /><path d="m9 15 6-7m-6 1h.01M15 14h.01" /></>,
 };
 export default function CategoryIcon({ id, className }: { id: string; className?: string }) {
-  const icon = categoryIcons.find(item => item.id === id) || categoryIcons[15];
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{shapes[icon.id]}</svg>;
+  const icon = categoryIcons.find(item => item.id === id);
+  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{shapes[icon?.id ?? 'tag']}</svg>;
 }

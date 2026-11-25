@@ -13,7 +13,7 @@ import SelectedAvatar from './selected-avatar';
 import s from './planning-workspace.module.css';
 
 export type PlanningBudget = { id: string; category_id: string; category_name: string; amount: string; spent: string };
-export type PlanningPayment = { account_id?: string; category_id?: string; automatic_at?: string | null; automatic_time?: string | null; currency?: string; id: string; description: string; amount: string; due_on: string; account_name: string; category_name: string };
+export type PlanningPayment = { account_id?: string; category_id?: string; automatic_at?: string | null; automatic_time?: string | null; currency?: string; id: string; description: string; amount: string; due_on: string | null; account_name: string; category_name: string };
 export type PlanningCategory = { id: string; name: string; kind: string; icon?: string | null };
 export type PlanningResult = { success: boolean; message: string };
 const paymentMoney = (p: Pick<PlanningPayment, 'amount' | 'currency'>) => p.currency === 'USD' ? soles(p.amount).replace('S/', '$') : soles(p.amount);
@@ -29,7 +29,7 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
   section?: 'planificacion' | 'pagos'; goals?: ReactNode;
   processPayment?: (id: string, mode: 'paid' | 'cancel') => Promise<PlanningResult>;
 }) {
-  const [view, setView] = useState<'list' | 'calendar'>('calendar');
+  const [calendarMonth, setCalendarMonth] = useState(today.slice(0, 7));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<{ id: string; mode: 'paid' | 'cancel' } | null>(null);
   const [pending, setPending] = useState(false);
@@ -38,11 +38,21 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
   const agendaHeading = useRef<HTMLHeadingElement>(null);
   const confirmationBack = useRef<HTMLButtonElement>(null);
   useEffect(() => { if (confirmation) confirmationBack.current?.focus(); }, [confirmation]);
-  const sorted = [...payments].sort((a, b) => a.due_on.localeCompare(b.due_on));
-  const overdue = sorted.filter(payment => payment.due_on < today);
-  const visible = view === 'calendar' && selectedDate ? sorted.filter(p => p.due_on === selectedDate) : sorted;
-  const visibleTotals = paymentTotals(visible);
-  const next = sorted[0];
+  const monthPayments = payments
+    .filter(payment => payment.due_on?.startsWith(`${calendarMonth}-`))
+    .sort((a, b) => (a.due_on ?? '').localeCompare(b.due_on ?? ''));
+  const undatedPayments = payments.filter(payment => !payment.due_on);
+  const datedPayments = selectedDate ? monthPayments.filter(payment => payment.due_on === selectedDate) : monthPayments;
+
+  function selectDate(date: string | null) {
+    setSelectedDate(date);
+    setConfirmation(null);
+  }
+
+  function selectMonth(month: string, date?: string) {
+    setCalendarMonth(month);
+    selectDate(date ?? null);
+  }
 
   async function process(id: string, mode: 'paid' | 'cancel') {
     if (!processPayment || busy.current) return;
@@ -56,18 +66,31 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
     finally { busy.current = false; setPending(false); }
   }
 
+  function renderPayment(payment: PlanningPayment) {
+    const days = payment.due_on ? daysUntil(payment.due_on, today) : null, confirming = confirmation?.id === payment.id;
+    return <article key={payment.id} className={`${s.payment} ${days !== null && days < 0 ? s.latePayment : ''}`}>
+      <div className={s.paymentMain}>
+        {managePayment && <div className={s.paymentControls}><PaymentControls payment={payment} manage={managePayment} accounts={accounts} categories={categories} today={today} demo={demo} /></div>}
+        {payment.due_on ? <time className={s.dateTile} dateTime={payment.due_on}><span>{dateLabel(payment.due_on, { month: 'short' }).replace('.', '')}</span><strong>{payment.due_on.slice(8)}</strong></time> :
+          <div className={`${s.dateTile} ${s.undatedTile}`}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="16" rx="4" /><path d="M7 3v4m10-4v4M3 10h18m-11 6h4" />
+            </svg>
+            <span>Sin fecha</span>
+          </div>}
+        <div className={s.paymentCopy}><h3>{payment.description}</h3>{payment.automatic_at && <span className={s.autoBadge}>ϟ Automático · {payment.automatic_time} Lima</span>}<span>{payment.category_name} <i aria-hidden="true">·</i> {payment.account_name}</span></div>
+        <div className={s.paymentValue}><strong>{paymentMoney(payment)}</strong><span className={days !== null && days < 0 ? s.dangerText : ''}>{days === null ? 'Sin vencimiento' : dueLabel(days)}</span></div>
+      </div>
+      {processPayment && <div className={s.paymentBottom}>{confirming ? <div className={s.confirmation}><p>{confirmation.mode === 'paid' ? `Se registrará un gasto de ${paymentMoney(payment)} hoy en ${payment.account_name}.` : 'Se retirará este pago pendiente, sin crear un gasto.'}</p><div><button ref={confirmationBack} type="button" className={s.quietButton} disabled={pending} onClick={() => { setConfirmation(null); document.getElementById(`pay-${payment.id}`)?.focus(); }}>Volver</button><button type="button" className={s.button} disabled={pending} onClick={() => process(payment.id, confirmation.mode)}>{pending ? 'Procesando…' : confirmation.mode === 'paid' ? 'Confirmar gasto' : 'Cancelar pago'}</button></div></div> : <div><button className={s.quietButton} type="button" disabled={pending} onClick={() => { setConfirmation({ id: payment.id, mode: 'cancel' }); setMessage(null); }}>Cancelar pago</button><button id={`pay-${payment.id}`} className={s.payButton} type="button" disabled={pending} onClick={() => { setConfirmation({ id: payment.id, mode: 'paid' }); setMessage(null); }}><span aria-hidden="true">✓</span> Marcar pagado</button></div>}</div>}
+    </article>;
+  }
+
   return <div className={s.workspace} id={section}>
     <header className={s.titleRow}><h1>{section === 'pagos' ? 'Pagos futuros' : 'Planificación'}</h1>{section === 'planificacion' && <span className={s.month}><CalendarIcon />{dateLabel(`${month}-01`, { month: 'long', year: 'numeric' })}</span>}</header>
     {demo && <p className={s.demoNote}>Vista de ejemplo · Noviembre de 2026 · Guardado y confirmación en el espacio privado.</p>}
-    {section === 'pagos' && <section className={s.overview} aria-label="Panorama de pagos futuros">
-      <div className={s.hero}>
-        <div className={s.heroCopy}><span className={s.eyebrow}>PLANIFICA CON CALMA</span><h2>Tu mes,<br />a tu ritmo.</h2>
-        </div>
-        <div className={s.scene} aria-hidden="true"><span className={s.spark}>✦</span><div className={s.calendar}><div>{dateLabel(today, { month: 'short' })}<span>● ●</span></div><strong>{today.slice(8)}</strong><span className={s.calendarCheck}>✓</span></div><div className={s.avatar}><SelectedAvatar width={116} height={116} /></div><span className={s.orbit}>✧</span></div>
-      </div>
-      <div className={s.overviewSide}><div className={s.nextPayment}><span className={s.statLabel}>Próximo compromiso</span>{next ? <><strong>{paymentMoney(next)}</strong><span className={s.nextName}>{next.description}</span><span className={next.due_on < today ? s.dangerText : s.nextDate}>{dateLabel(next.due_on, { day: 'numeric', month: 'short' })} · {dueLabel(daysUntil(next.due_on, today))}</span></> : <><strong className={s.allClear}>Todo al día <span aria-hidden="true">✓</span></strong><span className={s.nextName}>Sin pagos pendientes</span></>}</div>
-        <div className={s.miniStats}><div><strong>{payments.length}</strong><span>Pendientes</span></div><div><strong className={overdue.length ? s.dangerText : ''}>{overdue.length}</strong><span>Vencidos</span></div></div>
-      </div>
+    {section === 'pagos' && <section className={s.hero} aria-label="Panorama de pagos futuros">
+      <div className={s.heroCopy}><span className={s.eyebrow}>PLANIFICA CON CALMA</span><h2>Tu mes,<br />a tu ritmo.</h2></div>
+      <div className={s.scene} aria-hidden="true"><span className={s.spark}>✦</span><div className={s.calendar}><div>{dateLabel(today, { month: 'short' })}<span>● ●</span></div><strong>{today.slice(8)}</strong><span className={s.calendarCheck}>✓</span></div><div className={s.avatar}><SelectedAvatar width={116} height={116} /></div><span className={s.orbit}>✧</span></div>
     </section>}
 
     {section === 'planificacion' && <section className={s.budgets} aria-labelledby="budget-heading">
@@ -89,20 +112,31 @@ export default function PlanningWorkspace({ budgets, payments, categories, month
     {section === 'planificacion' && goals}
 
     {section === 'pagos' && <section className={s.agenda} id="agenda-pagos" aria-labelledby="agenda-heading" aria-busy={pending}>
-      <header className={s.sectionHeading}><div><span className={s.sectionIcon}><CalendarIcon /></span><h2 id="agenda-heading" tabIndex={-1} ref={agendaHeading}>Pagos futuros</h2><span className={s.count}>{payments.length}</span></div>{paymentForm}</header>
-      <div className={s.filters} aria-label="Vista de pagos"><button aria-pressed={view==='calendar'} className={view==='calendar'?s.selectedFilter:''} disabled={pending} onClick={()=>{setView('calendar');setConfirmation(null);}}>▦ Calendario</button><button aria-pressed={view==='list'} className={view==='list'?s.selectedFilter:''} disabled={pending} onClick={()=>{setView('list');setConfirmation(null);}}>☷ Lista</button></div>
+      <header className={s.sectionHeading}><div><span className={s.sectionIcon}><CalendarIcon /></span><h2 id="agenda-heading" tabIndex={-1} ref={agendaHeading}>Pagos futuros</h2><span className={s.count}>{datedPayments.length + undatedPayments.length}</span></div>{paymentForm}</header>
       <p role="status" className={`${s.message} ${message?.success ? s.success : ''}`}>{message?.message}</p>
-      {view==='calendar' && <PaymentCalendar payments={sorted} today={today} selected={selectedDate} disabled={pending} onSelect={date=>{setSelectedDate(date);setConfirmation(null);}} />}
-      {view==='calendar' && selectedDate && <h3>{dateLabel(selectedDate,{day:'numeric',month:'long'})}</h3>}
-      <div className={s.paymentList}>{visible.map(payment => {
-        const days = daysUntil(payment.due_on, today), confirming = confirmation?.id === payment.id;
-        return <article key={payment.id} className={`${s.payment} ${days < 0 ? s.latePayment : ''}`}>
-          <div className={s.paymentMain}>{managePayment && <div className={s.paymentControls}><PaymentControls payment={payment} manage={managePayment} accounts={accounts} categories={categories} today={today} demo={demo} /></div>}<time className={s.dateTile} dateTime={payment.due_on}><span>{dateLabel(payment.due_on, { month: 'short' }).replace('.', '')}</span><strong>{payment.due_on.slice(8)}</strong></time><div className={s.paymentCopy}><h3>{payment.description}</h3>{payment.automatic_at && <span className={s.autoBadge}>ϟ Automático · {payment.automatic_time} Lima</span>}<span>{payment.category_name} <i aria-hidden="true">·</i> {payment.account_name}</span></div><div className={s.paymentValue}><strong>{paymentMoney(payment)}</strong><span className={days < 0 ? s.dangerText : ''}>{dueLabel(days)}</span></div></div>
-          {processPayment && <div className={s.paymentBottom}>{confirming ? <div className={s.confirmation}><p>{confirmation.mode === 'paid' ? `Se registrará un gasto de ${paymentMoney(payment)} hoy en ${payment.account_name}.` : 'Se retirará este pago pendiente, sin crear un gasto.'}</p><div><button ref={confirmationBack} type="button" className={s.quietButton} disabled={pending} onClick={() => { setConfirmation(null); document.getElementById(`pay-${payment.id}`)?.focus(); }}>Volver</button><button type="button" className={s.button} disabled={pending} onClick={() => process(payment.id, confirmation.mode)}>{pending ? 'Procesando…' : confirmation.mode === 'paid' ? 'Confirmar gasto' : 'Cancelar pago'}</button></div></div> : <><span className={s.paymentHint}>¿Ya lo pagaste?</span><div><button className={s.quietButton} type="button" disabled={pending} onClick={() => { setConfirmation({ id: payment.id, mode: 'cancel' }); setMessage(null); }}>Cancelar pago</button><button id={`pay-${payment.id}`} className={s.payButton} type="button" disabled={pending} onClick={() => { setConfirmation({ id: payment.id, mode: 'paid' }); setMessage(null); }}><span aria-hidden="true">✓</span> Marcar pagado</button></div></>}</div>}
-        </article>;
-      })}{!visible.length && <div className={s.empty}><span aria-hidden="true">✓</span><h3>{selectedDate && view==='calendar' ? 'Sin pagos para este día' : 'Tu agenda está libre'}</h3><p>Añade tu próximo pago para tenerlo presente.</p></div>}</div>
-      {visible.length > 0 && <div className={s.paymentTotal}><span>{view === 'calendar' && selectedDate ? 'Total del día' : 'Total pendiente'}</span><div>{visibleTotals.map(total => <strong key={total.currency}>{paymentMoney(total)}</strong>)}</div></div>}
+      <PaymentCalendar payments={monthPayments} today={today} month={calendarMonth} selected={selectedDate} disabled={pending} onSelect={selectDate} onMonthChange={selectMonth} />
+      {selectedDate && <h3>{dateLabel(selectedDate, { day:'numeric', month:'long' })}</h3>}
+      <div className={s.paymentList}>
+        {datedPayments.map(renderPayment)}
+        {!datedPayments.length && <div className={s.empty}><span aria-hidden="true">✓</span><h3>{selectedDate ? 'Sin pagos para este día' : 'Sin pagos para este mes'}</h3></div>}
+      </div>
+      {datedPayments.length > 0 && <PaymentTotal label={selectedDate ? 'Total del día' : 'Total del mes'} payments={datedPayments} />}
+      {undatedPayments.length > 0 && <section className={s.undated} aria-labelledby="undated-payments-heading">
+        <h3 id="undated-payments-heading">Sin vencimiento</h3>
+        <div className={s.paymentList}>{undatedPayments.map(renderPayment)}</div>
+        <PaymentTotal label="Total sin vencimiento" payments={undatedPayments} />
+      </section>}
+      {(monthPayments.length > 0 || undatedPayments.length > 0) && (
+        <PaymentTotal label="Total combinado del mes" payments={[...monthPayments, ...undatedPayments]} combined />
+      )}
     </section>}
+  </div>;
+}
+
+function PaymentTotal({ label, payments, combined }: { label: string; payments: PlanningPayment[]; combined?: boolean }) {
+  return <div className={s.paymentTotal} data-combined={combined}>
+    <span>{label}</span>
+    <div>{paymentTotals(payments).map(total => <strong key={total.currency}>{paymentMoney(total)}</strong>)}</div>
   </div>;
 }
 

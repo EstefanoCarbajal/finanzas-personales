@@ -26,7 +26,7 @@ export default function PaymentControls({ payment, manage, demo, accounts, categ
     setMode(next);
   }
   const [mode, setMode] = useState<'edit' | 'delete' | null>(null);
-  const initial = () => ({ description: payment.description, amount: payment.amount, due_on: payment.due_on, account_id: payment.account_id || accounts[0]?.id || '', category_id: payment.category_id || '', payment_mode: payment.automatic_at ? 'automatic' : 'manual', automatic_time: payment.automatic_time || '09:00' });
+  const initial = () => ({ description: payment.description, amount: payment.amount, due_on: payment.due_on || '', account_id: payment.account_id || accounts[0]?.id || '', category_id: payment.category_id || '', payment_mode: payment.automatic_at ? 'automatic' : 'manual', automatic_time: payment.automatic_time || '09:00' });
   const [draft, setDraft] = useState<PaymentEdit>(initial);
   function change(field: keyof PaymentEdit, value: string) { setDraft(current => ({ ...current, [field]: value })); }
   const [pending, setPending] = useState(false);
@@ -68,7 +68,7 @@ export default function PaymentControls({ payment, manage, demo, accounts, categ
         {mode === 'edit' ? <fieldset disabled={pending} className={s.paymentEditFields}>
           <label>Descripción<input ref={input} required maxLength={100} value={draft.description} onChange={event => change('description', event.target.value)} /></label>
           <label>Importe ({accounts.find(account => account.id === draft.account_id)?.currency || 'PEN'})<input required inputMode="decimal" value={draft.amount} onChange={event => change('amount', event.target.value.replace(',', '.'))} /></label>
-          <label>Vence el<input type="date" required value={draft.due_on} min={payment.due_on < today ? payment.due_on : today} max="9999-12-31" onChange={event => change('due_on', event.target.value)} /></label>
+          <label>Vence el (opcional)<input type="date" required={draft.payment_mode === 'automatic'} value={draft.due_on} min={payment.due_on && payment.due_on < today ? payment.due_on : today} max="9999-12-31" onChange={event => change('due_on', event.target.value)} /></label>
           <label>Cuenta o tarjeta<select required value={draft.account_id} onChange={event => change('account_id', event.target.value)}>{accounts.map(account => <option key={account.id} value={account.id}>{account.name} · {account.account_type === 'credit' ? 'Tarjeta' : 'Cuenta'} · {account.currency || 'PEN'}</option>)}</select></label>
           <label>Categoría de gasto<select required value={draft.category_id} onChange={event => change('category_id', event.target.value)}>{categories.filter(category => category.kind === 'expense').map(category => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
           <label>Modo<select value={draft.payment_mode} onChange={event => change('payment_mode', event.target.value)}><option value="manual">Manual</option><option value="automatic">Automático</option></select></label>

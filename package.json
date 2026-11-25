@@ -8,7 +8,7 @@
     "start": "node scripts/serve-with-payments.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
-    "test:integration": "node --test tests/integration.mjs tests/profile-integration.mjs tests/account-order-integration.mjs tests/category-icons-integration.mjs tests/accounts-integration.mjs tests/settings-integration.mjs tests/category-management-integration.mjs tests/credit-integration.mjs tests/automatic-payments-integration.mjs tests/piggybanks-integration.mjs tests/budgets-integration.mjs tests/goal-management-integration.mjs tests/payment-management-integration.mjs tests/user-management-integration.mjs tests/user-directory-integration.mjs tests/registration-integration.mjs tests/balance-visibility-integration.mjs",
+    "test:integration": "node --test tests/integration.mjs tests/profile-integration.mjs tests/account-order-integration.mjs tests/category-icons-integration.mjs tests/accounts-integration.mjs tests/settings-integration.mjs tests/category-management-integration.mjs tests/credit-integration.mjs tests/automatic-payments-integration.mjs tests/piggybanks-integration.mjs tests/budgets-integration.mjs tests/goal-management-integration.mjs tests/payment-management-integration.mjs tests/payment-schedule-integration.mjs tests/user-management-integration.mjs tests/user-directory-integration.mjs tests/registration-integration.mjs tests/balance-visibility-integration.mjs",
     "db:migrate": "node scripts/migrate.mjs",
     "db:create-user": "node scripts/create-user.mjs",
     "payments:worker": "node scripts/automatic-payments.mjs",

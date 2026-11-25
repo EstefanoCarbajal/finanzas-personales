@@ -6,9 +6,10 @@ import { decimal, toCents } from '@/lib/money.mjs';
 import { validatePaymentEdit } from '@/lib/payment-edit-policy.mjs';
 import PlanningWorkspace, { type PlanningPayment, type PlanningCategory } from './planning-workspace';
 import PlanningForm from './planning-form';
+import type { PaymentSourceAccount } from './payment-source-options';
 
 export default function PlanningDemo({ categories, accounts, movements, section = 'planificacion', goals }: {
-  categories: PlanningCategory[]; accounts: { id: string; name: string; currency?: string; account_type?: string }[];
+  categories: PlanningCategory[]; accounts: PaymentSourceAccount[];
   movements: { kind: string; amount: string; category_id: string | null; occurred_on: string }[];
   section?: 'planificacion' | 'pagos'; goals?: ReactNode;
 }) {

@@ -4,7 +4,8 @@ import { categoryColors, categoryToneFor, categoryIcons, categoryIconFor, validC
 import { createCategory, saveCategoryIcon, updateCategory } from '../src/lib/categories.mjs';
 
 test('category icons support legacy names, explicit overrides and safe fallbacks', () => {
-  assert.equal(new Set(categoryIcons.map(icon => icon.id)).size, 16);
+  assert.equal(categoryIcons.length, 24);
+  assert.equal(new Set(categoryIcons.map(icon => icon.id)).size, 24);
   assert.equal(categoryIconFor({ name: 'Alimentación', icon: null }), 'food');
   assert.equal(categoryIconFor({ name: 'Educación' }), 'education');
   assert.equal(categoryIconFor({ name: 'Transporte', icon: 'pet' }), 'pet');
@@ -20,6 +21,13 @@ test('category creation validates icon, type and name before writing', async () 
 });
 
 test('an explicit palette color overrides the icon tone and automatic restores it', async () => {
+  const palette = new Set(categoryColors.map(color => color.id));
+  assert.equal(categoryColors.length, 14);
+  assert.equal(palette.size, 14);
+  for (const { id, tone } of categoryIcons) {
+    assert.ok(palette.has(tone), id);
+    assert.equal(categoryToneFor({ icon: id, color: 'auto' }), tone);
+  }
   for (const { id } of categoryColors) assert.equal(categoryToneFor({ icon: 'food', color: id }), id);
   for (const color of [undefined, null, 'auto', 'invalid']) assert.equal(categoryToneFor({ name: 'Transporte', color }), 'blue');
   const input = { name: 'Mascotas', icon: 'pet', kind: 'expense', color: '#ff0000' };

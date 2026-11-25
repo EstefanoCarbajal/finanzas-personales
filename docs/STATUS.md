@@ -1,3 +1,53 @@
+## Cuenta o tarjeta por banco en pagos futuros · 25/11/2026
+
+- En Chrome con la demo se verificaron las etiquetas y grupos del modal, el ID de la tarjeta, PEN y USD sin cuentas, y la selección al volver a PEN. Se comprobó el selector de Nuevo movimiento después de compartir el componente y el ancho de ambos modales a 1440, 390 y 320 px. Build y typecheck aprobados. La vista se comparte con privado y el QA de navegador se hizo en demo.
+
+## Selector Pagar con por banco · 25/11/2026
+
+- En Chrome con la demo se verificaron los grupos de BCP y «Sin banco», las etiquetas, la selección y el ID enviado para crédito. También se comprobó que ingresos excluye tarjetas como origen y transferencias las admite como destino. Selector sin desbordamiento a 1440, 390 y 320 px. Build y typecheck aprobados. El componente se comparte con privado y la revisión de navegador se hizo en demo.
+
+## Catálogo ampliado de categorías · 25/11/2026
+
+- Migración 022 aplicada con TLS en la base exclusiva de pruebas. La integración creó y leyó las ocho combinaciones nuevas, verificó la edición y comprobó el rechazo de valores fuera del catálogo. Se comprobó la limpieza de los usuarios ficticios.
+- Build, typecheck y 11 pruebas locales relacionadas aprobados. Suite general 52/53, con el fallo previo de contraste del tema zorro. En Chrome con la demo se verificaron 24 iconos y 14 colores más «Automático», alta, edición, tema claro y oscuro y ausencia de desbordamiento a 1440, 390 y 320 px. Pendiente QA de navegador en privado.
+
+## Total combinado de pagos futuros · 25/11/2026
+
+- Build, typecheck y prueba local de totales exactos por moneda aprobados. En Chrome con la demo se verificó el total combinado con pagos fechados y sin fecha, con un mes sin pagos fechados y con un día sin pagos en un mes con actividad. También se comprobó la ausencia de desbordamiento a 1440, 390 y 320 px. El componente se comparte con privado y el QA de navegador se hizo en demo.
+
+## Ficha de pago sin fecha · 25/11/2026
+
+- Chrome en demo comprobó la ficha con un pago ficticio sin vencimiento a 1440, 390 y 320 px. El icono y la etiqueta caben en la ficha y los pagos fechados conservan el formato de calendario. Build y typecheck aprobados. El componente se comparte con privado y la revisión en navegador se hizo en demo.
+
+## Calendario y pagos sin vencimiento · 25/11/2026
+
+- Chrome en demo confirmó que el calendario queda visible sin selectores de vista, que el pago ficticio sin fecha queda al final en noviembre y diciembre, y que sigue accesible al elegir un día o un mes sin pagos fechados. Se verificaron ambos totales y la ausencia de desbordamiento horizontal a 1440, 390 y 320 px. Build, typecheck y tres pruebas locales de totales y programación aprobados. La vista se comparte con privado y el QA se realizó en demo.
+
+## Lista de pagos por mes · 25/11/2026
+
+- Build, typecheck y las tres pruebas locales de totales y programación aprobados. En Chrome con la demo se movió un pago ficticio de noviembre a diciembre y se verificaron el recuento de tarjetas, los totales, el filtro por día, «Hoy», el mes vacío y la conservación del mes al alternar Calendario y Lista. Después se quitó su fecha y se verificó el acceso desde «Sin vencimiento» y la ausencia de desbordamiento a 320 y 390 px. El cambio es compartido con privado, con QA de navegador realizado en demo.
+
+## Texto de acciones en Pagos futuros · 25/11/2026
+
+- Se retiró «¿Ya lo pagaste?» de las tarjetas de pagos futuros; se conservan las acciones y su confirmación. Cambio compartido por demo y privado.
+- Compilación y typecheck aprobados; diff comprobado. Sin QA nuevo en navegador.
+
+## Ancho completo en Pagos futuros · 25/11/2026
+
+- La tarjeta principal ocupa el mismo ancho que la agenda. Se retiraron el panel lateral y sus estilos exclusivos.
+- Chrome en demo confirmó la ausencia del panel, la alineación de anchos y la ausencia de desbordamiento horizontal a 1440, 390 y 320 px. Build y typecheck aprobados. La presentación se comparte con privado y la revisión de navegador se hizo en demo.
+
+## Modal de alta de pagos futuros · 25/11/2026
+
+- Rediseñado el diálogo «Añadir pago futuro» con tarjeta de importe y moneda, ficha de calendario sincronizada, campos compactos y botón que muestra cuántos pagos se guardarán. El formulario conserva el borrador y las opciones de fecha, repetición y registro manual o automático.
+- Validación nueva: build y typecheck aprobados. Chrome en la demo verificó 1440, 390 y 320 px sin desbordamiento horizontal, apertura por teclado, Escape y cierre exterior, retorno de foco, borrador, normalización de importe con coma, cambio de moneda, calendario, repetición, modo automático, transición a sin vencimiento y movimiento reducido. Pasaron dos pruebas locales de calendario. Queda pendiente comprobar guardado, errores y espera en navegador con sesión privada ficticia.
+
+## Pagos mensuales y sin vencimiento · 25/11/2026
+
+- El alta crea entre 1 y 24 pagos individuales con la misma descripción, cuenta, categoría, importe y modo; la fecha inicial fija el día de cada mes y los meses más cortos usan su último día. Se crean en una transacción. Cada pago puede editarse, confirmarse o cancelarse de forma independiente. La repetición requiere fecha.
+- Un pago manual puede no tener vencimiento; aparece como pendiente sin fecha, no se considera vencido y no ocupa un día en el calendario. La fecha es opcional también al editar. El registro automático requiere fecha y hora. La migración 021 permite fecha NULL; aplicada con TLS únicamente a la base exclusiva de pruebas.
+- Validación: build y typecheck aprobados, cuatro pruebas locales específicas aprobadas; integración de pagos nuevos, gestión y automático aprobada (6 pruebas contando contenedores), con identidades ficticias limpiadas. Suite local 52/53: persiste el fallo previo de contraste fox: deep/accent. Pendiente QA visual y funcional en navegador, responsive y teclado, incluida sesión privada ficticia. No se publicó ni se usaron datos reales.
+
 ## Iconos de categoría en el historial · 23/11/2026
 
 - El historial general y el de cada cuenta muestran el icono y tono vigentes junto al nombre de la categoría. El modo automático utiliza el tono del icono. Las transferencias muestran su destino. La lectura privada usa la unión existente por categoría y propietario.
